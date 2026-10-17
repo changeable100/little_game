@@ -6,10 +6,23 @@
 #include "lab_pan.h"
 #include "lvgl.h"
 #include "littlevgl2rtt.h"
+#include "maze_selftest.h"
+
+static void maze_test_report(const char *name, bool passed)
+{
+    rt_kprintf("[maze:selftest] %s %s\n", name, passed ? "PASS" : "FAIL");
+}
 
 /* 先建立测试和显示环境，再进入 LVGL 定时器处理循环。 */
 int main(void)
 {
+    int maze_failures = maze_selftest_run(maze_test_report);
+    rt_kprintf("[maze:selftest] summary %s failures=%d\n",
+               maze_failures ? "FAIL" : "PASS", maze_failures);
+    if (maze_failures) {
+        rt_kprintf("[maze] model self-test failed; maze feature is not validated\n");
+    }
+
     /* lab_init 创建后台工作任务；littlevgl2rtt_init 将 LVGL 接到 SDK 的 lcd 驱动。 */
     if (lab_init() != RT_EOK || littlevgl2rtt_init("lcd") != RT_EOK) {
         rt_kprintf("Peripheral Lab: initialization failed\n");
