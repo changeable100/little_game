@@ -2,7 +2,7 @@ submission:
   student_id: null
   student_name: "成员 B（姓名待提供）"
   group_id: null
-  milestone: "H0 边界评审 / 成员 B 需求与设计草案"
+  milestone: "H0 边界评审 / 按 MAZE_CONTRACT_VERSION v1 同步成员 B 文档"
   submitted_at: null
 
 dev_agent:
@@ -14,18 +14,19 @@ dev_agent:
 requirements:
   prd_path: "docs/01-需求规格说明.md"
   hardware_constraints_ref: "README.md；黄山派 SF32LB52 / 390x450 / SiFli SDK v2.5.1"
+  source_contract: "用户提供的 MAZE_CONTRACT_VERSION v1 接口/时序说明（2026-10-17）；对应提交 77b15d3 当前不可获取"
 
 design:
   architecture_doc_path: "docs/02-方案设计说明.md"
   key_decisions:
     - decision: "成员 B 选择倾斜控制连续滚动小球"
       alternatives_considered: "倾斜触发按格移动"
-      rationale: "连续运动更直接呈现体感；需由成员 A 明确小球碰撞半径、边界和步进上限后才能定地图"
-      decided_by: "成员 B 明确选择；待成员 A 共同评审"
+      rationale: "连续运动更直接呈现体感；A 契约说明给出半径 0.20 格和步进边界，模型源码及地图通行仍待核验"
+      decided_by: "成员 B 明确选择；接口细节依 A 契约说明，待源码联评"
     - decision: "成员 B 选择 UI 线程周期推进游戏的一步有界计算"
       alternatives_considered: "独立游戏任务通过有界消息和快照通信"
-      rationale: "减少任务与队列协调；需要成员 A 验证单步不阻塞 UI"
-      decided_by: "成员 B 明确选择；待成员 A 共同评审"
+      rationale: "A 契约说明规定 A 管唯一 UI 刷新入口，B 不另建游戏时钟；生产调度尚未进入本工作副本"
+      decided_by: "成员 B 明确选择；接口细节依 A 契约说明，待源码联评"
     - decision: "首版只做一张固定地图，不做多关卡选关"
       alternatives_considered: "首版包含多张地图和选关"
       rationale: "收敛首次联调与验收范围"
@@ -33,7 +34,7 @@ design:
 
 code:
   repo_url: "https://github.com/changeable100/little_game"
-  commit_range: "1672326..（功能分支尚无新提交）"
+  commit_range: "1672326..b677f32（已提交的 B 文档基线；本次同步尚未提交）"
 
 physical_verification: []
 
@@ -41,21 +42,25 @@ test_results:
   - test_id: "TC-201～TC-208"
     description: "成员 B 迷宫地图与界面用例"
     expected: "依 docs/03-测试计划.md 执行并逐条登记"
-    actual: "未执行；目前只完成 SDK/源码核对与文档草案"
+    actual: "未执行；本次只将 A 契约说明同步到文档并核对追踪；迷宫源码/头文件及模型自检证据未在当前工作副本"
     pass: false
     evidence_path: null
 
 known_issues:
   - "任务书中的旧基线、提交 4d9eb23 和无游戏 UI 描述与当前工作副本不符；当前仓库只有 1672326 初始提交，且已有鹈鹕自行车 UI。"
-  - "公共 maze_contract.h、游戏快照/意图签名、球半径和碰撞规则需成员 A 提供并由双方确认。"
+  - "A 的说明文档声称模型提交 77b15d3 并报告 24 项板上自检 PASS；当前 GitHub main 无此提交，契约头文件、模型源码、自检代码和日志均不在 D:\\peripheral_lab，无法独立复核。"
+  - "B 收到实际 maze_contract.h 与 A 的源码提交后，仍须核对真实类型/函数签名；当前不能编译或实现 UI 适配。"
+  - "16×16、20 px/格仅为 B 的布局/地图候选；连续小球通行能力尚未由模型验证。"
   - "本机未找到 cc、gcc 或 clang，尚未运行主机渲染测试。"
   - "任务书引用的 D:\\AGENTS.md 与 D:\\作业下的 01/02/03 文档未找到；项目成员 B 姓名、学号和组别尚未提供。"
 
 self_review: |
-  本轮仅完成任务书核读、当前仓库与 SDK 接入依据核查，以及成员 B 需求/设计/测试草案。
-  用户明确选择连续滚动、UI 线程周期推进和单一固定关卡。未实现任何迷宫游戏代码，
-  未执行构建、主机测试或物理验证。后续必须等待成员 A 提供共享契约和碰撞尺寸，
-  并解决任务书与当前代码基线差异。
+  本轮按用户确认，将其提供的 MAZE_CONTRACT_VERSION v1 说明同步到 B 的需求、设计、
+  测试和界面/地图提案，记录地图/快照/动作/计时/调度语义。契约对照提交 77b15d3、
+  共享头文件、模型源码、自检代码与所述板上日志未能从当前 GitHub/工作副本获取；
+  未编写或验证迷宫 C 代码，也未将说明中提到的 24 项 PASS 作为本地测试结果。
+  REQ/TC 追踪通过局部脚本核对；仓库未提供 scripts/check_trace.py。未运行构建、
+  主机渲染或物理验证。
 
 human_checkpoints:
   - decision_point: "体感迷宫玩法"
@@ -64,3 +69,5 @@ human_checkpoints:
     student_confirmation: "用户选择 UI 线程周期推进；成员 A 需确认单步有界且不阻塞。"
   - decision_point: "首版关卡范围"
     student_confirmation: "用户选择一张固定地图；暂不包含多关卡和选关。"
+  - decision_point: "A 接口契约文档同步"
+    student_confirmation: "用户确认先按提供的 MAZE_CONTRACT_VERSION v1 说明同步 B 文档，之后再提供 A 的源码分支或提交号。"
