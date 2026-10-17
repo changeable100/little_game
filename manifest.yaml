@@ -1,0 +1,66 @@
+submission:
+  student_id: null
+  student_name: "成员 B（姓名待提供）"
+  group_id: null
+  milestone: "H0 边界评审 / 成员 B 需求与设计草案"
+  submitted_at: null
+
+dev_agent:
+  tool: "Copilot SDK in VS Code"
+  model: null
+  session_log_path: null
+  session_log_hash: null
+
+requirements:
+  prd_path: "docs/01-需求规格说明.md"
+  hardware_constraints_ref: "README.md；黄山派 SF32LB52 / 390x450 / SiFli SDK v2.5.1"
+
+design:
+  architecture_doc_path: "docs/02-方案设计说明.md"
+  key_decisions:
+    - decision: "成员 B 选择倾斜控制连续滚动小球"
+      alternatives_considered: "倾斜触发按格移动"
+      rationale: "连续运动更直接呈现体感；需由成员 A 明确小球碰撞半径、边界和步进上限后才能定地图"
+      decided_by: "成员 B 明确选择；待成员 A 共同评审"
+    - decision: "成员 B 选择 UI 线程周期推进游戏的一步有界计算"
+      alternatives_considered: "独立游戏任务通过有界消息和快照通信"
+      rationale: "减少任务与队列协调；需要成员 A 验证单步不阻塞 UI"
+      decided_by: "成员 B 明确选择；待成员 A 共同评审"
+    - decision: "首版只做一张固定地图，不做多关卡选关"
+      alternatives_considered: "首版包含多张地图和选关"
+      rationale: "收敛首次联调与验收范围"
+      decided_by: "成员 B 明确选择；待成员 A 共同评审"
+
+code:
+  repo_url: "https://github.com/changeable100/little_game"
+  commit_range: "1672326..（功能分支尚无新提交）"
+
+physical_verification: []
+
+test_results:
+  - test_id: "TC-201～TC-208"
+    description: "成员 B 迷宫地图与界面用例"
+    expected: "依 docs/03-测试计划.md 执行并逐条登记"
+    actual: "未执行；目前只完成 SDK/源码核对与文档草案"
+    pass: false
+    evidence_path: null
+
+known_issues:
+  - "任务书中的旧基线、提交 4d9eb23 和无游戏 UI 描述与当前工作副本不符；当前仓库只有 1672326 初始提交，且已有鹈鹕自行车 UI。"
+  - "公共 maze_contract.h、游戏快照/意图签名、球半径和碰撞规则需成员 A 提供并由双方确认。"
+  - "本机未找到 cc、gcc 或 clang，尚未运行主机渲染测试。"
+  - "任务书引用的 D:\\AGENTS.md 与 D:\\作业下的 01/02/03 文档未找到；项目成员 B 姓名、学号和组别尚未提供。"
+
+self_review: |
+  本轮仅完成任务书核读、当前仓库与 SDK 接入依据核查，以及成员 B 需求/设计/测试草案。
+  用户明确选择连续滚动、UI 线程周期推进和单一固定关卡。未实现任何迷宫游戏代码，
+  未执行构建、主机测试或物理验证。后续必须等待成员 A 提供共享契约和碰撞尺寸，
+  并解决任务书与当前代码基线差异。
+
+human_checkpoints:
+  - decision_point: "体感迷宫玩法"
+    student_confirmation: "用户选择倾斜控制连续滚动小球；仍需与成员 A 评审碰撞半径和通道净宽。"
+  - decision_point: "游戏推进调度"
+    student_confirmation: "用户选择 UI 线程周期推进；成员 A 需确认单步有界且不阻塞。"
+  - decision_point: "首版关卡范围"
+    student_confirmation: "用户选择一张固定地图；暂不包含多关卡和选关。"
