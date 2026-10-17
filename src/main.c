@@ -17,9 +17,10 @@
 #include "stdio.h"
 #include "string.h"
 #include "drivers/rt_drv_pwm.h"
+#include "maze_selftest.h"
 
 #define APP_NAME        "course_starter"
-#define APP_VERSION     "0.1.0"
+#define APP_VERSION     "0.2.0"
 
 #define RGBLED_NAME     "rgbled"
 #define BLINK_ON_MS     500
@@ -62,10 +63,26 @@ static void rgb_led_set_color(uint32_t color)
     rt_device_control(rgbled_device, PWM_CMD_SET_COLOR, &configuration);
 }
 
+static void maze_test_report(const char *name, bool passed)
+{
+    rt_kprintf("[maze:selftest] %s %s\n", name, passed ? "PASS" : "FAIL");
+}
+
 int main(void)
 {
+    int failures;
     rt_kprintf("\n[%s] v%s boot ok\n", APP_NAME, APP_VERSION);
     rt_kprintf("Hello world!\n");
+
+    /* Isolated rule tests only: this is not an IMU/UI game demo. */
+    failures = maze_selftest_run(maze_test_report);
+    rt_kprintf("[maze:selftest] summary %s failures=%d\n",
+               failures ? "FAIL" : "PASS", failures);
+    if (failures)
+    {
+        rt_kprintf("[maze] model selftest failed; RGB demo not started\n");
+        return -1;
+    }
 
     rgb_led_init();
 

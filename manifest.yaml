@@ -90,7 +90,15 @@ test_results:
     pass: <true 或 false>
     evidence_path: "<对应的原始数据/截图路径>"
 
+  - test_id: "HOST-MODEL-001"
+    description: "REQ-301至REQ-306模型的24个主机补充自检，含边界与非法输入；不是板端验证"
+    expected: "相同自检函数在主机全部PASS，ASan/UBSan无报告"
+    actual: "WSL cc C11严格警告与ASan/UBSan下24场景通过，summary PASS failures=0；板端尚未执行"
+    pass: true
+    evidence_path: "evidence/M2/maze_model/host_pass_2026-10-17.txt"
+
 known_issues:
+  - "模型0.2.0已编译但板上自检未执行，UI/IMU尚未接入；学生已审阅确认功能提交，不能把主机PASS当板端PASS"
   - "王若豪已选择方案 A；另一成员姓名、板卡数量、正式地图/布局与 UI 资源验收值待补，游戏/IMU/UI 的新板端功能均未验证"
   - "<已知问题1，真实项目通常都有未解决或有局限性的地方，主动说明比隐瞒更可信>"
 
