@@ -34,7 +34,7 @@ design:
 
 code:
   repo_url: "https://github.com/changeable100/little_game"
-  commit_range: "1672326..b677f32（已提交的 B 文档基线；本次同步尚未提交）"
+  commit_range: "1672326..b677f32（B 功能源码基线；本次为纯文档同步，未新增迷宫代码）"
 
 physical_verification: []
 
