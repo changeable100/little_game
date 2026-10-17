@@ -14,7 +14,7 @@ dev_agent:
 requirements:
   prd_path: "docs/01-需求规格说明.md"
   hardware_constraints_ref: "README.md；黄山派 SF32LB52 / 390x450 / SiFli SDK v2.5.1"
-  source_contract: "用户提供的 MAZE_CONTRACT_VERSION v1 接口/时序说明（2026-10-17）；对应提交 77b15d3 当前不可获取"
+  source_contract: "MAZE_CONTRACT_VERSION v1；从 origin/feat/req-301-maze-model@9595000 选择性接入，模型源码基于 77b15d3"
 
 design:
   architecture_doc_path: "docs/02-方案设计说明.md"
@@ -34,7 +34,8 @@ design:
 
 code:
   repo_url: "https://github.com/changeable100/little_game"
-  commit_range: "1672326..b677f32（B 功能源码基线；本次为纯文档同步，未新增迷宫代码）"
+  commit_range: "B 工程从 1672326 独立演进；本次选择性导入 A 源文件，未合并 A 分支历史"
+  a_model_source: "origin/feat/req-301-maze-model@9595000；模型实现源提交 77b15d3"
 
 physical_verification: []
 
@@ -42,25 +43,36 @@ test_results:
   - test_id: "TC-201～TC-208"
     description: "成员 B 迷宫地图与界面用例"
     expected: "依 docs/03-测试计划.md 执行并逐条登记"
-    actual: "未执行；本次只将 A 契约说明同步到文档并核对追踪；迷宫源码/头文件及模型自检证据未在当前工作副本"
+    actual: "B 的正式地图/UI/交互用例未执行；当前仍缺正式地图、LVGL 页面、动作适配和真实 IMU 集成"
+    pass: false
+    evidence_path: null
+  - test_id: "A-model-selftest-24-host"
+    description: "A 的 24 个隔离模型场景，使用其 host harness 在本地运行"
+    expected: "每个模型场景及汇总均 PASS；失败时须明确显示并不得记录为通过"
+    actual: "MinGW GCC 4.9.2 编译成功；24 个场景及 summary PASS failures=0"
+    pass: true
+    evidence_path: "evidence/M2/maze_model/host_pass_2026-10-17.txt"
+  - test_id: "A-model-selftest-24-board"
+    description: "当前 B 固件启动时运行 24 个隔离模型场景"
+    expected: "真实板复位后逐项 PASS 且 summary PASS failures=0；完整串口原文归档"
+    actual: "固件构建成功，尚未烧录/复位；等待学生提供板端证据"
     pass: false
     evidence_path: null
 
 known_issues:
   - "任务书中的旧基线、提交 4d9eb23 和无游戏 UI 描述与当前工作副本不符；当前仓库只有 1672326 初始提交，且已有鹈鹕自行车 UI。"
-  - "A 的说明文档声称模型提交 77b15d3 并报告 24 项板上自检 PASS；当前 GitHub main 无此提交，契约头文件、模型源码、自检代码和日志均不在 D:\\peripheral_lab，无法独立复核。"
-  - "B 收到实际 maze_contract.h 与 A 的源码提交后，仍须核对真实类型/函数签名；当前不能编译或实现 UI 适配。"
+  - "本次固件构建成功，但仍输出 RWX LOAD segment、newlib _close/_lseek/_read/_write 未实现、缺少 entry 符号及 img 'dfu' not found 警告；未改 SDK 工程骨架，板上影响未验证。"
+  - "正式固定地图、BFS 可达性自检、LVGL UI、动作适配、真实 IMU 与生产刷新调度尚未实现。"
   - "16×16、20 px/格仅为 B 的布局/地图候选；连续小球通行能力尚未由模型验证。"
-  - "本机未找到 cc、gcc 或 clang，尚未运行主机渲染测试。"
+  - "LVGL 主机渲染测试尚未运行，因为迷宫生产 UI 尚未实现。"
   - "任务书引用的 D:\\AGENTS.md 与 D:\\作业下的 01/02/03 文档未找到；项目成员 B 姓名、学号和组别尚未提供。"
 
 self_review: |
-  本轮按用户确认，将其提供的 MAZE_CONTRACT_VERSION v1 说明同步到 B 的需求、设计、
-  测试和界面/地图提案，记录地图/快照/动作/计时/调度语义。契约对照提交 77b15d3、
-  共享头文件、模型源码、自检代码与所述板上日志未能从当前 GitHub/工作副本获取；
-  未编写或验证迷宫 C 代码，也未将说明中提到的 24 项 PASS 作为本地测试结果。
-  REQ/TC 追踪通过局部脚本核对；仓库未提供 scripts/check_trace.py。未运行构建、
-  主机渲染或物理验证。
+  本轮成功获取 A 分支 feat/req-301-maze-model@9595000。由于 A/B 分支无共同 Git
+  祖先且 A 树含独立 RGB 工程入口，没有合并整分支；经学生确认，只导入 A 的五个
+  契约/模型/自检文件，并在现有 LVGL main 入口增加逐项自检调用。主机 24 项模型
+  自检通过；使用 SiFli SDK v2.5.1 完成目标固件构建。构建警告及主机/构建日志见
+  evidence/M2/maze_model/；尚未烧录，板端自检等学生取证。正式地图和 UI 未实现。
 
 human_checkpoints:
   - decision_point: "体感迷宫玩法"
@@ -69,5 +81,5 @@ human_checkpoints:
     student_confirmation: "用户选择 UI 线程周期推进；成员 A 需确认单步有界且不阻塞。"
   - decision_point: "首版关卡范围"
     student_confirmation: "用户选择一张固定地图；暂不包含多关卡和选关。"
-  - decision_point: "A 接口契约文档同步"
-    student_confirmation: "用户确认先按提供的 MAZE_CONTRACT_VERSION v1 说明同步 B 文档，之后再提供 A 的源码分支或提交号。"
+  - decision_point: "A 模型分支选择性接入"
+    student_confirmation: "用户确认按最小接入计划只导入 A 的契约、模型和自检文件，保留当前 LVGL 主入口；实际接入五个 A 源文件并修改 main.c。"

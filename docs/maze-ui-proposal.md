@@ -6,7 +6,7 @@
 
 - 目标工作副本：`D:\peripheral_lab`，已确认 `main` 有 LVGL v9 主循环和 Play Lab。
 - 当前 `src/main.c` 调用 `littlevgl2rtt_init("lcd")` 后创建外设 UI，并在主线程调用 `lv_timer_handler()`。
-- A 的契约说明指定：同一 UI/模型线程顺序执行操作、校准完成、step 和快照读取；A 拥有唯一游戏刷新入口，B 不建立第二个游戏推进 timer。代码/头文件未在当前分支，待收到 A 的提交后核对签名。
+- A 的契约及纯逻辑模型已从 `origin/feat/req-301-maze-model` 选择性接入；同一 UI/模型线程顺序执行操作、校准完成、step 和快照读取。生产游戏刷新入口与 IMU 通知通道尚未实现，B 不建立第二个游戏推进 timer。
 - `project/proj.conf` 已启用 LittlevGL2RTT、LVGL v9 和多个 Montserrat 字体；未改动配置。
 - SDK v2.5.1 的官方 LVGL 示例 `example/dfu_v2/cdc/app/src/main.c` 与其 `project/proj.conf` 可用于对照初始化入口和 LVGL v9 配置。
 - 仓库既有 LVGL 事件、绘制与销毁范例位于 `src/lab_ui.c`、`src/modules/test_touch.c`、`src/lab_game_ui.c`。
@@ -73,4 +73,4 @@ A 契约说明规定地图维度最多 16×16、行优先、PATH=0/WALL=1，球�
 
 ## 基线差异
 
-任务书称“main 只有串口与 RGB、无现成游戏 UI”，但当前 `D:\peripheral_lab` 中已有 LVGL 主入口和鹈鹕自行车 Play Lab。当前 GitHub 可见历史只有 `1672326` 初始提交和 B 的文档提交 `b677f32`；A 说明所列模型提交 `77b15d3` 未能解析。契约所引头文件、模型和板上日志尚缺。新增迷宫时保留既有页面和入口，不复制工程或把自行车逻辑误认为迷宫已完成。
+任务书称“main 只有串口与 RGB、无现成游戏 UI”，但当前 B 工程已有 LVGL 主入口和鹈鹕自行车 Play Lab。A 与 B 分支没有共同 Git 祖先，不能整分支合并；已只从 A 分支模型提交 `77b15d3` 及其交接分支 `9595000` 引入契约、游戏模型和隔离自检，保留现有页面、入口和工程配置。A 分支的既有 host/板端证据未复制到 B 本地工作树；本地接入还未编译或复测，生产迷宫 UI、正式地图与真实 IMU 均未完成。
