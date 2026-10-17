@@ -1,0 +1,19 @@
+﻿Scenario: PD-controlled input follows every centerline waypoint in the confirmed 16x16 maze.
+Assertions: no map-boundary escape, no circle/wall overlap, all waypoints settled, final model state MAZE_WON.
+Command: gcc -std=c11 -Wall -Wextra -Werror -O2 -I src src/maze_game.c src/maze_levels.c <temporary TC-203 driver> -lm
+gcc.exe (tdm64-1) 4.9.2
+compile_exit=0
+waypoint 1 reached: (14.462,1.500)
+waypoint 2 reached: (14.500,3.461)
+waypoint 3 reached: (1.538,3.500)
+waypoint 4 reached: (1.500,5.461)
+waypoint 5 reached: (14.462,5.500)
+waypoint 6 reached: (14.500,7.461)
+waypoint 7 reached: (1.538,7.500)
+waypoint 8 reached: (1.500,9.461)
+waypoint 9 reached: (14.462,9.500)
+waypoint 10 reached: (14.500,11.461)
+waypoint 11 reached: (1.538,11.500)
+waypoint 12 reached: (1.500,13.461)
+steps=2494 waypoints=12/13 state=4 pos=(14.0045,13.5000) elapsed_ms=49865
+run_exit=5

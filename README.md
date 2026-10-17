@@ -61,7 +61,7 @@
 | 蓝牙 BLE | SDK BLE 协议栈 | 扫描、连接、通知回环等，详见 [BLE 测试说明](docs/ble-testing.md)（进阶） |
 | 蓝牙联网 | BTPAN + HID / lwIP | 配对、DHCP、DNS、HTTP、MQTT 回环，详见 [BTPAN 联网测试](docs/pan-testing.md)、[MQTT](docs/mqtt-testing.md)（进阶） |
 | Play Lab | IMU + 屏幕 + 触摸 | 鹈鹕自行车综合小游戏，见 [说明](docs/pelican-ride.md) |
-| 体感迷宫（成员 B） | LVGL v9 + 连续运动模型 | 已选择性接入 A 的契约、模型和启动自检；正式地图、迷宫 UI、IMU/动作调度仍未实现。需求、设计、测试和草案见 [需求](docs/01-需求规格说明.md)、[方案](docs/02-方案设计说明.md)、[测试计划](docs/03-测试计划.md)、[提案](docs/maze-ui-proposal.md) |
+| 体感迷宫（成员 B） | LVGL v9 + 连续运动模型 | 已接入 A 的契约/模型并实现确认的 16×16 固定地图、四邻接 BFS 和启动自检；A/B 主机回归及固件构建通过。迷宫 UI、真实 IMU/动作调度与板上验证仍待完成。需求、设计、测试和草案见 [需求](docs/01-需求规格说明.md)、[方案](docs/02-方案设计说明.md)、[测试计划](docs/03-测试计划.md)、[提案](docs/maze-ui-proposal.md) |
 
 ### UART 接线与串口复用
 

@@ -31,6 +31,10 @@ design:
       alternatives_considered: "首版包含多张地图和选关"
       rationale: "收敛首次联调与验收范围"
       decided_by: "成员 B 明确选择；待成员 A 共同评审"
+    - decision: "首版采用16×16蛇形单通道固定地图"
+      alternatives_considered: "采用带分支或环路的复杂地图"
+      rationale: "拓扑简明，适合先验证契约映射与四邻接 BFS；连续小球碰撞须另由 A 模型和真机验证"
+      decided_by: "用户于2026-10-17明确确认"
 
 code:
   repo_url: "https://github.com/changeable100/little_game"
@@ -40,10 +44,34 @@ code:
 physical_verification: []
 
 test_results:
-  - test_id: "TC-201～TC-208"
-    description: "成员 B 迷宫地图与界面用例"
+  - test_id: "TC-204～TC-208"
+    description: "成员 B 迷宫界面、动作和生命周期用例"
     expected: "依 docs/03-测试计划.md 执行并逐条登记"
-    actual: "B 的正式地图/UI/交互用例未执行；当前仍缺正式地图、LVGL 页面、动作适配和真实 IMU 集成"
+    actual: "未执行；LVGL 页面、动作适配和真实 IMU 集成仍待实现"
+    pass: false
+    evidence_path: null
+  - test_id: "TC-201-host"
+    description: "确认的固定地图结构与四邻接 BFS 主机自检"
+    expected: "16×16/256 格，S=(1,1)、G=(14,13)，结构有效且可达"
+    actual: "PASS；B 地图启动自检 4 项全部通过"
+    pass: true
+    evidence_path: "evidence/M2/maze_levels/host_pass_2026-10-17.txt"
+  - test_id: "TC-202-host"
+    description: "BFS 拒绝断路、仅对角相邻和畸形地图"
+    expected: "断路和畸形输入判不可达/无效，不越界"
+    actual: "PASS；断路、对角相邻及非法尺寸/端点/格值用例通过"
+    pass: true
+    evidence_path: "evidence/M2/maze_levels/host_pass_2026-10-17.txt"
+  - test_id: "TC-203-host"
+    description: "A 模型在确认地图上连续穿越走廊并到达终点"
+    expected: "沿各走廊中心线控制，球不越界/穿墙并进入 WON"
+    actual: "PASS；首次自检 harness 误要求到达终点格心，失败记录保留，按契约修正后重测通过"
+    pass: true
+    evidence_path: "evidence/M2/maze_levels/tc203_model_regression_retry_2026-10-17.txt"
+  - test_id: "B-level-selftest-board"
+    description: "B 固定地图启动自检在真实板上运行"
+    expected: "串口逐项输出 TC-201/202 PASS，汇总 failures=0"
+    actual: "固件构建成功但尚未烧录/复位；等待学生提供板上证据"
     pass: false
     evidence_path: null
   - test_id: "A-model-selftest-24-host"
@@ -62,17 +90,20 @@ test_results:
 known_issues:
   - "任务书中的旧基线、提交 4d9eb23 和无游戏 UI 描述与当前工作副本不符；当前仓库只有 1672326 初始提交，且已有鹈鹕自行车 UI。"
   - "本次固件构建成功，但仍输出 RWX LOAD segment、newlib _close/_lseek/_read/_write 未实现、缺少 entry 符号及 img 'dfu' not found 警告；未改 SDK 工程骨架，板上影响未验证。"
-  - "正式固定地图、BFS 可达性自检、LVGL UI、动作适配、真实 IMU 与生产刷新调度尚未实现。"
-  - "16×16、20 px/格仅为 B 的布局/地图候选；连续小球通行能力尚未由模型验证。"
+  - "16×16蛇形地图和BFS已实现并通过主机自检；LVGL UI、动作适配、真实 IMU 与生产刷新调度仍未实现。"
+  - "20 px/格仍是 UI 布局候选；连续通行的主机模型回归通过，但真机可玩性未验证。"
   - "LVGL 主机渲染测试尚未运行，因为迷宫生产 UI 尚未实现。"
   - "任务书引用的 D:\\AGENTS.md 与 D:\\作业下的 01/02/03 文档未找到；项目成员 B 姓名、学号和组别尚未提供。"
 
 self_review: |
   本轮成功获取 A 分支 feat/req-301-maze-model@9595000。由于 A/B 分支无共同 Git
   祖先且 A 树含独立 RGB 工程入口，没有合并整分支；经学生确认，只导入 A 的五个
-  契约/模型/自检文件，并在现有 LVGL main 入口增加逐项自检调用。主机 24 项模型
-  自检通过；使用 SiFli SDK v2.5.1 完成目标固件构建。构建警告及主机/构建日志见
-  evidence/M2/maze_model/；尚未烧录，板端自检等学生取证。正式地图和 UI 未实现。
+  契约/模型/自检文件，并在现有 LVGL main 入口增加逐项自检调用。随后按学生确认
+  的 16×16 蛇形地图实现 B 固定关卡、结构检查和 BFS 自检。A 的 24 项与 B 的 4 项
+  主机自检、TC-203 连续模型回归以及 SiFli SDK 固件构建通过；首次 TC-203 harness
+  错误要求驶至终点格心，在模型进入 WON 时失败，修正为契约规定的进入终点格后
+  重测通过。构建警告、失败/重测及主机日志见 evidence/M2/maze_levels/；尚未烧录，
+  UI 和 IMU 集成未实现，板端证据待学生提供。
 
 human_checkpoints:
   - decision_point: "体感迷宫玩法"
@@ -83,3 +114,5 @@ human_checkpoints:
     student_confirmation: "用户选择一张固定地图；暂不包含多关卡和选关。"
   - decision_point: "A 模型分支选择性接入"
     student_confirmation: "用户确认按最小接入计划只导入 A 的契约、模型和自检文件，保留当前 LVGL 主入口；实际接入五个 A 源文件并修改 main.c。"
+  - decision_point: "首版正式固定地图"
+    student_confirmation: "用户确认采用 docs/maze-ui-proposal.md 中的16×16蛇形单通道拓扑作为首版固定关卡；先实现静态地图和BFS自检。"
