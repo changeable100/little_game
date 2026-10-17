@@ -10,6 +10,8 @@
 
 ## 5 分钟上手
 
+完整的 Windows 环境激活、编译、端口确认、烧录、串口复位与证据保存步骤，见 [黄山派固件操作指南](docs/guides/黄山派固件编译烧录与串口验证操作指南.md)。其中包含 PowerShell 执行策略和串口软件复位无效的处理方法。
+
 ```bash
 # 1. 前置：Git 2.30+、Python 3.8+、一个 AI agent 工具（Claude Code / Codex 等）
 #    以及 SiFli SDK v2.5.1 开发环境（SDK + 工具链，安装步骤见 training/T0）
