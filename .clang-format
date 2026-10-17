@@ -1,0 +1,10 @@
+# 与现有模块（test_*.c、lab.c）的风格一致：函数大括号独占一行，其余同行。
+BasedOnStyle: LLVM
+IndentWidth: 4
+ColumnLimit: 120
+BreakBeforeBraces: Linux
+AllowShortBlocksOnASingleLine: Always
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortFunctionsOnASingleLine: All
+AlignConsecutiveMacros: Consecutive
+SortIncludes: Never

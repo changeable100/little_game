@@ -1,0 +1,7 @@
+/build_log.txt
+/project/.sconsign.dblite
+/project/__pycache__/
+/project/build_*/
+/src/lcpu_img.c
+__pycache__/
+*.py[cod]
