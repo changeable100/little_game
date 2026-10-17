@@ -38,6 +38,15 @@ design:
       rationale: "<为什么最终这么选，写具体理由，不要只写'效果更好'>"
       decided_by: "<agent建议+学生确认 / 学生主导 / 纯agent自动决定（不建议用于关键决策）>"
 
+    - decision: "已采纳 A：王若豪负责 IMU/模型/集成，另一成员负责 UI/关卡；游戏与 UI 同线程有界步进，IMU 提供复制快照"
+      alternatives_considered: "UI 线程运行有界游戏步进与独立游戏任务两种方案；详见 docs/adr/0001-maze-collaboration.md"
+      rationale: "先约定状态、坐标、地图、操作与失败处理，减少双人开发重复状态和接口冲突；调度代价需结合例程与实测评审"
+      decided_by: "王若豪审阅后回复选择方案 A 并要求开始；另一成员姓名待补，未代记其确认"
+    - decision: "已采纳 A：连续滚动小球，首版一张固定地图、校准、暂停继续、终点和重开"
+      alternatives_considered: "B 为按格移动或多关卡及成绩记录；详见 docs/adr/0002-maze-first-playable.md"
+      rationale: "沿用任务书方案 A，先完成体感控制的一局闭环；运动与碰撞先由独立模型自检验证"
+      decided_by: "王若豪选择方案 A；初始数值与接口由 agent 在已选路线内落实，不声称硬件已验证"
+
 code:
   repo_url: "<git仓库地址>"
   commit_range: "<起始commit..结束commit，对应本次里程碑>"
@@ -82,6 +91,7 @@ test_results:
     evidence_path: "<对应的原始数据/截图路径>"
 
 known_issues:
+  - "王若豪已选择方案 A；另一成员姓名、板卡数量、正式地图/布局与 UI 资源验收值待补，游戏/IMU/UI 的新板端功能均未验证"
   - "<已知问题1，真实项目通常都有未解决或有局限性的地方，主动说明比隐瞒更可信>"
 
 self_review: |
