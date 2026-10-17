@@ -1,0 +1,73 @@
+reboot
+
+SFBL
+Serial:c2,Chip:4,Package:3,Rev:3  Reason:00000000
+
+
+ \ | /
+- SiFli Corporation
+ / | \     build on Oct 10 2026, 2.5.1 build 421126d9
+ 2020 - 2022 Copyright by SiFli team
+aw32001_init ok,  time consum: 0.00 ms.
+mount /dev sucess
+[I/drv.rtc] PSCLR=0x80000100 DivAI=128 DivAF=0 B=256
+[I/drv.rtc] RTC use LXT RTC_CR=00000001
+
+[I/drv.rtc] Init RTC, wake = 1
+
+[I/drv.audprc] init 00 ADC_PATH_CFG0 0x606
+
+[I/drv.audprc] HAL_AUDPRC_Init res 0
+
+[I/drv.audcodec] HAL_AUDCODEC_Init res 0
+
+[I/drv.rgb] rgbled register success, supporting 1 LEDs
+[I/TOUCH] Regist touch screen driver, probe=1202740d 
+[I/FAL] Flash Abstraction Layer (V0.5.99) initialize success.[0m
+[I/FAL] The FAL MTD NOR device (dfu) created successfully
+[I/FAL] The FAL MTD NOR device (ble) created successfully
+call par CFG1(3313)
+
+fc 9, xtal 2000, pll 2106
+
+call par CFG1(3313)
+
+fc 7, xtal 2000, pll 1689
+
+
+[course_starter] v0.2.0 boot ok
+Hello world!
+[maze:selftest] TC-301 start-calibrate PASS
+[maze:selftest] TC-302 right PASS
+[maze:selftest] TC-302 left PASS
+[maze:selftest] TC-302 down PASS
+[maze:selftest] TC-302 up PASS
+[maze:selftest] TC-303 thin-wall PASS
+[maze:selftest] TC-303 horizontal-wall PASS
+[maze:selftest] TC-303 corner PASS
+[maze:selftest] TC-303 slide PASS
+[maze:selftest] TC-303 right-edge PASS
+[maze:selftest] TC-303 left-edge PASS
+[maze:selftest] TC-303 bottom-edge PASS
+[maze:selftest] TC-303 top-edge PASS
+[maze:selftest] TC-304 pause-resume PASS
+[maze:selftest] TC-304 restart-stale-back PASS
+[maze:selftest] TC-305 win-freeze PASS
+[maze:selftest] TC-306 bad-maps PASS
+[maze:selftest] TC-306 invalid-sample PASS
+[maze:selftest] TC-306 nan PASS
+[maze:selftest] TC-306 infinity PASS
+[maze:selftest] TC-306 range PASS
+[maze:selftest] TC-306 long-dt PASS
+[maze:selftest] TC-306 counters PASS
+[maze:selftest] TC-306 api-guards PASS
+[maze:selftest] summary PASS failures=0
+[course_starter] rgb -> red
+msh />[course_starter] rgb -> green
+[course_starter] rgb -> blue
+[course_starter] rgb -> red
+[course_starter] rgb -> green
+[course_starter] rgb -> blue
+[course_starter] rgb -> red
+[course_starter] rgb -> green
+[course_starter] rgb -> blue

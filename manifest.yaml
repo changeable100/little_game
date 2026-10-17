@@ -82,6 +82,12 @@ physical_verification:
     evidence_path: "evidence/T0/屏幕截图 2026-10-10 153048.png"
     agent_conclusion: "可见 SDK 2.5.1 启动输出、rgbled register success、[course_starter] v0.1.0 boot ok、Hello world! 及连续 red/green/blue 日志。结合此前视频审阅，T0 基础启动、串口输出与 RGB 循环已验证通过；截图不能证明 CodeKit 软件复位按钮有效，也不作为精确闪烁时序测量。"
 
+  - item: "模型 v0.2.0 启动与24项板上自检"
+    required_action: "学生烧录后保持串口连接，reboot并回传从启动到全部自检及RGB循环的完整文本。"
+    executed_at: "2026-10-17 收到学生回传；实际执行时刻未提供"
+    evidence_path: "evidence/M2/maze_model/boot_log_2026-10-17_run01.txt"
+    agent_conclusion: "日志显示reboot后v0.2.0 boot ok，24项逐项PASS与summary PASS failures=0，随后RGB日志循环。确认本次板上模型自检和启动通过；日志未内嵌提交/固件哈希，版本及场景与已交付77b15d3一致。不能据此宣称真实IMU/UI/正式关卡通过，亦未由本段文本单独验证灯光实物。"
+
 test_results:
   - test_id: "<测试编号，例如 TC-01>"
     description: "<测试内容简述>"
@@ -97,9 +103,16 @@ test_results:
     pass: true
     evidence_path: "evidence/M2/maze_model/host_pass_2026-10-17.txt"
 
+  - test_id: "BOARD-MODEL-001"
+    description: "TC-301至TC-306共24个板上模型自检场景"
+    expected: "全部24项PASS，汇总PASS failures=0，APP启动进入后续循环"
+    actual: "学生回传v0.2.0启动日志，全部24项PASS，汇总PASS failures=0，随后red/green/blue三轮；仅记录本次模型自检通过"
+    pass: true
+    evidence_path: "evidence/M2/maze_model/boot_log_2026-10-17_run01.txt"
+
 known_issues:
-  - "模型0.2.0已编译但板上自检未执行，UI/IMU尚未接入；学生已审阅确认功能提交，不能把主机PASS当板端PASS"
-  - "王若豪已选择方案 A；另一成员姓名、板卡数量、正式地图/布局与 UI 资源验收值待补，游戏/IMU/UI 的新板端功能均未验证"
+  - "模型v0.2.0本次24项板上自检已通过；UI/IMU尚未接入。学生复制文本未提供精确执行时刻、实际COM和二进制哈希，不扩大结论"
+  - "王若豪已选择方案 A；另一成员姓名、板卡数量、正式地图/布局与 UI 资源验收值待补；真实IMU/UI和完整游戏仍未验证"
   - "<已知问题1，真实项目通常都有未解决或有局限性的地方，主动说明比隐瞒更可信>"
 
 self_review: |
