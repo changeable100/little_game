@@ -2,7 +2,7 @@ submission:
   student_id: null
   student_name: "成员 B（姓名待提供）"
   group_id: null
-  milestone: "独立游戏UI：移除Lab产品入口；主机与编译完成，新版本物理待验证"
+  milestone: "独立游戏UI：首页实物显示与两路基本导航确认；生产控制/IMU后续"
   submitted_at: null
 
 dev_agent:
@@ -79,7 +79,27 @@ physical_verification:
     verified_by: "用户实际回传照片并确认；Codex目视核对"
     source_version: "e42af465ce9486d02f5e06be05f35dd2b73c79ef by session context; no version banner in photograph"
 
+  - item: "TC-201独立游戏首页实物显示"
+    required_action: "烧录独立UI版并提供首页/说明/迷宫及返回结果"
+    executed_at: "实际执行时刻未提供；证据接收日2026-10-31"
+    agent_conclusion: "PASS: photo shows complete TILT MAZE home, preview badge, map/level information and both entry labels; user confirms interface normal"
+    evidence_path: "evidence/standalone-ui/physical-2026-10-31/game_home_original.jpg"
+    verified_by: "用户提供原图并确认；Codex目视核对"
+    source_version: "6e4d33d6fdb7facd8a3b57a8415913362cbeb671 by session context; no firmware version banner in photograph"
+  - item: "TC-205独立首页两路导航及返回"
+    required_action: "分别进入迷宫/说明并验证BACK/BACK TO MENU返回游戏首页"
+    executed_at: "实际执行时刻及次数未提供；用户报告接收日2026-10-31"
+    agent_conclusion: "PASS (explicit user report): both entry and return paths normal; no physical 20-cycle/heap or video result claimed"
+    evidence_path: "evidence/standalone-ui/physical-2026-10-31/README.md"
+    verified_by: "用户在本会话明确答复两个入口和返回都正常"
+
 test_results:
+  - test_id: "TC-201/205-standalone-physical-basic"
+    description: "独立首页实物显示及两个入口/返回的基本导航验证"
+    expected: "首页元素完整可见，两个入口打开且返回自己的首页"
+    actual: "PASS：首页原图与用户界面正常反馈；两个入口及返回由用户明确报告正常。无新启动日志/操作轮次/IMU结果。"
+    pass: true
+    evidence_path: "evidence/standalone-ui/physical-2026-10-31/README.md"
   - test_id: "TC-201/202/205/208/209/210-standalone-host"
     description: "独立首页/说明/迷宫导航及资源基准，明确静态模拟层级"
     expected: "无Lab产品页面；说明和迷宫返回游戏首页；20轮重入和销毁不叠加对象/timer，预览不发送生产动作"
@@ -207,7 +227,7 @@ standalone_ui:
   firmware: "PASS: SiFli SDK v2.5.1 / GCC14.2.1; main.bin 905548 bytes; SDK RWX/newlib/entry/DFU warnings retained"
   integrity: "evidence/standalone-ui/firmware_integrity.json"
   evidence: "evidence/standalone-ui/README.md"
-  physical: "NOT EXECUTED for this new standalone version; earlier photos only validate the old Lab-entry version"
+  physical: "PASS for independent home visual layout (photo) and both entry/return paths (explicit user report); no new serial log, iteration count, dynamic/IMU/heap result"
   limitations:
     - "Production input/request adapter not connected; PREVIEW remains visible and game action buttons disabled"
     - "No new game clock, IMU or calibration integration; no physical heap/lifecycle or complete game acceptance"

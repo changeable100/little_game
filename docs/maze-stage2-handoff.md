@@ -67,3 +67,6 @@ B2-1 只允许 NULL sink 的静态预览。START / PAUSE / RESTART 完整绘制�
 
 
 2026-10-31最新产品入口变更：用户已确认移除Peripheral Lab测试入口，重建独立游戏首页/说明/迷宫。新main不再启动Lab测试/BLE/PAN任务，BACK回游戏首页；旧版本图片保留但不能作为新版入口物理证据。实现/主机回归及编译完成，详见docs/maze-standalone-ui.md、ADR-0002及evidence/standalone-ui。当前构建目录已更新为独立UI固件，真实控制仍未接入。
+
+
+2026-10-31独立UI最新验证：用户提供TILT MAZE首页原图并确认界面正常，随后明确确认两入口及返回正常；首页实物显示PASS，基本导航按用户报告PASS。原图与记录位于evidence/standalone-ui/physical-2026-10-31，源码上下文6e4d33d6fdb7facd8a3b57a8415913362cbeb671。此次无新启动日志/多轮堆测/动态或IMU结果，旧Lab版和首次圆角问题证据继续保留。

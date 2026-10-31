@@ -1,0 +1,10 @@
+{
+  "received_date": "2026-10-31",
+  "capture_execution_time": "not provided",
+  "source_commit_by_session_context": "6e4d33d6fdb7facd8a3b57a8415913362cbeb671",
+  "version_limit": "photo does not independently attest a firmware commit/hash",
+  "sha256": "bec7331909b9dec1e87880104cab31ae8b6cf9b48dadb8a1f8f66882eb9b1a8b",
+  "display_feedback": "现在界面正常",
+  "navigation_feedback": "两个入口和返回都正常",
+  "navigation_scope": "User explicitly confirmed both ENTER MAZE and HOW TO PLAY open, and BACK / BACK TO MENU return to TILT MAZE home. No iteration count or new serial log supplied."
+}
