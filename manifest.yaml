@@ -65,7 +65,22 @@ physical_verification:
     evidence_path: "evidence/B2-1/physical-2026-10-31/README.md"
     verified_by: "用户在本会话明确确认能正常返回"
 
+  - date: "2026-10-31 (received)"
+    item: "TC-201圆角边距修复后静态预览显示复测"
+    required_action: "重烧边距修复版并提供正面全屏照片，检查MAZE与四按钮文字完整可见"
+    executed_at: "实际执行时刻未提供；照片接收日2026-10-31"
+    agent_conclusion: "PASS for static visual layout: title/state/map/ball/goal/PREVIEW and four labels visible; user says 现在可以了; dynamic/IMU not tested"
+    evidence_path: "evidence/B2-1/physical-2026-10-31/preview_safe_margin_retest_original.jpg"
+    verified_by: "用户实际回传照片并确认；Codex目视核对"
+    source_version: "e42af465ce9486d02f5e06be05f35dd2b73c79ef by session context; no version banner in photograph"
+
 test_results:
+  - test_id: "TC-201-physical-static-safe-margin-retest"
+    description: "边距修复后的静态预览物理布局可见性，非动态或触摸全覆盖"
+    expected: "MAZE、状态、地图与四按钮标签完整可见，不受圆角遮挡"
+    actual: "照片可见完整布局；用户确认现在可以了。此前局部遮挡证据保留。"
+    pass: true
+    evidence_path: "evidence/B2-1/physical-2026-10-31/preview_safe_margin_retest_original.jpg"
   - test_id: "B@943e762:TC-204～TC-208"
     description: "成员 B 迷宫界面、动作和生命周期用例"
     expected: "依 docs/03-测试计划.md 执行并逐条登记"
@@ -165,6 +180,6 @@ stage2:
     - "A须提供统一request_id与快照回送后再接生产按钮"
     - "known_issues及test_results中旧条目为B@943e762历史，当前状态以本节为准"
   initial_source_commit: "00f9e0e108bea16b5c55a8e5bb6f9e0793e41cfa"
-  delivery_status: "本地提交；未推送；已收首次UI证据及BACK报告，圆角边距修复待物理重测，A接口审查待完成"
-  safe_margin_update: "B2-1圆角边距修复；主机静态/20轮/2000次render及Lab回归PASS，固件编译PASS；新物理照片待提供，旧照片不当作修复后结果"
+  delivery_status: "本地提交；未推送；静态显示边距修复已获实机照片及用户确认；A接口审查、动态与IMU后续"
+  safe_margin_update: "B2-1圆角边距修复后主机/编译PASS；新实机照片和用户确认支持TC-201静态布局复测PASS。动态/生产动作/IMU及完整物理生命周期未验收"
   safe_margin_firmware: "evidence/B2-1/safe_margin_firmware.json"
