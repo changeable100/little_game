@@ -1,3 +1,5 @@
+> 当前默认启动已改为体感迷宫独立游戏UI：游戏首页 → 迷宫 / 玩法说明。Peripheral Lab测试页面与其任务不再作为开机流程。独立UI说明见 [maze-standalone-ui](docs/maze-standalone-ui.md)；下方Lab文档保留为历史排障资料。当前运动控制仍未接入，界面明确标注PREVIEW。
+
 # Peripheral Lab · 黄山派外设验证台
 
 基于 **SiFli SDK v2.5.1 / LVGL v9 / sf32lb52-lchspi-ulp**，面向 390 × 450 屏幕。每个外设独立测试、显示结果，并提供操作提示和 API 摘要。深色卡片界面使用 SDK 内置英文字体，学习说明和源码注释使用中文。
@@ -61,6 +63,7 @@
 | 蓝牙 BLE | SDK BLE 协议栈 | 扫描、连接、通知回环等，详见 [BLE 测试说明](docs/ble-testing.md)（进阶） |
 | 蓝牙联网 | BTPAN + HID / lwIP | 配对、DHCP、DNS、HTTP、MQTT 回环，详见 [BTPAN 联网测试](docs/pan-testing.md)、[MQTT](docs/mqtt-testing.md)（进阶） |
 | Play Lab | IMU + 屏幕 + 触摸 | 鹈鹕自行车综合小游戏，见 [说明](docs/pelican-ride.md) |
+| 体感迷宫（成员 B） | LVGL v9 + 连续运动模型 | 已接入 A 的契约/模型并实现确认的 16×16 固定地图、四邻接 BFS 和启动自检；A/B 主机回归及固件构建通过。迷宫 UI、真实 IMU/动作调度与板上验证仍待完成。需求、设计、测试和草案见 [需求](docs/01-需求规格说明.md)、[方案](docs/02-方案设计说明.md)、[测试计划](docs/03-测试计划.md)、[提案](docs/maze-ui-proposal.md) |
 
 ### UART 接线与串口复用
 

@@ -1,0 +1,8 @@
+SIMULATED DATA ONLY; no board, IMU or production model actions
+Actual status: ...
+Assertion failed!
+
+Program: D:\peripheral_lab\build\maze-preview\ui-test.exe
+File: D:\peripheral_lab\tests\maze_ui_test.c, Line 82
+
+Expression: text(top, "READY  |  0s")

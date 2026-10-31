@@ -6,6 +6,7 @@
 #include "lab_game.h"
 #include "lab_ble.h"
 #include "lab_pan.h"
+#include "maze_ui.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -302,6 +303,12 @@ static void refresh(lv_timer_t *timer)
 }
 
 /* 创建首页和外设卡片，注册导航输入与周期刷新定时器。 */
+static void maze_preview_event(lv_event_t *event)
+{
+    (void)event;
+    maze_ui_preview_open();
+}
+
 void lab_ui_create(void)
 {
     lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(BG), 0);
@@ -310,6 +317,9 @@ void lab_ui_create(void)
     lv_obj_set_pos(eyebrow, 24, 20);
     lv_obj_t *title = label(dashboard, "Peripheral Lab", &lv_font_montserrat_28, TEXT);
     lv_obj_set_pos(title, 22, 43);
+    lv_obj_t *maze_entry = button(dashboard, "MAZE PREVIEW", 132, PANEL,
+                                   maze_preview_event, NULL);
+    lv_obj_set_pos(maze_entry, 236, 36);
     summary = label(dashboard, "Ready to verify", &lv_font_montserrat_14, MUTED);
     lv_obj_set_pos(summary, 24, 84);
     progress = lv_bar_create(dashboard);

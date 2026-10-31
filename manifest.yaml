@@ -1,0 +1,247 @@
+submission:
+  student_id: null
+  student_name: "成员 B（姓名待提供）"
+  group_id: null
+  milestone: "独立游戏UI：首页实物显示与两路基本导航确认；生产控制/IMU后续"
+  submitted_at: null
+
+dev_agent:
+  tool: "Codex desktop（本轮）；既往记录使用Copilot SDK in VS Code"
+  model: null
+  session_log_path: null
+  session_log_hash: null
+
+requirements:
+  prd_path: "docs/01-需求规格说明.md"
+  hardware_constraints_ref: "README.md；黄山派 SF32LB52 / 390x450 / SiFli SDK v2.5.1"
+  source_contract: "MAZE_CONTRACT_VERSION v1；从 origin/feat/req-301-maze-model@9595000 选择性接入，模型源码基于 77b15d3"
+
+design:
+  architecture_doc_path: "docs/02-方案设计说明.md"
+  key_decisions:
+    - decision: "成员 B 选择倾斜控制连续滚动小球"
+      alternatives_considered: "倾斜触发按格移动"
+      rationale: "连续运动更直接呈现体感；A 契约说明给出半径 0.20 格和步进边界，模型源码及地图通行仍待核验"
+      decided_by: "成员 B 明确选择；接口细节依 A 契约说明，待源码联评"
+    - decision: "成员 B 选择 UI 线程周期推进游戏的一步有界计算"
+      alternatives_considered: "独立游戏任务通过有界消息和快照通信"
+      rationale: "A 契约说明规定 A 管唯一 UI 刷新入口，B 不另建游戏时钟；生产调度尚未进入本工作副本"
+      decided_by: "成员 B 明确选择；接口细节依 A 契约说明，待源码联评"
+    - decision: "首版只做一张固定地图，不做多关卡选关"
+      alternatives_considered: "首版包含多张地图和选关"
+      rationale: "收敛首次联调与验收范围"
+      decided_by: "成员 B 明确选择；待成员 A 共同评审"
+    - decision: "首版采用16×16蛇形单通道固定地图"
+      alternatives_considered: "采用带分支或环路的复杂地图"
+      rationale: "拓扑简明，适合先验证契约映射与四邻接 BFS；连续小球碰撞须另由 A 模型和真机验证"
+      decided_by: "用户于2026-10-17明确确认"
+
+    - decision: "独立游戏首页、迷宫页面和玩法说明，替换Peripheral Lab产品入口"
+      alternatives_considered: "开机直接进迷宫；延用Lab中的游戏入口"
+      rationale: "用户明确指出Lab为测试UI并要求重建独立游戏界面，BACK回游戏首页，产品导航与测试用途分离"
+      decided_by: "用户本会话明确确认；ADR-0002记录"
+
+code:
+  repo_url: "https://github.com/changeable100/little_game"
+  commit_range: "B 工程从 1672326 独立演进；本次选择性导入 A 源文件，未合并 A 分支历史"
+  a_model_source: "origin/feat/req-301-maze-model@9595000；模型实现源提交 77b15d3"
+
+physical_verification:
+  - date: "2026-10-31 (received; capture/run time not provided)"
+    required_action: "烧录并保存完整启动日志、预览照片，验证BACK返回首页"
+    executed_at: "实际执行时刻未提供；证据接收日2026-10-31"
+    item: "模型24项与地图4项板端启动自检"
+    agent_conclusion: "PASS: both summaries failures=0; old map labels retained as B@943e762:TC-201/202 -> unified TC-211/212"
+    evidence_path: "evidence/B2-1/physical-2026-10-31/startup_original.zip"
+    verified_by: "用户实际烧录并回传粘贴日志；Codex逐项核对"
+    source_version: "00f9e0e108bea16b5c55a8e5bb6f9e0793e41cfa by session context; no firmware commit/hash in log"
+  - date: "2026-10-31 (received)"
+    required_action: "烧录并保存完整启动日志、预览照片，验证BACK返回首页"
+    executed_at: "实际执行时刻未提供；证据接收日2026-10-31"
+    item: "TC-201静态迷宫实际显示"
+    agent_conclusion: "PARTIAL: preview/map/ball/READY/0s visible; corner title/START visibility issue, full physical layout not accepted"
+    evidence_path: "evidence/B2-1/physical-2026-10-31/preview_board_original.jpg"
+    verified_by: "用户提供原图；Codex目视核对"
+  - date: "2026-10-31 (received)"
+    required_action: "烧录并保存完整启动日志、预览照片，验证BACK返回首页"
+    executed_at: "实际执行时刻未提供；证据接收日2026-10-31"
+    item: "TC-205单次BACK返回"
+    agent_conclusion: "PASS (user report): BACK returns to Peripheral Lab; no physical 20-cycle/heap result"
+    evidence_path: "evidence/B2-1/physical-2026-10-31/README.md"
+    verified_by: "用户在本会话明确确认能正常返回"
+
+  - date: "2026-10-31 (received)"
+    item: "TC-201圆角边距修复后静态预览显示复测"
+    required_action: "重烧边距修复版并提供正面全屏照片，检查MAZE与四按钮文字完整可见"
+    executed_at: "实际执行时刻未提供；照片接收日2026-10-31"
+    agent_conclusion: "PASS for static visual layout: title/state/map/ball/goal/PREVIEW and four labels visible; user says 现在可以了; dynamic/IMU not tested"
+    evidence_path: "evidence/B2-1/physical-2026-10-31/preview_safe_margin_retest_original.jpg"
+    verified_by: "用户实际回传照片并确认；Codex目视核对"
+    source_version: "e42af465ce9486d02f5e06be05f35dd2b73c79ef by session context; no version banner in photograph"
+
+  - item: "TC-201独立游戏首页实物显示"
+    required_action: "烧录独立UI版并提供首页/说明/迷宫及返回结果"
+    executed_at: "实际执行时刻未提供；证据接收日2026-10-31"
+    agent_conclusion: "PASS: photo shows complete TILT MAZE home, preview badge, map/level information and both entry labels; user confirms interface normal"
+    evidence_path: "evidence/standalone-ui/physical-2026-10-31/game_home_original.jpg"
+    verified_by: "用户提供原图并确认；Codex目视核对"
+    source_version: "6e4d33d6fdb7facd8a3b57a8415913362cbeb671 by session context; no firmware version banner in photograph"
+  - item: "TC-205独立首页两路导航及返回"
+    required_action: "分别进入迷宫/说明并验证BACK/BACK TO MENU返回游戏首页"
+    executed_at: "实际执行时刻及次数未提供；用户报告接收日2026-10-31"
+    agent_conclusion: "PASS (explicit user report): both entry and return paths normal; no physical 20-cycle/heap or video result claimed"
+    evidence_path: "evidence/standalone-ui/physical-2026-10-31/README.md"
+    verified_by: "用户在本会话明确答复两个入口和返回都正常"
+
+test_results:
+  - test_id: "TC-201/205-standalone-physical-basic"
+    description: "独立首页实物显示及两个入口/返回的基本导航验证"
+    expected: "首页元素完整可见，两个入口打开且返回自己的首页"
+    actual: "PASS：首页原图与用户界面正常反馈；两个入口及返回由用户明确报告正常。无新启动日志/操作轮次/IMU结果。"
+    pass: true
+    evidence_path: "evidence/standalone-ui/physical-2026-10-31/README.md"
+  - test_id: "TC-201/202/205/208/209/210-standalone-host"
+    description: "独立首页/说明/迷宫导航及资源基准，明确静态模拟层级"
+    expected: "无Lab产品页面；说明和迷宫返回游戏首页；20轮重入和销毁不叠加对象/timer，预览不发送生产动作"
+    actual: "PASS；截图已查看，独立导航20轮、原迷宫2000次render及静态异常回归通过；新物理UI未执行"
+    pass: true
+    evidence_path: "evidence/standalone-ui/host_2026-10-31.txt"
+  - test_id: "TC-201-physical-static-safe-margin-retest"
+    description: "边距修复后的静态预览物理布局可见性，非动态或触摸全覆盖"
+    expected: "MAZE、状态、地图与四按钮标签完整可见，不受圆角遮挡"
+    actual: "照片可见完整布局；用户确认现在可以了。此前局部遮挡证据保留。"
+    pass: true
+    evidence_path: "evidence/B2-1/physical-2026-10-31/preview_safe_margin_retest_original.jpg"
+  - test_id: "B@943e762:TC-204～TC-208"
+    description: "成员 B 迷宫界面、动作和生命周期用例"
+    expected: "依 docs/03-测试计划.md 执行并逐条登记"
+    actual: "未执行；LVGL 页面、动作适配和真实 IMU 集成仍待实现"
+    pass: false
+    evidence_path: null
+  - test_id: "B@943e762:TC-201-host"
+    description: "确认的固定地图结构与四邻接 BFS 主机自检"
+    expected: "16×16/256 格，S=(1,1)、G=(14,13)，结构有效且可达"
+    actual: "PASS；B 地图启动自检 4 项全部通过"
+    pass: true
+    evidence_path: "evidence/M2/maze_levels/host_pass_2026-10-17.txt"
+  - test_id: "B@943e762:TC-202-host"
+    description: "BFS 拒绝断路、仅对角相邻和畸形地图"
+    expected: "断路和畸形输入判不可达/无效，不越界"
+    actual: "PASS；断路、对角相邻及非法尺寸/端点/格值用例通过"
+    pass: true
+    evidence_path: "evidence/M2/maze_levels/host_pass_2026-10-17.txt"
+  - test_id: "B@943e762:TC-203-host"
+    description: "A 模型在确认地图上连续穿越走廊并到达终点"
+    expected: "沿各走廊中心线控制，球不越界/穿墙并进入 WON"
+    actual: "PASS；首次自检 harness 误要求到达终点格心，失败记录保留，按契约修正后重测通过"
+    pass: true
+    evidence_path: "evidence/M2/maze_levels/tc203_model_regression_retry_2026-10-17.txt"
+  - test_id: "B-level-selftest-board"
+    description: "B 固定地图启动自检在真实板上运行"
+    expected: "串口逐项输出 TC-201/202 PASS，汇总 failures=0"
+    actual: "固件构建成功但尚未烧录/复位；等待学生提供板上证据"
+    pass: false
+    evidence_path: null
+  - test_id: "A-model-selftest-24-host"
+    description: "A 的 24 个隔离模型场景，使用其 host harness 在本地运行"
+    expected: "每个模型场景及汇总均 PASS；失败时须明确显示并不得记录为通过"
+    actual: "MinGW GCC 4.9.2 编译成功；24 个场景及 summary PASS failures=0"
+    pass: true
+    evidence_path: "evidence/M2/maze_model/host_pass_2026-10-17.txt"
+  - test_id: "A-model-selftest-24-board"
+    description: "当前 B 固件启动时运行 24 个隔离模型场景"
+    expected: "真实板复位后逐项 PASS 且 summary PASS failures=0；完整串口原文归档"
+    actual: "固件构建成功，尚未烧录/复位；等待学生提供板端证据"
+    pass: false
+    evidence_path: null
+
+known_issues:
+  - "任务书中的旧基线、提交 4d9eb23 和无游戏 UI 描述与当前工作副本不符；当前仓库只有 1672326 初始提交，且已有鹈鹕自行车 UI。"
+  - "本次固件构建成功，但仍输出 RWX LOAD segment、newlib _close/_lseek/_read/_write 未实现、缺少 entry 符号及 img 'dfu' not found 警告；未改 SDK 工程骨架，板上影响未验证。"
+  - "16×16蛇形地图和BFS已实现并通过主机自检；LVGL UI、动作适配、真实 IMU 与生产刷新调度仍未实现。"
+  - "20 px/格仍是 UI 布局候选；连续通行的主机模型回归通过，但真机可玩性未验证。"
+  - "LVGL 主机渲染测试尚未运行，因为迷宫生产 UI 尚未实现。"
+  - "任务书引用的 D:\\AGENTS.md 与 D:\\作业下的 01/02/03 文档未找到；项目成员 B 姓名、学号和组别尚未提供。"
+
+self_review: |
+  以下原总结保留为B@943e762历史状态；当前B2-0/B2-1交付与限制见stage2。
+  本轮成功获取 A 分支 feat/req-301-maze-model@9595000。由于 A/B 分支无共同 Git
+  祖先且 A 树含独立 RGB 工程入口，没有合并整分支；经学生确认，只导入 A 的五个
+  契约/模型/自检文件，并在现有 LVGL main 入口增加逐项自检调用。随后按学生确认
+  的 16×16 蛇形地图实现 B 固定关卡、结构检查和 BFS 自检。A 的 24 项与 B 的 4 项
+  主机自检、TC-203 连续模型回归以及 SiFli SDK 固件构建通过；首次 TC-203 harness
+  错误要求驶至终点格心，在模型进入 WON 时失败，修正为契约规定的进入终点格后
+  重测通过。构建警告、失败/重测及主机日志见 evidence/M2/maze_levels/；尚未烧录，
+  UI 和 IMU 集成未实现，板端证据待学生提供。
+
+human_checkpoints:
+  - decision_point: "2026-10-31 B2-0/B2-1范围"
+    student_confirmation: "确认统一编号、UI草案与静态预览入口、主机预览和编译；生产按钮/动态状态/IMU后续联评。"
+  - decision_point: "体感迷宫玩法"
+    student_confirmation: "用户选择倾斜控制连续滚动小球；仍需与成员 A 评审碰撞半径和通道净宽。"
+  - decision_point: "游戏推进调度"
+    student_confirmation: "用户选择 UI 线程周期推进；成员 A 需确认单步有界且不阻塞。"
+  - decision_point: "首版关卡范围"
+    student_confirmation: "用户选择一张固定地图；暂不包含多关卡和选关。"
+  - decision_point: "A 模型分支选择性接入"
+    student_confirmation: "用户确认按最小接入计划只导入 A 的契约、模型和自检文件，保留当前 LVGL 主入口；实际接入五个 A 源文件并修改 main.c。"
+  - decision_point: "首版正式固定地图"
+    student_confirmation: "用户确认采用 docs/maze-ui-proposal.md 中的16×16蛇形单通道拓扑作为首版固定关卡；先实现静态地图和BFS自检。"
+
+stage2:
+  date: "2026-10-31"
+  baseline: "origin/feat/maze-integration@943e762d30ed6bee64c21cd19ae5e92b6c7e38ea"
+  branch: "codex/maze-ui-stage2"
+  handoff: "docs/maze-stage2-handoff.md"
+  numbering: "统一REQ-201～210、模型REQ-301～306保持原义；旧测试标B@943e762，映射见handoff"
+  interface_review: "maze_ui.h为B草案，待A核对；非NULL生产sink返回未接入"
+  evidence: "evidence/B2-1/README.md"
+  firmware: "SiFli SDK v2.5.1 / GCC14.2.1最终构建PASS；main.bin 1547836字节；RWX和DFU警告保留"
+  host_results:
+    - "TC-201主机静态布局PASS；物理显示/触摸未执行"
+    - "TC-202/210模拟操作禁用与BACK退出PASS；生产动作/六态未执行"
+    - "TC-203固定READY/0s PASS；动态冻结未执行"
+    - "TC-205/209主机20轮重入及2000次render对象/timer基准PASS；真机堆与生产刷新未执行"
+    - "TC-206静态异常输入PASS；旧局/动态异常未执行"
+    - "TC-207/208来源、失败/重测、命令与限制已记录"
+  limitations:
+    - "课程scripts不存在，check_all/check_trace/new_devlog/build_firmware无法运行；等价SCons及主机driver已运行"
+    - "先前两张截图仍未归档；本轮另收启动粘贴日志及UI原图，模型24项/地图4项PASS与显示部分结果见physical_verification"
+    - "只支持390x450及16x16的READY静态模拟页；六态/动作/IMU未接入"
+    - "A须提供统一request_id与快照回送后再接生产按钮"
+    - "known_issues及test_results中旧条目为B@943e762历史，当前状态以本节为准"
+  initial_source_commit: "00f9e0e108bea16b5c55a8e5bb6f9e0793e41cfa"
+  delivery_status: "已于2026-10-31按用户要求推送origin/codex/maze-ui-stage2；静态UI及基本导航证据已归档，A接口审查/动态/IMU后续"
+  safe_margin_update: "B2-1圆角边距修复后主机/编译PASS；新实机照片和用户确认支持TC-201静态布局复测PASS。动态/生产动作/IMU及完整物理生命周期未验收"
+  safe_margin_firmware: "evidence/B2-1/safe_margin_firmware.json"
+
+standalone_ui:
+  date: "2026-10-31"
+  branch: "codex/maze-ui-stage2"
+  spec: "docs/maze-standalone-ui.md"
+  decision: "docs/adr/0002-standalone-maze-interface.md"
+  entry: "main -> maze_menu_create; home -> maze preview / instructions; BACK -> game menu"
+  retired_startup_calls: "lab_init, lab_ui_create, lab_ble_init, lab_pan_init; absent in final ELF defined symbols"
+  retained: "A模型和地图启动自检；SDK显示/触摸；现有LVGL主循环；Lab历史源码/证据供排障"
+  host: "PASS: actual SDK LVGL; 20 standalone navigation cycles; original 2000 maze renders; screenshots inspected"
+  firmware: "PASS: SiFli SDK v2.5.1 / GCC14.2.1; main.bin 905548 bytes; SDK RWX/newlib/entry/DFU warnings retained"
+  integrity: "evidence/standalone-ui/firmware_integrity.json"
+  evidence: "evidence/standalone-ui/README.md"
+  physical: "PASS for independent home visual layout (photo) and both entry/return paths (explicit user report); no new serial log, iteration count, dynamic/IMU/heap result"
+  limitations:
+    - "Production input/request adapter not connected; PREVIEW remains visible and game action buttons disabled"
+    - "No new game clock, IMU or calibration integration; no physical heap/lifecycle or complete game acceptance"
+    - "SDK auto-initialized drivers/services not fully removed; no config or build-skeleton rewrite"
+    - "Course scripts absent; errors retained, no claim check_all passed"
+    - "Published to origin/codex/maze-ui-stage2 on 2026-10-31; integration target remains feat/maze-integration"
+
+github_delivery:
+  date: "2026-10-31"
+  repository: "https://github.com/changeable100/little_game"
+  branch: "codex/maze-ui-stage2"
+  url: "https://github.com/changeable100/little_game/tree/codex/maze-ui-stage2"
+  work_head_published: "601347eb020bd8c69bc2d9d0fd88bb6c79a40d28"
+  work_commits: 9
+  contents: "成员B今日源码、统一编号/设计/测试/日志、主机/构建输出、原始照片/粘贴日志及基本导航报告"
+  integration_target: "feat/maze-integration"
+  scope: "普通推送功能分支；未创建PR、未合并、未强推或改写共享历史"

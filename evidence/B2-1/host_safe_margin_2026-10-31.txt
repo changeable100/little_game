@@ -1,0 +1,7 @@
+SIMULATED DATA ONLY; no board, IMU or production model actions
+TC-201 host layout PASS; screenshot maze-preview.ppm
+TC-202/210 preview disabled controls PASS; production actions NOT TESTED
+TC-203 fixed READY/time PASS; dynamic states NOT TESTED
+TC-205/209 20 cycles, 2000 renders, object/timer baseline PASS; physical heap NOT TESTED
+TC-206 static invalid inputs PASS; stale/dynamic coverage NOT TESTED
+Host UI previews (simulated): D:\peripheral_lab\build\maze-safe-margin

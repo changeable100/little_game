@@ -194,6 +194,12 @@ int main(void)
     check_decoder();
     puts("Rendering dashboard");
     screenshot("dashboard.ppm");
+    click_text(lv_screen_active(), "MAZE PREVIEW");
+    assert(find_text(lv_layer_top(), "PREVIEW / SIMULATED DATA"));
+    screenshot("maze-entry.ppm");
+    click_text(lv_layer_top(), "BACK");
+    assert(!find_text(lv_layer_top(), "PREVIEW / SIMULATED DATA"));
+    assert(find_text(lv_screen_active(), "Peripheral Lab"));
     click_text(lv_screen_active(), "RGB light");
     screenshot("rgb-detail.ppm");
     lv_obj_t *cycle = click_text(lv_screen_active(), "Cycle RGB");

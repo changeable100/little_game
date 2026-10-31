@@ -1,0 +1,34 @@
+﻿Host harness: temporary driver invokes A and B startup self-tests.
+Command: gcc -std=c11 -Wall -Wextra -Werror -O2 -I src src/maze_game.c src/maze_selftest.c src/maze_levels.c src/maze_levels_selftest.c <temporary driver> -lm
+gcc.exe (tdm64-1) 4.9.2
+compile_exit=0
+[maze:selftest] TC-301 start-calibrate PASS
+[maze:selftest] TC-302 right PASS
+[maze:selftest] TC-302 left PASS
+[maze:selftest] TC-302 down PASS
+[maze:selftest] TC-302 up PASS
+[maze:selftest] TC-303 thin-wall PASS
+[maze:selftest] TC-303 horizontal-wall PASS
+[maze:selftest] TC-303 corner PASS
+[maze:selftest] TC-303 slide PASS
+[maze:selftest] TC-303 right-edge PASS
+[maze:selftest] TC-303 left-edge PASS
+[maze:selftest] TC-303 bottom-edge PASS
+[maze:selftest] TC-303 top-edge PASS
+[maze:selftest] TC-304 pause-resume PASS
+[maze:selftest] TC-304 restart-stale-back PASS
+[maze:selftest] TC-305 win-freeze PASS
+[maze:selftest] TC-306 bad-maps PASS
+[maze:selftest] TC-306 invalid-sample PASS
+[maze:selftest] TC-306 nan PASS
+[maze:selftest] TC-306 infinity PASS
+[maze:selftest] TC-306 range PASS
+[maze:selftest] TC-306 long-dt PASS
+[maze:selftest] TC-306 counters PASS
+[maze:selftest] TC-306 api-guards PASS
+[maze:level:selftest] TC-201 fixed-map-structure-and-reachability PASS
+[maze:level:selftest] TC-202 disconnected-map PASS
+[maze:level:selftest] TC-202 diagonal-only-map PASS
+[maze:level:selftest] TC-202 malformed-maps PASS
+[maze:host] summary PASS failures=0 (model=0 levels=0)
+run_exit=0
