@@ -41,7 +41,17 @@ code:
   commit_range: "B 工程从 1672326 独立演进；本次选择性导入 A 源文件，未合并 A 分支历史"
   a_model_source: "origin/feat/req-301-maze-model@9595000；模型实现源提交 77b15d3"
 
-physical_verification: []
+physical_verification:
+  - item: "B基线模型24项启动自检截图"
+    required_action: "真实板启动后回传模型逐项及汇总输出"
+    executed_at: "精确执行时间未提供；2026-10-31收到截图"
+    evidence_path: "evidence/review-b-2026-10-31/model_pass_screenshot.png"
+    agent_conclusion: "可见24项及summary PASS failures=0；不能推定固件哈希或与地图截图同次启动，更不替代新适配器验证"
+  - item: "B基线地图4项启动自检截图"
+    required_action: "真实板输出旧B:TC-201/202四项及汇总"
+    executed_at: "精确执行时间未提供；2026-10-31收到截图"
+    evidence_path: "evidence/review-b-2026-10-31/map_selftest_screenshot.png"
+    agent_conclusion: "结构/可达、断路、对角、畸形四项及summary PASS failures=0；旧标签保留，不伪造新编号重测"
 
 test_results:
   - test_id: "TC-204～TC-208"
@@ -71,9 +81,10 @@ test_results:
   - test_id: "B-level-selftest-board"
     description: "B 固定地图启动自检在真实板上运行"
     expected: "串口逐项输出 TC-201/202 PASS，汇总 failures=0"
-    actual: "固件构建成功但尚未烧录/复位；等待学生提供板上证据"
-    pass: false
-    evidence_path: null
+    actual: "2026-10-31补齐旧B地图4项PASS截图；精确执行时间/固件哈希未提供"
+    pass: true
+    evidence_path: "evidence/review-b-2026-10-31/map_selftest_screenshot.png"
+
   - test_id: "A-model-selftest-24-host"
     description: "A 的 24 个隔离模型场景，使用其 host harness 在本地运行"
     expected: "每个模型场景及汇总均 PASS；失败时须明确显示并不得记录为通过"
@@ -83,9 +94,10 @@ test_results:
   - test_id: "A-model-selftest-24-board"
     description: "当前 B 固件启动时运行 24 个隔离模型场景"
     expected: "真实板复位后逐项 PASS 且 summary PASS failures=0；完整串口原文归档"
-    actual: "固件构建成功，尚未烧录/复位；等待学生提供板端证据"
-    pass: false
-    evidence_path: null
+    actual: "2026-10-31已收到24项PASS截图；没有完整启动原文或固件哈希，不代表新增A第二阶段板端结果"
+    pass: true
+    evidence_path: "evidence/review-b-2026-10-31/model_pass_screenshot.png"
+
 
 known_issues:
   - "任务书中的旧基线、提交 4d9eb23 和无游戏 UI 描述与当前工作副本不符；当前仓库只有 1672326 初始提交，且已有鹈鹕自行车 UI。"
@@ -96,6 +108,8 @@ known_issues:
   - "任务书引用的 D:\\AGENTS.md 与 D:\\作业下的 01/02/03 文档未找到；项目成员 B 姓名、学号和组别尚未提供。"
 
 self_review: |
+  2026-10-31追加：学生分别补齐旧模型24项与地图4项PASS截图，时间/镜像哈希未提供。
+  以下为原B历史自述，原先未取证状态保留；新A适配器仍需另行上板验证。
   本轮成功获取 A 分支 feat/req-301-maze-model@9595000。由于 A/B 分支无共同 Git
   祖先且 A 树含独立 RGB 工程入口，没有合并整分支；经学生确认，只导入 A 的五个
   契约/模型/自检文件，并在现有 LVGL main 入口增加逐项自检调用。随后按学生确认
