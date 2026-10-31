@@ -1,6 +1,7 @@
 /* TC-201/202/203/205/206/209/210: host LVGL, simulated data only. */
 #include "maze_ui.h"
 #include "maze_levels.h"
+#include "maze_menu.h"
 #include "lvgl.h"
 #include <assert.h>
 #include <math.h>
@@ -38,12 +39,12 @@ static lv_obj_t *text(lv_obj_t *o, const char *s)
     }
     return NULL;
 }
-static void screenshot(void)
+static void screenshot(const char *name)
 {
     lv_tick_inc(20);
     lv_timer_handler();
     lv_refr_now(NULL);
-    FILE *f = fopen("maze-preview.ppm", "wb");
+    FILE *f = fopen(name, "wb");
     assert(f);
     fprintf(f, "P6\n390 450\n255\n");
     for (unsigned i = 0; i < sizeof(pixels); i += 4) {
@@ -66,6 +67,47 @@ int main(void)
     lv_display_set_flush_cb(d, flush);
     lv_obj_t *top = lv_layer_top();
     unsigned base = objects(top), clock_count = timers();
+    lv_obj_t *screen = lv_screen_active();
+    unsigned screen_base = objects(screen);
+    for (unsigned round = 0; round < 20; ++round) {
+        assert(maze_menu_create() == MAZE_UI_SUCCESS);
+        assert(maze_menu_create() == MAZE_UI_ERR_EXISTS);
+        assert(text(screen, "TILT MAZE"));
+        assert(!text(screen, "Peripheral Lab"));
+        assert(!text(screen, "RGB light"));
+        assert(text(screen, "PREVIEW"));
+        lv_obj_update_layout(screen);
+        lv_obj_t *enter = lv_obj_get_parent(text(screen, "ENTER MAZE"));
+        lv_obj_t *instructions = lv_obj_get_parent(text(screen, "HOW TO PLAY"));
+        assert(lv_obj_get_x(enter) == 44 && lv_obj_get_y(enter) == 330);
+        assert(lv_obj_get_width(enter) == 302 && lv_obj_get_height(enter) == 48);
+        assert(lv_obj_get_y(instructions) == 388);
+        unsigned menu_count = objects(screen);
+        if (round == 0) screenshot("game-home.ppm");
+        lv_obj_send_event(instructions, LV_EVENT_CLICKED, NULL);
+        assert(text(screen, "HOW TO PLAY"));
+        assert(text(screen, "Preview only: motion controls\nare not enabled yet."));
+        if (round == 0) screenshot("game-help.ppm");
+        lv_obj_send_event(lv_obj_get_parent(text(screen, "BACK TO MENU")), LV_EVENT_CLICKED, NULL);
+        assert(!text(screen, "BACK TO MENU"));
+        assert(objects(screen) == menu_count);
+        lv_obj_send_event(enter, LV_EVENT_CLICKED, NULL);
+        assert(text(top, "PREVIEW / SIMULATED DATA"));
+        if (round == 0) screenshot("game-maze.ppm");
+        lv_obj_send_event(lv_obj_get_parent(text(top, "BACK")), LV_EVENT_CLICKED, NULL);
+        assert(objects(top) == base && text(screen, "TILT MAZE"));
+        assert(objects(screen) == menu_count && timers() == clock_count);
+        /* Also destroy while the maze or nested help page is still open. */
+        lv_obj_send_event(enter, LV_EVENT_CLICKED, NULL);
+        maze_menu_destroy(); maze_menu_destroy();
+        assert(objects(screen) == screen_base && objects(top) == base);
+        assert(timers() == clock_count);
+        assert(maze_menu_create() == MAZE_UI_SUCCESS);
+        lv_obj_send_event(lv_obj_get_parent(text(screen, "HOW TO PLAY")), LV_EVENT_CLICKED, NULL);
+        maze_menu_destroy();
+        assert(objects(screen) == screen_base && objects(top) == base);
+    }
+    puts("Standalone home/help/maze navigation: 20 cycles PASS; no Lab page, no extra timers");
     assert(maze_ui_create(sink, NULL) == MAZE_UI_ERR_NOT_CONNECTED);
     assert(objects(top) == base && sink_calls == 0);
     const maze_level_t *level = maze_levels_default();
@@ -102,7 +144,7 @@ int main(void)
             assert(lv_obj_get_y(button) == 400);
             assert(lv_obj_has_state(button, LV_STATE_DISABLED) == (i < 3));
         }
-        if (round == 0) screenshot();
+        if (round == 0) screenshot("maze-preview.ppm");
         lv_tick_inc(2000); lv_timer_handler();
         assert(text(top, "READY  |  0s"));
         maze_ui_render(NULL, level);

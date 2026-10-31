@@ -27,7 +27,7 @@ platform_flags = shlex.split(os.environ.get('CFLAGS', ''))
 flags = platform_flags + ['-std=c11', '-O1', '-DLV_KCONFIG_IGNORE', '-DLV_CONF_INCLUDE_SIMPLE',
          '-I' + str(root / 'include'), '-I' + str(root.parent / 'src'), '-I' + str(lvgl)]
 sources = sorted((lvgl / 'src').rglob('*.c'))
-app_sources = ('maze_ui.c', 'maze_levels.c', 'maze_game.c')
+app_sources = ('maze_menu.c', 'maze_ui.c', 'maze_levels.c', 'maze_game.c')
 if not args.maze_only:
     app_sources += ('lab_game_ui.c', 'lab_ride.c', 'lab_ui.c', 'lab_ble_ui.c', 'lab_pan_ui.c', 'lab_registry.c', 'modules/test_display.c', 'modules/test_touch.c', 'modules/touch_decode.c')
 sources += [root.parent / 'src' / name for name in app_sources]

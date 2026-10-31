@@ -31,8 +31,9 @@ void maze_ui_render(const maze_snapshot_t *snapshot,
  * in a future production integration. Only this module's objects are freed. */
 void maze_ui_destroy(void);
 
-/* Lab-only entry, supplies explicit fixed simulated data; no model actions.
- * BACK closes this preview directly and reveals the existing Lab screen. */
+/* Preview entry, supplies explicit fixed simulated data; no model actions.
+ * BACK closes the preview, revealing the standalone game menu underneath.
+ * Archived Lab host tests may also open it without running the game menu. */
 void maze_ui_preview_open(void);
 
 #endif
