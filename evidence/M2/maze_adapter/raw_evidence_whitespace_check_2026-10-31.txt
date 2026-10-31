@@ -1,0 +1,156 @@
+evidence/M2/maze_adapter/build_before_timing_priority_2026-10-31.txt:25: trailing whitespace.
++parent          
+evidence/M2/maze_adapter/build_before_timing_priority_2026-10-31.txt:62: trailing whitespace.
++                                              main                             
+evidence/M2/maze_adapter/build_before_timing_priority_2026-10-31.txt:64: trailing whitespace.
++| Region / Section         |            Total |             Used |             
+evidence/M2/maze_adapter/build_before_timing_priority_2026-10-31.txt:67: trailing whitespace.
++|   .text                  |        984,948 B |                  |             
+evidence/M2/maze_adapter/build_before_timing_priority_2026-10-31.txt:68: trailing whitespace.
++|   .rodata                |        667,290 B |                  |             
+evidence/M2/maze_adapter/build_before_timing_priority_2026-10-31.txt:69: trailing whitespace.
++|   other                  |            568 B |                  |             
+evidence/M2/maze_adapter/build_before_timing_priority_2026-10-31.txt:71: trailing whitespace.
++|   other                  |        197,088 B |                  |             
+evidence/M2/maze_adapter/build_before_timing_priority_2026-10-31.txt:72: trailing whitespace.
++|   .bss                   |        104,748 B |                  |             
+evidence/M2/maze_adapter/build_before_timing_priority_2026-10-31.txt:73: trailing whitespace.
++|   .data                  |          4,884 B |                  |             
+evidence/M2/maze_adapter/build_before_timing_priority_2026-10-31.txt:77: trailing whitespace.
++                                              lcpu                             
+evidence/M2/maze_adapter/build_before_timing_priority_2026-10-31.txt:79: trailing whitespace.
++| Region / Section         |            Total |             Used |             
+evidence/M2/maze_adapter/build_before_timing_priority_2026-10-31.txt:82: trailing whitespace.
++|   .text                  |          4,784 B |                  |             
+evidence/M2/maze_adapter/build_before_timing_priority_2026-10-31.txt:83: trailing whitespace.
++|   .rodata                |            717 B |                  |             
+evidence/M2/maze_adapter/build_before_timing_priority_2026-10-31.txt:84: trailing whitespace.
++|   other                  |              8 B |                  |             
+evidence/M2/maze_adapter/build_before_timing_priority_2026-10-31.txt:86: trailing whitespace.
++|   other                  |          1,028 B |                  |             
+evidence/M2/maze_adapter/build_before_timing_priority_2026-10-31.txt:87: trailing whitespace.
++|   .bss                   |            784 B |                  |             
+evidence/M2/maze_adapter/build_before_timing_priority_2026-10-31.txt:88: trailing whitespace.
++|   .data                  |             60 B |                  |             
+evidence/M2/maze_adapter/build_before_timing_priority_2026-10-31.txt:96: new blank line at EOF.
+evidence/M2/maze_adapter/build_final_2026-10-31.txt:25: trailing whitespace.
++parent          
+evidence/M2/maze_adapter/build_final_2026-10-31.txt:81: trailing whitespace.
++                                              main                             
+evidence/M2/maze_adapter/build_final_2026-10-31.txt:83: trailing whitespace.
++| Region / Section         |            Total |             Used |             
+evidence/M2/maze_adapter/build_final_2026-10-31.txt:86: trailing whitespace.
++|   .text                  |        985,060 B |                  |             
+evidence/M2/maze_adapter/build_final_2026-10-31.txt:87: trailing whitespace.
++|   .rodata                |        667,290 B |                  |             
+evidence/M2/maze_adapter/build_final_2026-10-31.txt:88: trailing whitespace.
++|   other                  |            568 B |                  |             
+evidence/M2/maze_adapter/build_final_2026-10-31.txt:90: trailing whitespace.
++|   other                  |        197,088 B |                  |             
+evidence/M2/maze_adapter/build_final_2026-10-31.txt:91: trailing whitespace.
++|   .bss                   |        104,748 B |                  |             
+evidence/M2/maze_adapter/build_final_2026-10-31.txt:92: trailing whitespace.
++|   .data                  |          4,884 B |                  |             
+evidence/M2/maze_adapter/build_final_2026-10-31.txt:96: trailing whitespace.
++                                              lcpu                             
+evidence/M2/maze_adapter/build_final_2026-10-31.txt:98: trailing whitespace.
++| Region / Section         |            Total |             Used |             
+evidence/M2/maze_adapter/build_final_2026-10-31.txt:101: trailing whitespace.
++|   .text                  |          4,784 B |                  |             
+evidence/M2/maze_adapter/build_final_2026-10-31.txt:102: trailing whitespace.
++|   .rodata                |            717 B |                  |             
+evidence/M2/maze_adapter/build_final_2026-10-31.txt:103: trailing whitespace.
++|   other                  |              8 B |                  |             
+evidence/M2/maze_adapter/build_final_2026-10-31.txt:105: trailing whitespace.
++|   other                  |          1,028 B |                  |             
+evidence/M2/maze_adapter/build_final_2026-10-31.txt:106: trailing whitespace.
++|   .bss                   |            784 B |                  |             
+evidence/M2/maze_adapter/build_final_2026-10-31.txt:107: trailing whitespace.
++|   .data                  |             60 B |                  |             
+evidence/M2/maze_adapter/build_final_2026-10-31.txt:115: new blank line at EOF.
+evidence/M2/maze_adapter/build_intermediate2_2026-10-31.txt:25: trailing whitespace.
++parent          
+evidence/M2/maze_adapter/build_intermediate2_2026-10-31.txt:81: trailing whitespace.
++                                              main                             
+evidence/M2/maze_adapter/build_intermediate2_2026-10-31.txt:83: trailing whitespace.
++| Region / Section         |            Total |             Used |             
+evidence/M2/maze_adapter/build_intermediate2_2026-10-31.txt:86: trailing whitespace.
++|   .text                  |        984,948 B |                  |             
+evidence/M2/maze_adapter/build_intermediate2_2026-10-31.txt:87: trailing whitespace.
++|   .rodata                |        667,290 B |                  |             
+evidence/M2/maze_adapter/build_intermediate2_2026-10-31.txt:88: trailing whitespace.
++|   other                  |            568 B |                  |             
+evidence/M2/maze_adapter/build_intermediate2_2026-10-31.txt:90: trailing whitespace.
++|   other                  |        197,088 B |                  |             
+evidence/M2/maze_adapter/build_intermediate2_2026-10-31.txt:91: trailing whitespace.
++|   .bss                   |        104,748 B |                  |             
+evidence/M2/maze_adapter/build_intermediate2_2026-10-31.txt:92: trailing whitespace.
++|   .data                  |          4,884 B |                  |             
+evidence/M2/maze_adapter/build_intermediate2_2026-10-31.txt:96: trailing whitespace.
++                                              lcpu                             
+evidence/M2/maze_adapter/build_intermediate2_2026-10-31.txt:98: trailing whitespace.
++| Region / Section         |            Total |             Used |             
+evidence/M2/maze_adapter/build_intermediate2_2026-10-31.txt:101: trailing whitespace.
++|   .text                  |          4,784 B |                  |             
+evidence/M2/maze_adapter/build_intermediate2_2026-10-31.txt:102: trailing whitespace.
++|   .rodata                |            717 B |                  |             
+evidence/M2/maze_adapter/build_intermediate2_2026-10-31.txt:103: trailing whitespace.
++|   other                  |              8 B |                  |             
+evidence/M2/maze_adapter/build_intermediate2_2026-10-31.txt:105: trailing whitespace.
++|   other                  |          1,028 B |                  |             
+evidence/M2/maze_adapter/build_intermediate2_2026-10-31.txt:106: trailing whitespace.
++|   .bss                   |            784 B |                  |             
+evidence/M2/maze_adapter/build_intermediate2_2026-10-31.txt:107: trailing whitespace.
++|   .data                  |             60 B |                  |             
+evidence/M2/maze_adapter/build_intermediate2_2026-10-31.txt:115: new blank line at EOF.
+evidence/M2/maze_adapter/build_intermediate_2026-10-31.txt:25: trailing whitespace.
++parent          
+evidence/M2/maze_adapter/build_intermediate_2026-10-31.txt:1362: trailing whitespace.
++                                              main                             
+evidence/M2/maze_adapter/build_intermediate_2026-10-31.txt:1364: trailing whitespace.
++| Region / Section         |            Total |             Used |             
+evidence/M2/maze_adapter/build_intermediate_2026-10-31.txt:1367: trailing whitespace.
++|   .text                  |        984,940 B |                  |             
+evidence/M2/maze_adapter/build_intermediate_2026-10-31.txt:1368: trailing whitespace.
++|   .rodata                |        667,290 B |                  |             
+evidence/M2/maze_adapter/build_intermediate_2026-10-31.txt:1369: trailing whitespace.
++|   other                  |            568 B |                  |             
+evidence/M2/maze_adapter/build_intermediate_2026-10-31.txt:1371: trailing whitespace.
++|   other                  |        197,088 B |                  |             
+evidence/M2/maze_adapter/build_intermediate_2026-10-31.txt:1372: trailing whitespace.
++|   .bss                   |        104,748 B |                  |             
+evidence/M2/maze_adapter/build_intermediate_2026-10-31.txt:1373: trailing whitespace.
++|   .data                  |          4,884 B |                  |             
+evidence/M2/maze_adapter/build_intermediate_2026-10-31.txt:1377: trailing whitespace.
++                                              lcpu                             
+evidence/M2/maze_adapter/build_intermediate_2026-10-31.txt:1379: trailing whitespace.
++| Region / Section         |            Total |             Used |             
+evidence/M2/maze_adapter/build_intermediate_2026-10-31.txt:1382: trailing whitespace.
++|   .text                  |          4,784 B |                  |             
+evidence/M2/maze_adapter/build_intermediate_2026-10-31.txt:1383: trailing whitespace.
++|   .rodata                |            717 B |                  |             
+evidence/M2/maze_adapter/build_intermediate_2026-10-31.txt:1384: trailing whitespace.
++|   other                  |              8 B |                  |             
+evidence/M2/maze_adapter/build_intermediate_2026-10-31.txt:1386: trailing whitespace.
++|   other                  |          1,028 B |                  |             
+evidence/M2/maze_adapter/build_intermediate_2026-10-31.txt:1387: trailing whitespace.
++|   .bss                   |            784 B |                  |             
+evidence/M2/maze_adapter/build_intermediate_2026-10-31.txt:1388: trailing whitespace.
++|   .data                  |             60 B |                  |             
+evidence/M2/maze_adapter/build_intermediate_2026-10-31.txt:1396: new blank line at EOF.
+evidence/M2/maze_adapter/course_check_before_feature_commit_2026-10-31.txt:20: trailing whitespace.
++    
+evidence/M2/maze_adapter/course_check_integration_2026-10-31.txt:20: trailing whitespace.
++    
+evidence/M2/maze_adapter/course_check_integration_encoding_issue_2026-10-31.txt:20: trailing whitespace.
++    
+evidence/M2/maze_adapter/course_check_integration_final_2026-10-31.txt:20: trailing whitespace.
++    
+evidence/M2/maze_adapter/course_check_root_2026-10-31.txt:9: trailing whitespace.
++    
+evidence/M2/maze_adapter/course_check_root_encoding_issue_2026-10-31.txt:9: trailing whitespace.
++    
+evidence/M2/maze_adapter/course_check_root_initial_2026-10-31.txt:9: trailing whitespace.
++    
+
+exit_code=2

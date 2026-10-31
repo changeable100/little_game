@@ -1,0 +1,309 @@
+{
+  "base_commit": "943e762d30ed6bee64c21cd19ae5e92b6c7e38ea",
+  "branch": "codex/maze-a-stage2",
+  "uncommitted": true,
+  "hardware_verified": false,
+  "artifacts": [
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/main.bin",
+      "bytes": 1553712,
+      "sha256": "149fb2811ca3e34f9fd31e17c1c4bffed3fa3851fa0f67748484c640050cd368"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/bootloader/bootloader.bin",
+      "bytes": 58496,
+      "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/ftab/ftab.bin",
+      "bytes": 11288,
+      "sha256": "3dff38e292245bed24816535bb7434ab0f045e4f7a44e105af89cfc47cdb81e4"
+    }
+  ],
+  "compiled_source_files": [
+    {
+      "path": "src/bluetooth/lab_ble_model.c",
+      "sha256": "4ebc0440fce71cbe454312a41475ed1e3a396782792461f4f193d245f680ef14"
+    },
+    {
+      "path": "src/bluetooth/lab_ble_service.c",
+      "sha256": "2a1b8f600cdf03ea8505579cf7d0b4a29a75081c63b16e275f03239fc1de6e70"
+    },
+    {
+      "path": "src/lab.c",
+      "sha256": "1815a64e4b9f13538693b6d0fcb979bd300949b60f2215f2664b6e04a82ca0ad"
+    },
+    {
+      "path": "src/lab.h",
+      "sha256": "ad8d8bd13717fdc0644f9704c4bb0568d858c20f5e31873ce1e8a0f4e4136df7"
+    },
+    {
+      "path": "src/lab_audio.c",
+      "sha256": "48ae60ce4728998ab3f0fa9cc6b5a318e98e1da960652c15d27803c57e5d20b1"
+    },
+    {
+      "path": "src/lab_audio.h",
+      "sha256": "1421859805f898d5dd804b1a53cfb777baf6e0add6b59eaab7675d110bc7c15d"
+    },
+    {
+      "path": "src/lab_ble.h",
+      "sha256": "c3c4f92f85e6649473ed7ed2ea97a6500004fbcda32201f2eb6a7b6f93667478"
+    },
+    {
+      "path": "src/lab_ble_ui.c",
+      "sha256": "e2349cf73ad63c1fa50dbe961445c4fbb4d4c48d7efd212a8c5df5151a292646"
+    },
+    {
+      "path": "src/lab_bus.c",
+      "sha256": "9e81a5ea3eef78092a538ce10a5a0c8e64f22e4429b1f969b17f5918dbafa5b2"
+    },
+    {
+      "path": "src/lab_game.h",
+      "sha256": "eb6ef4b065a0effffbb957ea5dc67fac3e9205ace19cdb286124c693b7dd154e"
+    },
+    {
+      "path": "src/lab_game_pcm.h",
+      "sha256": "579a5e2aff12605cff3ed2ec78cad87852614efdb6afacc2ca54800aaacd78b3"
+    },
+    {
+      "path": "src/lab_game_sound.c",
+      "sha256": "88c4ebefde638268db41acc57ec7ea5e1b8195925ee7c89a61bf9aad66a4cf45"
+    },
+    {
+      "path": "src/lab_game_sound.h",
+      "sha256": "4ff4f5b03cbefd496708a9374fdfa8e3ca442c0b41ce8603a030b66475ec04e6"
+    },
+    {
+      "path": "src/lab_game_ui.c",
+      "sha256": "fd623351f75de010f3d172f72df3b84e88c79e2f080492887f53cc881a07fe10"
+    },
+    {
+      "path": "src/lab_pan.h",
+      "sha256": "978ad9184dd0c87200ad5afcca47cff7f114a4a4d144c4447a80dfbc6f442dca"
+    },
+    {
+      "path": "src/lab_pan_ui.c",
+      "sha256": "d1064b5115e3a53766f7fb2bacb3a55526e5c906b2d3326fe6447dcf62bd2691"
+    },
+    {
+      "path": "src/lab_registry.c",
+      "sha256": "08a276b478eac31405bf4e56724b507b71256ebe0b3e063ad42477b91ffc4e7e"
+    },
+    {
+      "path": "src/lab_ride.c",
+      "sha256": "2eb1fbdb30ac8858fccb5ab7af249f99bc9ef71452788ccadebe6bdf3b126981"
+    },
+    {
+      "path": "src/lab_ride.h",
+      "sha256": "d869f877916d35a4e009624d805d0023bcc4e58c323698b1ca12521faef8de8a"
+    },
+    {
+      "path": "src/lab_touch_capture.h",
+      "sha256": "7a01ba8a9bab889218300896b8d2d9fe2b83dfe791803b1cf561358bc6735064"
+    },
+    {
+      "path": "src/lab_ui.c",
+      "sha256": "5a697d03f832a7a50589be8b11cdc3dd867253ce5ae793304094a592d542617f"
+    },
+    {
+      "path": "src/lab_ui.h",
+      "sha256": "bdf3a3e39df7272eb98fcc8fcba61b57c16525e42a465d94dd897b3760360a32"
+    },
+    {
+      "path": "src/lab_units.c",
+      "sha256": "55e00627120db6d85fbdb2524d1aea0be37a13d97cf96fbce5d60e39066ac741"
+    },
+    {
+      "path": "src/lab_units.h",
+      "sha256": "6318ab74b10c2da86fa5c00af1685a237af7b79f8e2713d98d55f3295b4862a8"
+    },
+    {
+      "path": "src/lab_wav.c",
+      "sha256": "202fbdd5c9b9a1d7522f5027094c479bd719156d4d0e7a41ea3767304bde3b5a"
+    },
+    {
+      "path": "src/lab_wav.h",
+      "sha256": "880a7044dcd48062be695f1401c881182316d7bf7aaf52da4e98cd25a770c434"
+    },
+    {
+      "path": "src/main.c",
+      "sha256": "55ea7407747c2c4186744232bcb239def2f778f8d0af7d2ad60703aa4750d8f9"
+    },
+    {
+      "path": "src/maze_contract.h",
+      "sha256": "0bca0c3d7e98ac7caef61872311c3fec19465d79ef183b774df3acdc22cfd438"
+    },
+    {
+      "path": "src/maze_controller.c",
+      "sha256": "fabda44918b50ff598f3234d69f37eae738b6569b2f7185331a8f9c3db2b4dc9"
+    },
+    {
+      "path": "src/maze_controller.h",
+      "sha256": "4433ebc3a27aa2691e94bb33824e28537e9e573676a6da48cbe2c5adef29546d"
+    },
+    {
+      "path": "src/maze_controller_selftest.c",
+      "sha256": "a8202d9ff5165c25cc597ce1c3bdae2af3eede2fd4f3dae33448e331b564c337"
+    },
+    {
+      "path": "src/maze_controller_selftest.h",
+      "sha256": "83d93d2f2defca68f25bb8faec7140fb26a3d95cb5643d0cb630c90c37935058"
+    },
+    {
+      "path": "src/maze_game.c",
+      "sha256": "412146e6c70d6919d89ff8d87b91c5f0155e535c79bf6055d7c57251367fbe10"
+    },
+    {
+      "path": "src/maze_game.h",
+      "sha256": "97c94e9cd3234e40f4e03b838ef8b1403fb06392784045d4cea09f4552f52692"
+    },
+    {
+      "path": "src/maze_levels.c",
+      "sha256": "b9e54fd330d84953680c2abf24aea67e5a9e8cfa54dcec71870737d9995c3a79"
+    },
+    {
+      "path": "src/maze_levels.h",
+      "sha256": "5120d09137b9e89fa42c1c4984bc7e3538b18799689954d3e9ffe4de95831d9c"
+    },
+    {
+      "path": "src/maze_levels_selftest.c",
+      "sha256": "3503f7282fa8275ee65a115023e06f7bd84c83d88e626d01c63075552171a4cc"
+    },
+    {
+      "path": "src/maze_levels_selftest.h",
+      "sha256": "d0d30469d680e7aee291330af56ef492988c899a18d7e105fe9a6b4c4327b105"
+    },
+    {
+      "path": "src/maze_motion_service.c",
+      "sha256": "d070952b4e7073786a8410e7b365ddd88936909776978995d28372aa62988ee2"
+    },
+    {
+      "path": "src/maze_runtime.c",
+      "sha256": "780b41d73271d2f57481ada248f783a7614632614f43c6cd592c0b36e13e665e"
+    },
+    {
+      "path": "src/maze_runtime.h",
+      "sha256": "2e3100ec14e56459cdce8fcea315ba65ae2c70884240c0e8a1ac6fd4c098432b"
+    },
+    {
+      "path": "src/maze_selftest.c",
+      "sha256": "d9be67b749c9bcd82155cf9ecaa83c0c1ae781411351a52fb8c3042f3c45fd86"
+    },
+    {
+      "path": "src/maze_selftest.h",
+      "sha256": "a7a2d848ff2b94e186f201218e447b2ab2c59ae160d430aa87f3c5340ac884c3"
+    },
+    {
+      "path": "src/modules/test_adc.c",
+      "sha256": "9fe835e33fd3e4e0bf5cfe828410fd89d08a78ed10506111e9a9b9713010d3b7"
+    },
+    {
+      "path": "src/modules/test_charger.c",
+      "sha256": "e524cc9dd62e96f88aff1374d3fd009c05c6e75d8f19f6f3bc3418490c6316b6"
+    },
+    {
+      "path": "src/modules/test_display.c",
+      "sha256": "0325d43eaebcdf36151a949596874bc8de971c09cdea502877b4f823177a72dc"
+    },
+    {
+      "path": "src/modules/test_game.c",
+      "sha256": "16badc88ea969cd58cdfd4097f8daa617742e5180cb52afaa1cf3b08342253e7"
+    },
+    {
+      "path": "src/modules/test_gpio.c",
+      "sha256": "8ec696f4853067bb7126f349292e128a535704dace62fba35a8aad91ef8c5a48"
+    },
+    {
+      "path": "src/modules/test_imu.c",
+      "sha256": "5ffd0a23d81ee8f8f2871ea38bc7026c04c8591e2215133179e76c8d077fa34c"
+    },
+    {
+      "path": "src/modules/test_key.c",
+      "sha256": "c7dbc6a7fae8f0042f43ff7866dd4c375d5527e739a2a534595a2e922de00734"
+    },
+    {
+      "path": "src/modules/test_light.c",
+      "sha256": "f1c8e142bf350e5f7277f3ce8063e5d3f64872a0c433b206041454f31a09ed0f"
+    },
+    {
+      "path": "src/modules/test_mag.c",
+      "sha256": "db15d0d1f342e3e77118e174c275ab0c2ae325b04cd5d50e4096636672f0c362"
+    },
+    {
+      "path": "src/modules/test_mic.c",
+      "sha256": "0c39a24a85f696e22722007124e368371643ba54816496f2b80736159606be55"
+    },
+    {
+      "path": "src/modules/test_rgb.c",
+      "sha256": "f4ddc271b85def74a7fa91ddc18710420a2d7bd7950923b34228c61710f24f70"
+    },
+    {
+      "path": "src/modules/test_rtc.c",
+      "sha256": "a10de00e843f57695b0883272dd91a0d284aa75fef0c70579fd461dc2f89b2cb"
+    },
+    {
+      "path": "src/modules/test_speaker.c",
+      "sha256": "d25961526d3058cbce6e96d4fa88c04a12a836bbd26486d0e1e492a0df688fa9"
+    },
+    {
+      "path": "src/modules/test_touch.c",
+      "sha256": "7b651f1a6195bcbc33ba61747d0f9d598acdd93459a5f7047f81e2df4b0953f0"
+    },
+    {
+      "path": "src/modules/test_touch_raw.c",
+      "sha256": "d3c4706678ae184a62aadec21539f801d976c2775f982381232d10b393480d91"
+    },
+    {
+      "path": "src/modules/test_uart.c",
+      "sha256": "d4504a6fa63f5b1b723ff68c534f24a6a2948afcc8d651d8e9aafa4a4f9a2db3"
+    },
+    {
+      "path": "src/modules/test_wav.c",
+      "sha256": "61856dcee782e1a3d493da4601db463eedcbf08d1bfd7ac552571aa0b4b32984"
+    },
+    {
+      "path": "src/modules/touch_capture.c",
+      "sha256": "d8667e07f4f412cb1d8ed8701ec954c9cbc9a6e396dfe46c7cdfcdd6cdfe2ed6"
+    },
+    {
+      "path": "src/modules/touch_decode.c",
+      "sha256": "0227696ebfeb43cf860ddcf7a838a5d84e3f686bfa11801d0906fd781e93b5ea"
+    },
+    {
+      "path": "src/network/lab_mqtt.c",
+      "sha256": "a129ebbc6171aeaf1c51c773f426411a98f5584f27863b9f65f71617d73a6c31"
+    },
+    {
+      "path": "src/network/lab_mqtt.h",
+      "sha256": "7e33920609ffdd2f5be92dd7fc9da1a379be28d6cec7f5a678c77072f801ba49"
+    },
+    {
+      "path": "src/network/lab_pan_audio_compat.c",
+      "sha256": "f36fe5b8d73421a02ed732772218b796c6fa787b57d98e029f4cb0dbca9353e1"
+    },
+    {
+      "path": "src/network/lab_pan_hid_compat.c",
+      "sha256": "20fe53c82a7a63a27e1afdc1c0c06e88bc217e0b697c267a0a4b255428bfecad"
+    },
+    {
+      "path": "src/network/lab_pan_identity.c",
+      "sha256": "0585ef854f85069b599c585837f19e270e8e4360090c1b586967797f66571fb6"
+    },
+    {
+      "path": "src/network/lab_pan_model.c",
+      "sha256": "4714e7960214d3b7df9200fdadbe5494d5761305de3b6f6da552b175769f67ef"
+    },
+    {
+      "path": "src/network/lab_pan_net.c",
+      "sha256": "726c2f5df93608a756533fb2b145b0a1470c349d06ed0a10eb369b85647acb4b"
+    },
+    {
+      "path": "src/network/lab_pan_net.h",
+      "sha256": "52731c31022715d0340dd348499ac9b76b7d80d871d7d711257060797f4253e8"
+    },
+    {
+      "path": "src/network/lab_pan_service.c",
+      "sha256": "8cb96aa1b3b3f18a571bad7cba4fd2a076a5e78e32883e06932948604662ef10"
+    }
+  ]
+}

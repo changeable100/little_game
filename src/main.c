@@ -8,6 +8,13 @@
 #include "littlevgl2rtt.h"
 #include "maze_levels_selftest.h"
 #include "maze_selftest.h"
+#include "maze_controller_selftest.h"
+#include "maze_runtime.h"
+
+static void maze_adapter_test_report(const char *name, bool passed)
+{
+    rt_kprintf("[maze:adapter:selftest] %s %s\n", name, passed ? "PASS" : "FAIL");
+}
 
 static void maze_test_report(const char *name, bool passed)
 {
@@ -23,17 +30,24 @@ static void maze_level_test_report(const char *name, bool passed)
 int main(void)
 {
     int maze_failures = maze_selftest_run(maze_test_report);
+    bool maze_tests_ok = maze_failures == 0;
     rt_kprintf("[maze:selftest] summary %s failures=%d\n",
                maze_failures ? "FAIL" : "PASS", maze_failures);
     if (maze_failures) {
         rt_kprintf("[maze] model self-test failed; maze feature is not validated\n");
     }
     maze_failures = maze_levels_selftest_run(maze_level_test_report);
+    maze_tests_ok = maze_tests_ok && maze_failures == 0;
     rt_kprintf("[maze:level:selftest] summary %s failures=%d\n",
                maze_failures ? "FAIL" : "PASS", maze_failures);
     if (maze_failures) {
         rt_kprintf("[maze] level self-test failed; level is not validated\n");
     }
+
+    maze_failures = maze_controller_selftest_run(maze_adapter_test_report);
+    maze_tests_ok = maze_tests_ok && maze_failures == 0;
+    rt_kprintf("[maze:adapter:selftest] summary %s failures=%d\n",
+               maze_failures ? "FAIL" : "PASS", maze_failures);
 
     /* lab_init 创建后台工作任务；littlevgl2rtt_init 将 LVGL 接到 SDK 的 lcd 驱动。 */
     if (lab_init() != RT_EOK || littlevgl2rtt_init("lcd") != RT_EOK) {
@@ -44,6 +58,8 @@ int main(void)
     if (lab_pan_init() != RT_EOK) rt_kprintf("PAN initialization failed\n");
     if (lab_ble_init() != RT_EOK) rt_kprintf("Peripheral Lab: BLE initialization failed\n");
     lab_ui_create();
+    if (maze_runtime_init(maze_tests_ok) != MAZE_OK)
+        rt_kprintf("[maze] runtime disabled: initialization or self-test failure\n");
     while (1) {
         /* 处理界面定时器、输入与重绘，返回建议的下次调用间隔。 */
         uint32_t delay = lv_timer_handler();

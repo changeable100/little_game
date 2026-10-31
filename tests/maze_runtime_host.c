@@ -1,0 +1,158 @@
+/* Deterministic service-boundary tests using the production runtime.c.
+ * RT/LVGL and sensor transport are fakes; no claim about actual hardware. */
+#include "maze_runtime.h"
+#include "lab_game.h"
+#include "rtthread.h"
+#include "lvgl.h"
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
+
+#define CHECK(expr) do { if (!(expr)) { printf("FAIL line %d: %s\n",__LINE__,#expr); return 1; } } while (0)
+static uint32_t clock_ms, worker_session;
+static bool busy, stop_requested;
+static unsigned starts, stops, wrong_stops, timers, draws;
+static rt_thread_t current_thread=(void *)1;
+static lv_timer_t ui_timer;
+static lab_motion_t motion;
+static struct rt_messagequeue *queue;
+extern void (*test_export_maze_diag)(int, char **);
+
+rt_thread_t rt_thread_self(void) { return current_thread; }
+uint32_t rt_tick_get_millisecond(void) { return clock_ms; }
+int rt_kprintf(const char *format, ...)
+{
+    int result;
+    va_list args; va_start(args,format); result=vprintf(format,args); va_end(args);
+    return result;
+}
+rt_err_t rt_mq_init(struct rt_messagequeue *q, const char *name, void *pool,
+                    size_t size, size_t pool_size, unsigned flag)
+{
+    (void)name; (void)pool; (void)size; (void)pool_size; (void)flag;
+    memset(q,0,sizeof(*q)); queue=q; return RT_EOK;
+}
+rt_err_t rt_mq_detach(struct rt_messagequeue *q) { (void)q; return RT_EOK; }
+rt_err_t rt_mq_send(struct rt_messagequeue *q, void *data, size_t size)
+{
+    if (q->count==8 || size!=sizeof(uint32_t)) return -1;
+    memcpy(&q->values[(q->head+q->count)%8],data,size); ++q->count; return RT_EOK;
+}
+rt_err_t rt_mq_recv(struct rt_messagequeue *q, void *out, size_t size, int wait)
+{
+    (void)wait;
+    if (!q->count || size!=sizeof(uint32_t)) return -1;
+    memcpy(out,&q->values[q->head],size); q->head=(q->head+1)%8; --q->count;
+    return RT_EOK;
+}
+lv_timer_t *lv_timer_create(void (*callback)(lv_timer_t *), uint32_t period, void *data)
+{
+    (void)data;
+    if (period!=20) return NULL;
+    ++timers; ui_timer.callback=callback; return &ui_timer;
+}
+bool lab_maze_motion_state(uint32_t session, bool *is_busy, bool *owned)
+{
+    *is_busy=busy; *owned=busy && worker_session==session && session!=0; return true;
+}
+bool lab_maze_motion_start(uint32_t session)
+{
+    if (busy) return false;
+    busy=true; worker_session=session; stop_requested=false; ++starts;
+    memset(&motion,0,sizeof(motion)); return true;
+}
+bool lab_maze_motion_stop(uint32_t session)
+{
+    if (!busy || !session || worker_session!=session) { ++wrong_stops; return false; }
+    stop_requested=true; ++stops; return true;
+}
+bool lab_motion_try_snapshot(lab_motion_t *out) { *out=motion; return true; }
+
+static void render(void *context, const maze_snapshot_t *s, const maze_level_t *level)
+{
+    if (context==(void *)7 && level && s) ++draws;
+}
+static void pump(unsigned ms, bool publish)
+{
+    clock_ms+=ms;
+    if (publish)
+    {
+        motion.a[0]=0.1f; motion.a[1]=-0.1f; motion.a[2]=1;
+        motion.valid=true; motion.session=worker_session; ++motion.sequence;
+        motion.sampled_ms=clock_ms;
+    }
+    ui_timer.callback(&ui_timer);
+}
+static maze_result_t action(maze_action_kind_t kind)
+{
+    maze_snapshot_t s;
+    maze_action_t a;
+    maze_result_t result=maze_runtime_snapshot(&s);
+    if (result!=MAZE_OK) return result;
+    result=maze_runtime_next_request(&a.request_id);
+    if (result!=MAZE_OK) return result;
+    a.action=kind; a.expected_run_id=s.run_id;
+    return maze_runtime_action(NULL,&a);
+}
+
+int main(void)
+{
+    maze_snapshot_t s, paused;
+    unsigned i, detached_draws;
+    CHECK(maze_runtime_init(false)==MAZE_WRONG_STATE && timers==0);
+    CHECK(maze_runtime_init(true)==MAZE_OK && timers==1);
+    CHECK(maze_runtime_init(true)==MAZE_WRONG_STATE && timers==1);
+    CHECK(maze_runtime_attach(render,(void *)7)==MAZE_OK);
+    CHECK(maze_runtime_attach(render,(void *)7)==MAZE_WRONG_STATE);
+    current_thread=(void *)2;
+    CHECK(maze_runtime_snapshot(&s)==MAZE_WRONG_STATE);
+    CHECK(maze_runtime_next_request(&s.run_id)==MAZE_WRONG_STATE);
+    CHECK(maze_runtime_action(NULL,NULL)==MAZE_WRONG_STATE);
+    current_thread=(void *)1;
+    CHECK(action(MAZE_ACTION_START)==MAZE_OK && starts==1);
+    for (i=0;i<32;++i) pump(20,true);
+    CHECK(maze_runtime_snapshot(&s)==MAZE_OK && s.state==MAZE_RUNNING && s.elapsed_ms==0);
+    printf("TC-406 runtime-single-owner-and-timer PASS\n");
+    pump(20,true);
+    CHECK(maze_runtime_detach()==MAZE_OK && stop_requested);
+    CHECK(maze_runtime_snapshot(&paused)==MAZE_OK && paused.state==MAZE_PAUSED);
+    detached_draws=draws;
+    CHECK(maze_runtime_attach(render,(void *)7)==MAZE_OK);
+    pump(20,true); /* Reopen before old worker has observed Stop. */
+    CHECK(starts==1 && maze_runtime_snapshot(&s)==MAZE_OK && s.state==MAZE_PAUSED);
+    CHECK(maze_runtime_detach()==MAZE_OK);
+    detached_draws=draws;
+    busy=false; motion.valid=false; /* Worker has restored its settings. */
+    pump(500,false);
+    CHECK(draws==detached_draws);
+    CHECK(maze_runtime_attach(render,(void *)7)==MAZE_OK);
+    pump(20,false); /* Start a new acquisition, clear old publication. */
+    CHECK(starts==2);
+    CHECK(action(MAZE_ACTION_RESUME)==MAZE_WRONG_STATE);
+    pump(20,true);
+    CHECK(action(MAZE_ACTION_RESUME)==MAZE_OK);
+    pump(20,true);
+    CHECK(maze_runtime_snapshot(&s)==MAZE_OK && s.run_id==paused.run_id);
+    CHECK(s.elapsed_ms==paused.elapsed_ms+20 && timers==1);
+    printf("TC-406 detach-reopen-no-reset-no-callback PASS\n");
+    CHECK(action(MAZE_ACTION_BACK)==MAZE_OK && stop_requested);
+    busy=true; worker_session=0; motion.valid=false; /* Another job acquired the slot. */
+    pump(20,false);
+    CHECK(wrong_stops==0 && busy);
+    CHECK(action(MAZE_ACTION_START)==MAZE_OK);
+    CHECK(maze_runtime_snapshot(&s)==MAZE_OK && s.state==MAZE_ERROR && s.error_code==MAZE_ERROR_INPUT);
+    CHECK(wrong_stops==0 && busy);
+    printf("TC-405 busy-slot-and-stop-ownership PASS\n");
+    {
+        char *argv[]={"maze_diag","status"};
+        current_thread=(void *)2;
+        for(i=0;i<9;++i) test_export_maze_diag(2,argv);
+        CHECK(queue->count==8);
+        current_thread=(void *)1;
+        pump(20,false);
+        CHECK(queue->count==0);
+    }
+    CHECK(timers==1 && starts==2 && stops==2);
+    printf("TC-406 shell-bounded-ui-queue PASS\nsummary PASS failures=0\n");
+    return 0;
+}

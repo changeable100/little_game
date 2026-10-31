@@ -14,6 +14,7 @@ void lab_motion_publish(const lab_motion_t *sample)
 {
     rt_mutex_take(&state_lock, RT_WAITING_FOREVER);
     motion = *sample;
+    motion.sampled_ms = (uint32_t)rt_tick_get_millisecond();
     rt_mutex_release(&state_lock);
 }
 /* 复制最新运动数据，读取完成即释放锁，不把锁带入游戏计算。 */
@@ -30,6 +31,52 @@ static lab_status_t sample_status;
 static lab_touch_frame_t touch_frame;
 static lab_id_t pending_id;
 static unsigned pending_action;
+static bool maze_motion_job;
+static uint32_t maze_motion_session;
+
+bool lab_motion_try_snapshot(lab_motion_t *sample)
+{
+    if (!sample || rt_mutex_take(&state_lock, 0) != RT_EOK) return false;
+    *sample = motion;
+    rt_mutex_release(&state_lock);
+    return true;
+}
+
+bool lab_maze_motion_start(uint32_t session)
+{
+    if (!session || rt_mutex_take(&state_lock, 0) != RT_EOK) return false;
+    if (busy) { rt_mutex_release(&state_lock); return false; }
+    busy = true;
+    continuous = false;
+    stop_requested = false;
+    pending_id = LAB_IMU;
+    pending_action = 0;
+    maze_motion_job = true;
+    maze_motion_session = session;
+    memset(&motion, 0, sizeof(motion));
+    rt_mutex_release(&state_lock);
+    rt_sem_release(&request_ready);
+    return true;
+}
+
+bool lab_maze_motion_state(uint32_t session, bool *is_busy, bool *owned)
+{
+    if (rt_mutex_take(&state_lock, 0) != RT_EOK) return false;
+    *is_busy = busy;
+    *owned = busy && maze_motion_job && maze_motion_session == session;
+    rt_mutex_release(&state_lock);
+    return true;
+}
+
+bool lab_maze_motion_stop(uint32_t session)
+{
+    bool owned;
+    if (rt_mutex_take(&state_lock, 0) != RT_EOK) return false;
+    owned = busy && maze_motion_job && maze_motion_session == session;
+    if (owned) stop_requested = true;
+    rt_mutex_release(&state_lock);
+    return owned;
+}
 
 /* 设置只在空闲时更新；工作线程读取同一份快照。 */
 static unsigned speaker_volume = 6, speaker_frequency = 440;
@@ -130,6 +177,7 @@ bool lab_start(lab_id_t id, unsigned action)
     rt_mutex_take(&state_lock, RT_WAITING_FOREVER);
     if (busy) { rt_mutex_release(&state_lock); return false; }
     busy = true;
+    maze_motion_job = false;
     if (id == LAB_GAME) memset(&motion, 0, sizeof(motion));
     pending_id = id;
     pending_action = action;
@@ -174,7 +222,8 @@ static void worker(void *parameter)
                 results[pending_id].samples++;
                 rt_mutex_release(&state_lock);
             }
-            lab_modules[pending_id].run(pending_action);
+            if (maze_motion_job) lab_maze_motion_run(maze_motion_session);
+            else lab_modules[pending_id].run(pending_action);
             lab_result_t result;
             lab_snapshot(pending_id, &result);
             if (!repeat || result.status == LAB_FAIL) break;

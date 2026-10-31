@@ -19,6 +19,8 @@ maze_result_t maze_game_level_check(const maze_level_t *level);
 maze_result_t maze_game_init(maze_game_t *game, const maze_level_t *level);
 maze_result_t maze_game_action(maze_game_t *game, const maze_action_t *action);
 maze_result_t maze_game_calibrated(maze_game_t *game, uint32_t run_id);
+/* Owner-thread input-service failure, including during calibration/pause. */
+maze_result_t maze_game_input_failed(maze_game_t *game, uint32_t run_id);
 maze_result_t maze_game_step(maze_game_t *game, const maze_input_t *input,
                              uint32_t dt_ms);
 maze_result_t maze_game_snapshot(const maze_game_t *game,

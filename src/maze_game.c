@@ -158,6 +158,16 @@ static maze_result_t fail(maze_game_t *game, maze_error_t error)
     return MAZE_INVALID;
 }
 
+maze_result_t maze_game_input_failed(maze_game_t *game, uint32_t run_id)
+{
+    if (!game || !game->level) return MAZE_INVALID;
+    if (run_id != game->snapshot.run_id) return MAZE_STALE;
+    if (game->snapshot.state != MAZE_CALIBRATING &&
+        game->snapshot.state != MAZE_RUNNING && game->snapshot.state != MAZE_PAUSED)
+        return MAZE_WRONG_STATE;
+    return fail(game, MAZE_ERROR_INPUT);
+}
+
 /* The candidate is at most 0.015 cell away on either axis. Only overlapped
  * cells are inspected; outside the map is an impassable boundary. */
 static bool blocked(const maze_level_t *level, float x, float y)

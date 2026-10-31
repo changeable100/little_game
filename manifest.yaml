@@ -1,13 +1,13 @@
 submission:
   student_id: null
-  student_name: "成员 B（姓名待提供）"
+  student_name: "王若豪（A）；成员 B 姓名待提供"
   group_id: null
-  milestone: "H0 边界评审 / 按 MAZE_CONTRACT_VERSION v1 同步成员 B 文档"
+  milestone: "M2关键技术验证；A第二阶段软件完成，真实IMU与整机待验证"
   submitted_at: null
 
 dev_agent:
-  tool: "Copilot SDK in VS Code"
-  model: null
+  tool: "Codex；历史B开发工具Copilot SDK in VS Code保留于原提交"
+  model: "GPT-6；历史B模型未提供"
   session_log_path: null
   session_log_hash: null
 
@@ -19,6 +19,10 @@ requirements:
 design:
   architecture_doc_path: "docs/02-方案设计说明.md"
   key_decisions:
+    - decision: "以B的Lab/LVGL工程943e762为最终整机基线，见ADR-0004"
+      alternatives_considered: "以A课程工程为基线选择性移植B的LVGL/触摸"
+      rationale: "已有显示触摸入口，较快联调；接受依赖多、镜像大与告警需评估的代价"
+      decided_by: "王若豪于2026-10-31在两案中明确选择方案A"
     - decision: "成员 B 选择倾斜控制连续滚动小球"
       alternatives_considered: "倾斜触发按格移动"
       rationale: "连续运动更直接呈现体感；A 契约说明给出半径 0.20 格和步进边界，模型源码及地图通行仍待核验"
@@ -38,7 +42,7 @@ design:
 
 code:
   repo_url: "https://github.com/changeable100/little_game"
-  commit_range: "B 工程从 1672326 独立演进；本次选择性导入 A 源文件，未合并 A 分支历史"
+  commit_range: "B从1672326演进至943e762；codex/maze-a-stage2增加f5ac1fe硬件归档及A第二阶段功能，学生已审阅确认提交；功能HEAD以git log为准"
   a_model_source: "origin/feat/req-301-maze-model@9595000；模型实现源提交 77b15d3"
 
 physical_verification:
@@ -54,6 +58,24 @@ physical_verification:
     agent_conclusion: "结构/可达、断路、对角、畸形四项及summary PASS failures=0；旧标签保留，不伪造新编号重测"
 
 test_results:
+  - test_id: "A2-sdk-build"
+    description: "A第二阶段最终SDK固件编译"
+    expected: "SDK v2.5.1 / sf32lb52-lchspi-ulp编译退出0"
+    actual: "PASS；main.bin 1553712字节，SHA256 149fb2811ca3e34f9fd31e17c1c4bffed3fa3851fa0f67748484c640050cd368；未烧录；详细三镜像指纹另存firmware_fingerprint.json"
+    pass: true
+    evidence_path: "evidence/M2/maze_adapter/build_final_2026-10-31.txt"
+  - test_id: "A2-host-56"
+    description: "REQ-401～406逻辑、原28项回归及runtime服务边界"
+    expected: "52项生产逻辑和4组带传输替身的运行时用例全部通过"
+    actual: "PASS；Zig0.13/Clang18，C11 -Wall -Wextra -Werror -O2，两套summary failures=0；不代表真实I2C/显示验证"
+    pass: true
+    evidence_path: "evidence/M2/maze_adapter/host_2026-10-31_164634.txt"
+  - test_id: "TC-405-board-and-new-selftest"
+    description: "新24项板上启动、真实身份/校准/四向/暂停计时和恢复配置"
+    expected: "新镜像真实日志证明输入和时序符合docs/03判据"
+    actual: "未执行；已提供烧录与maze_diag步骤，必须等学生保存真实证据后继续"
+    pass: false
+    evidence_path: null
   - test_id: "TC-204～TC-208"
     description: "成员 B 迷宫界面、动作和生命周期用例"
     expected: "依 docs/03-测试计划.md 执行并逐条登记"
@@ -84,7 +106,6 @@ test_results:
     actual: "2026-10-31补齐旧B地图4项PASS截图；精确执行时间/固件哈希未提供"
     pass: true
     evidence_path: "evidence/review-b-2026-10-31/map_selftest_screenshot.png"
-
   - test_id: "A-model-selftest-24-host"
     description: "A 的 24 个隔离模型场景，使用其 host harness 在本地运行"
     expected: "每个模型场景及汇总均 PASS；失败时须明确显示并不得记录为通过"
@@ -98,18 +119,18 @@ test_results:
     pass: true
     evidence_path: "evidence/review-b-2026-10-31/model_pass_screenshot.png"
 
-
 known_issues:
+  - "本阶段check_all的追踪PASS；历史8条提交的合法Copilot署名被占位符规则误报，开发日志因最后提交距今14天FAIL；manifest还缺学号、组别、提交时间和会话导出路径。保留原结果，不改检查器或历史凑通过。"
   - "任务书中的旧基线、提交 4d9eb23 和无游戏 UI 描述与当前工作副本不符；当前仓库只有 1672326 初始提交，且已有鹈鹕自行车 UI。"
   - "本次固件构建成功，但仍输出 RWX LOAD segment、newlib _close/_lseek/_read/_write 未实现、缺少 entry 符号及 img 'dfu' not found 警告；未改 SDK 工程骨架，板上影响未验证。"
-  - "16×16蛇形地图和BFS已实现并通过主机自检；LVGL UI、动作适配、真实 IMU 与生产刷新调度仍未实现。"
+  - "B的maze_ui仍未实现；A动作/校准/采样服务和生产时钟软件已实现并编译、主机测试通过，真实IMU与新固件板端未验证。"
   - "20 px/格仍是 UI 布局候选；连续通行的主机模型回归通过，但真机可玩性未验证。"
   - "LVGL 主机渲染测试尚未运行，因为迷宫生产 UI 尚未实现。"
   - "任务书引用的 D:\\AGENTS.md 与 D:\\作业下的 01/02/03 文档未找到；项目成员 B 姓名、学号和组别尚未提供。"
 
 self_review: |
-  2026-10-31追加：学生分别补齐旧模型24项与地图4项PASS截图，时间/镜像哈希未提供。
-  以下为原B历史自述，原先未取证状态保留；新A适配器仍需另行上板验证。
+  以下为B在2026-10-17的历史自述。2026-10-31已补齐旧28项板端截图，
+  并在codex/maze-a-stage2完成A适配器软件和56项主机测试；新硬件证据仍待提供。
   本轮成功获取 A 分支 feat/req-301-maze-model@9595000。由于 A/B 分支无共同 Git
   祖先且 A 树含独立 RGB 工程入口，没有合并整分支；经学生确认，只导入 A 的五个
   契约/模型/自检文件，并在现有 LVGL main 入口增加逐项自检调用。随后按学生确认
@@ -120,6 +141,8 @@ self_review: |
   UI 和 IMU 集成未实现，板端证据待学生提供。
 
 human_checkpoints:
+  - decision_point: "整机基线与A第二阶段开工"
+    student_confirmation: "王若豪明确选择B的Lab/LVGL方案A，随后要求开始做我的第二阶段；agent实现A输入/时钟/意图适配，真实上板由学生完成"
   - decision_point: "体感迷宫玩法"
     student_confirmation: "用户选择倾斜控制连续滚动小球；仍需与成员 A 评审碰撞半径和通道净宽。"
   - decision_point: "游戏推进调度"

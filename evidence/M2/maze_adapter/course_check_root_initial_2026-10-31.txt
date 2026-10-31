@@ -1,0 +1,26 @@
+========================================================
+✓ 提交规范     PASS
+✗ 开发日志     FAIL
+    开发日志：1 个开发日（共 8 次提交），1 个有日志，0 个有问题。
+      ! 距上次提交（2026-10-17）已 14 天，请尽快恢复小步提交
+✓ 需求追踪     PASS
+! manifest WARN
+    ����ļ�: manifest.yaml
+    
+    ���� 26 ����벹ȫ�����⣺
+      [����] submission.student_id δ��д
+      [����] submission.student_name δ��д
+      [����] submission.group_id δ��д
+      [����] submission.milestone δ��д
+      [����] submission.submitted_at δ��д
+      [����] dev_agent.tool δ��д
+      [����] dev_agent.model δ��д
+      [����] dev_agent.session_log_path δ��д
+      [����] requirements.prd_path δ��д
+      [����] design.architecture_doc_path δ��д
+      [����] design.key_decisions[0].decision δ��д
+      [����] design.key_decisions[0].alternatives_considered δ��д
+========================================================
+结论：存在必须修复的问题，请处理后再提交。
+
+exit_code=1
