@@ -4,3 +4,5 @@
 Unified TC-201..213 defined before implementation PASS
 A five files / build skeleton / proj.conf unchanged PASS
 All results are host/static or compilation; no new physical result recorded.
+manifest YAML parsed with SDK PyYAML PASS
+Staged diff whitespace issues (log EOF blanks) corrected without changing diagnostics.

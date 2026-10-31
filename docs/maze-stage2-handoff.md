@@ -54,3 +54,5 @@ B2-1 只允许 NULL sink 的静态预览。START / PAUSE / RESTART 完整绘制�
 真实SDK LVGL主机布局、非法静态输入、20轮进入/退出、2000次重复render、对象/timer数量检查通过；Lab入口与旧UI回归通过。已查看 `evidence/B2-1/dashboard.png`、`maze-preview.png`、`maze-entry.png`；尺寸/布局符合候选值，8px球的实物可读性仍待评审。最终固件构建成功，main.bin为1,547,836字节，RWX/DFU警告保留。
 
 完整复现方式、失败和重测日志、逐项模拟/真实边界见 [验证记录](../evidence/B2-1/README.md)。下一步先交A审查接口/坐标/边界并补请求适配；真实屏幕/触摸验证由学生烧录后回传证据。本交付不宣称UI已通过物理验收。
+
+本次文档/接口提交：`cc950295315a7c78e089a641b9fec19a43536876`。静态UI、driver及证据完整提交：`00f9e0e108bea16b5c55a8e5bb6f9e0793e41cfa`。两项均位于`codex/maze-ui-stage2`，仅本地提交，未推送。后续收工记录提交不改变此源码版本。

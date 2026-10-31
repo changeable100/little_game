@@ -142,3 +142,5 @@ stage2:
     - "只支持390x450及16x16的READY静态模拟页；六态/动作/IMU未接入"
     - "A须提供统一request_id与快照回送后再接生产按钮"
     - "known_issues及test_results中旧条目为B@943e762历史，当前状态以本节为准"
+  source_commit: "00f9e0e108bea16b5c55a8e5bb6f9e0793e41cfa"
+  delivery_status: "本地提交；未推送；A接口/布局审查与物理UI证据待提供"
