@@ -51,7 +51,11 @@ def compile_one(item):
 with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
     objects = list(pool.map(compile_one, enumerate(sources)))
 exe = out / 'ui-test'
-subprocess.run([cc, *platform_flags, *objects, '-lm', '-o', str(exe)], check=True)
+# Keep the linker command below Windows' process command-line length limit.
+# GCC response files accept quoted forward-slash paths, including spaces.
+link_inputs = out / 'ui-link.rsp'
+link_inputs.write_text('\n'.join('"' + Path(obj).as_posix() + '"' for obj in objects) + '\n', encoding='utf-8')
+subprocess.run([cc, *platform_flags, '@' + str(link_inputs), '-lm', '-o', str(exe)], check=True)
 subprocess.run([str(exe)], cwd=out, check=True, timeout=30)
 if args.maze_only or args.ui_only:
     print(f'Host UI previews (simulated): {out}')

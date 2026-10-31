@@ -85,6 +85,8 @@ int main(void)
         assert(objects(top) == count && timers() == clock_count);
         lv_obj_update_layout(top);
         lv_obj_t *page = lv_obj_get_child(top, -1);
+        lv_obj_t *title = text(top, "MAZE");
+        assert(lv_obj_get_x(title) == 40 && lv_obj_get_y(title) == 12);
         lv_obj_t *ball = lv_obj_get_child(page, 260);
         assert(lv_obj_get_x(ball) == 61 && lv_obj_get_y(ball) == 87);
         assert(lv_obj_get_width(ball) == 8 && lv_obj_get_height(ball) == 8);
@@ -95,7 +97,8 @@ int main(void)
         const char *names[] = {"START", "PAUSE", "RESTART", "BACK"};
         for (unsigned i = 0; i < 4; ++i) {
             lv_obj_t *button = lv_obj_get_parent(text(top, names[i]));
-            assert(lv_obj_get_width(button) == 91 && lv_obj_get_height(button) == 46);
+            assert(lv_obj_get_width(button) == 78 && lv_obj_get_height(button) == 40);
+            assert(lv_obj_get_x(button) == 28 + (int)i * 84);
             assert(lv_obj_get_y(button) == 400);
             assert(lv_obj_has_state(button, LV_STATE_DISABLED) == (i < 3));
         }

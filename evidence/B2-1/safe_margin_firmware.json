@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-31",
+  "physical_retest": "pending",
+  "artifacts": [
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/main.bin",
+      "bytes": 1547836,
+      "sha256": "cd6bbbbe64809d0161b8e4788d284ce317149d2d008510a903eebab313235583"
+    },
+    {
+      "path": "src/maze_ui.c",
+      "bytes": 7449,
+      "sha256": "531a4a848d02e82dfd9923ab52fb2c7cfede0c479198fe8157809ce00c8e23a1"
+    },
+    {
+      "path": "tests/maze_ui_test.c",
+      "bytes": 6012,
+      "sha256": "84517e3e492a798e20836c26255606fabb3d3aab44f43a78659b88d3206e91db"
+    },
+    {
+      "path": "tests/render.py",
+      "bytes": 5686,
+      "sha256": "a3ec0083422841f32caa278712d6cf5eef63c45ddd971be03d7e8edb347cfac0"
+    }
+  ]
+}

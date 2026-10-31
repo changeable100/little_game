@@ -68,8 +68,8 @@ int maze_ui_create(maze_action_sink_t sink, void *context)
     page = box(lv_layer_top(), 0, 0, 390, 450, BG);
     lv_obj_add_flag(page, LV_OBJ_FLAG_CLICKABLE); /* absorb background taps */
     lv_obj_add_event_cb(page, deleted, LV_EVENT_DELETE, NULL);
-    label(page, "MAZE", 16, 8, &lv_font_montserrat_20, TEXT);
-    status_label = label(page, "NO SNAPSHOT", 119, 12,
+    label(page, "MAZE", 40, 12, &lv_font_montserrat_20, TEXT);
+    status_label = label(page, "NO SNAPSHOT", 119, 16,
                          &lv_font_montserrat_14, MUTED);
     lv_obj_set_width(status_label, 255);
     lv_label_set_long_mode(status_label, LV_LABEL_LONG_CLIP);
@@ -91,7 +91,7 @@ int maze_ui_create(maze_action_sink_t sink, void *context)
     lv_obj_set_style_text_align(preview, LV_TEXT_ALIGN_CENTER, 0);
     static const char *names[] = {"START", "PAUSE", "RESTART", "BACK"};
     for (unsigned i = 0; i < 4; ++i) {
-        lv_obj_t *button = box(page, 4 + i * 97, 400, 91, 46, 0x263D55);
+        lv_obj_t *button = box(page, 28 + i * 84, 400, 78, 40, 0x263D55);
         lv_obj_add_flag(button, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_set_style_radius(button, 8, 0);
         lv_obj_t *text = label(button, names[i], 0, 0,

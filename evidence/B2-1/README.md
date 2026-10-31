@@ -1,6 +1,6 @@
 # B2-0 / B2-1 验证记录（2026-10-31）
 
-本目录均为主机/编译记录。PNG 是 SDK LVGL 软件渲染，输入明确为模拟数据；没有进行固件烧录、屏幕/触摸物理测试或 IMU 测试。
+本目录顶层PNG为SDK LVGL软件渲染，输入明确为模拟数据。最初交付仅有主机/编译记录；随后用户实际烧录并回传的原图/粘贴日志另存physical-2026-10-31子目录，不能把二者混为同一验证层级。IMU与完整UI验收仍未完成。
 
 ## 可复现命令
 
@@ -54,3 +54,20 @@ python -m SCons --board=sf32lb52-lchspi-ulp -j8
 - TC-204/211/212/213：本次未重跑地图及连续模型用例；原 B@943e762 失败/重测日志未变。
 
 源基线和编号映射见 `docs/maze-stage2-handoff.md`。本次修改的提交号用 `git log --oneline origin/feat/maze-integration..HEAD` 获取；不把自己提交号预写成未发生的事实。
+
+
+## 实机反馈与圆角边距修复（随后追加）
+
+用户实机证据及有限结论见 [物理记录](physical-2026-10-31/README.md)，独立hw提交57275999f4d56a5b367af964e8f74fe077e79f9a。首次图的左上标题/左下START可见性不足；用户明确确认BACK正常。模型24项/地图4项板端PASS仅指隔离自检。
+
+边距修复按同一主机命令重跑，`--out build/maze-safe-margin`：
+
+- `host_safe_margin_2026-10-31.txt`：首次静态布局、20轮重入、2000次render主机PASS。
+- `lab_ui_safe_margin_2026-10-31.txt`：完整UI首次链接失败，GCC报告CreateProcess；长目录使对象路径列表接近Windows子进程命令上限，未删任何目标或用例。
+- `host_safe_margin_retry_2026-10-31.txt` / `lab_ui_safe_margin_retry_2026-10-31.txt`：改用GCC响应文件后，两组原判据均PASS。
+- `maze-safe-margin.png`：已目视检查的修复后矩形软件预览，不能证明物理圆角已通过。
+- `build_safe_margin_2026-10-31.txt`：修复后固件编译PASS，main.bin仍为1,547,836字节，既有RWX/DFU警告保留；完整日志仅移除行尾及末尾空白并注明。
+- `safe_margin_firmware.json`：修复后固件及源码SHA256；版本关联见后续交接，不伪写不存在的固件内版本横幅。
+- `course_checks_safe_margin_2026-10-31.txt`：课程日志/总检查脚本仍缺失，未报告课程总检查通过。
+
+真实圆角可见性待学生对新固件再次拍摄正面全屏照片，并重测BACK；不把旧照片记成修复后PASS。
