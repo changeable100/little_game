@@ -1,0 +1,6 @@
+01-需求规格说明.md: current REQ-201..210 coverage PASS (historical section excluded)
+02-方案设计说明.md: current REQ-201..210 coverage PASS (historical section excluded)
+03-测试计划.md: current REQ-201..210 coverage PASS (historical section excluded)
+Unified TC-201..213 defined before implementation PASS
+A five files / build skeleton / proj.conf unchanged PASS
+All results are host/static or compilation; no new physical result recorded.

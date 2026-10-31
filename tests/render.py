@@ -13,20 +13,25 @@ import sys
 parser = argparse.ArgumentParser()
 parser.add_argument('--sdk', required=True, type=Path)
 parser.add_argument('--out', type=Path, default=Path('/tmp/peripheral-lab-preview'))
+parser.add_argument('--maze-only', action='store_true', help='B2-1 simulated maze preview checks only')
+parser.add_argument('--ui-only', action='store_true', help='Run Lab UI integration checks without unrelated service tests')
 args = parser.parse_args()
 root = Path(__file__).resolve().parent
 lvgl = args.sdk.resolve() / 'external/lvgl_v9'
 out = args.out.resolve()
 out.mkdir(parents=True, exist_ok=True)
-subprocess.run([sys.executable, str(root.parent / 'tools/generate_game_audio.py'), '--check'], check=True)
+if not args.maze_only:
+    subprocess.run([sys.executable, str(root.parent / 'tools/generate_game_audio.py'), '--check'], check=True)
 cc = os.environ.get('CC', 'cc')
 platform_flags = shlex.split(os.environ.get('CFLAGS', ''))
 flags = platform_flags + ['-std=c11', '-O1', '-DLV_KCONFIG_IGNORE', '-DLV_CONF_INCLUDE_SIMPLE',
          '-I' + str(root / 'include'), '-I' + str(root.parent / 'src'), '-I' + str(lvgl)]
 sources = sorted((lvgl / 'src').rglob('*.c'))
-sources += [root.parent / 'src' / name for name in
-            ('lab_game_ui.c', 'lab_ride.c', 'lab_ui.c', 'lab_ble_ui.c', 'lab_pan_ui.c', 'lab_registry.c', 'modules/test_display.c', 'modules/test_touch.c', 'modules/touch_decode.c')]
-sources.append(root / 'ui_test.c')
+app_sources = ('maze_ui.c', 'maze_levels.c', 'maze_game.c')
+if not args.maze_only:
+    app_sources += ('lab_game_ui.c', 'lab_ride.c', 'lab_ui.c', 'lab_ble_ui.c', 'lab_pan_ui.c', 'lab_registry.c', 'modules/test_display.c', 'modules/test_touch.c', 'modules/touch_decode.c')
+sources += [root.parent / 'src' / name for name in app_sources]
+sources.append(root / ('maze_ui_test.c' if args.maze_only else 'ui_test.c'))
 headers = list((lvgl / 'src').rglob('*.h')) + list((root / 'include').glob('*.h'))
 headers += list((root.parent / 'src').glob('*.h'))
 header_mtime = max(p.stat().st_mtime for p in headers)
@@ -48,6 +53,9 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
 exe = out / 'ui-test'
 subprocess.run([cc, *platform_flags, *objects, '-lm', '-o', str(exe)], check=True)
 subprocess.run([str(exe)], cwd=out, check=True, timeout=30)
+if args.maze_only or args.ui_only:
+    print(f'Host UI previews (simulated): {out}')
+    sys.exit(0)
 core = out / 'core-test'
 subprocess.run([cc, '-I' + str(root / 'core_include'), *flags, '-pthread',
                 str(root / 'core_test.c'), str(root.parent / 'src/lab.c'), '-o', str(core)], check=True)

@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "D:\peripheral_lab\tests\render.py", line 54, in <module>
+    subprocess.run([str(exe)], cwd=out, check=True, timeout=30)
+  File "C:\Users\23396\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\23396\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\subprocess.py", line 1228, in communicate
+    sts = self.wait(timeout=self._remaining_time(endtime))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\23396\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\23396\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\subprocess.py", line 1593, in _wait
+    raise TimeoutExpired(self.args, timeout)
+subprocess.TimeoutExpired: Command '['D:\\peripheral_lab\\build\\maze-preview\\ui-test']' timed out after 30.0 seconds

@@ -1,0 +1,7 @@
+PASS: game PCM matches the offline score generator.
+Initializing host LVGL
+Rendering dashboard
+PASS: gestures, scroll, live-stop, raw two-point decoder and overlay; 17 detail screens; busy state; manual confirmation; display coverage; touch repeat/cancel/complete.
+PASS: pelican immediate entry, visible X/Y motion and turning, simplified controls, pause/recenter, stale IMU and exit.
+PASS: game entry, motion, turns, pause, game-over/replay, error and reopen allocate ZERO extra pixel buffers; no transform layers.
+Host UI previews (simulated): D:\peripheral_lab\build\maze-preview
