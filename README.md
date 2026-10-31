@@ -1,3 +1,5 @@
+> 当前默认启动已改为体感迷宫独立游戏UI：游戏首页 → 迷宫 / 玩法说明。Peripheral Lab测试页面与其任务不再作为开机流程。独立UI说明见 [maze-standalone-ui](docs/maze-standalone-ui.md)；下方Lab文档保留为历史排障资料。当前运动控制仍未接入，界面明确标注PREVIEW。
+
 # Peripheral Lab · 黄山派外设验证台
 
 基于 **SiFli SDK v2.5.1 / LVGL v9 / sf32lb52-lchspi-ulp**，面向 390 × 450 屏幕。每个外设独立测试、显示结果，并提供操作提示和 API 摘要。深色卡片界面使用 SDK 内置英文字体，学习说明和源码注释使用中文。

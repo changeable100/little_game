@@ -2,7 +2,7 @@ submission:
   student_id: null
   student_name: "成员 B（姓名待提供）"
   group_id: null
-  milestone: "B2-0/B2-1：统一编号与静态模拟UI；真实UI/IMU待验收"
+  milestone: "独立游戏UI：移除Lab产品入口；主机与编译完成，新版本物理待验证"
   submitted_at: null
 
 dev_agent:
@@ -35,6 +35,11 @@ design:
       alternatives_considered: "采用带分支或环路的复杂地图"
       rationale: "拓扑简明，适合先验证契约映射与四邻接 BFS；连续小球碰撞须另由 A 模型和真机验证"
       decided_by: "用户于2026-10-17明确确认"
+
+    - decision: "独立游戏首页、迷宫页面和玩法说明，替换Peripheral Lab产品入口"
+      alternatives_considered: "开机直接进迷宫；延用Lab中的游戏入口"
+      rationale: "用户明确指出Lab为测试UI并要求重建独立游戏界面，BACK回游戏首页，产品导航与测试用途分离"
+      decided_by: "用户本会话明确确认；ADR-0002记录"
 
 code:
   repo_url: "https://github.com/changeable100/little_game"
@@ -75,6 +80,12 @@ physical_verification:
     source_version: "e42af465ce9486d02f5e06be05f35dd2b73c79ef by session context; no version banner in photograph"
 
 test_results:
+  - test_id: "TC-201/202/205/208/209/210-standalone-host"
+    description: "独立首页/说明/迷宫导航及资源基准，明确静态模拟层级"
+    expected: "无Lab产品页面；说明和迷宫返回游戏首页；20轮重入和销毁不叠加对象/timer，预览不发送生产动作"
+    actual: "PASS；截图已查看，独立导航20轮、原迷宫2000次render及静态异常回归通过；新物理UI未执行"
+    pass: true
+    evidence_path: "evidence/standalone-ui/host_2026-10-31.txt"
   - test_id: "TC-201-physical-static-safe-margin-retest"
     description: "边距修复后的静态预览物理布局可见性，非动态或触摸全覆盖"
     expected: "MAZE、状态、地图与四按钮标签完整可见，不受圆角遮挡"
@@ -183,3 +194,23 @@ stage2:
   delivery_status: "本地提交；未推送；静态显示边距修复已获实机照片及用户确认；A接口审查、动态与IMU后续"
   safe_margin_update: "B2-1圆角边距修复后主机/编译PASS；新实机照片和用户确认支持TC-201静态布局复测PASS。动态/生产动作/IMU及完整物理生命周期未验收"
   safe_margin_firmware: "evidence/B2-1/safe_margin_firmware.json"
+
+standalone_ui:
+  date: "2026-10-31"
+  branch: "codex/maze-ui-stage2"
+  spec: "docs/maze-standalone-ui.md"
+  decision: "docs/adr/0002-standalone-maze-interface.md"
+  entry: "main -> maze_menu_create; home -> maze preview / instructions; BACK -> game menu"
+  retired_startup_calls: "lab_init, lab_ui_create, lab_ble_init, lab_pan_init; absent in final ELF defined symbols"
+  retained: "A模型和地图启动自检；SDK显示/触摸；现有LVGL主循环；Lab历史源码/证据供排障"
+  host: "PASS: actual SDK LVGL; 20 standalone navigation cycles; original 2000 maze renders; screenshots inspected"
+  firmware: "PASS: SiFli SDK v2.5.1 / GCC14.2.1; main.bin 905548 bytes; SDK RWX/newlib/entry/DFU warnings retained"
+  integrity: "evidence/standalone-ui/firmware_integrity.json"
+  evidence: "evidence/standalone-ui/README.md"
+  physical: "NOT EXECUTED for this new standalone version; earlier photos only validate the old Lab-entry version"
+  limitations:
+    - "Production input/request adapter not connected; PREVIEW remains visible and game action buttons disabled"
+    - "No new game clock, IMU or calibration integration; no physical heap/lifecycle or complete game acceptance"
+    - "SDK auto-initialized drivers/services not fully removed; no config or build-skeleton rewrite"
+    - "Course scripts absent; errors retained, no claim check_all passed"
+    - "Local commits only, not pushed"
