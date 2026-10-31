@@ -41,7 +41,29 @@ code:
   commit_range: "B 工程从 1672326 独立演进；本次选择性导入 A 源文件，未合并 A 分支历史"
   a_model_source: "origin/feat/req-301-maze-model@9595000；模型实现源提交 77b15d3"
 
-physical_verification: []
+physical_verification:
+  - date: "2026-10-31 (received; capture/run time not provided)"
+    required_action: "烧录并保存完整启动日志、预览照片，验证BACK返回首页"
+    executed_at: "实际执行时刻未提供；证据接收日2026-10-31"
+    item: "模型24项与地图4项板端启动自检"
+    agent_conclusion: "PASS: both summaries failures=0; old map labels retained as B@943e762:TC-201/202 -> unified TC-211/212"
+    evidence_path: "evidence/B2-1/physical-2026-10-31/startup_original.zip"
+    verified_by: "用户实际烧录并回传粘贴日志；Codex逐项核对"
+    source_version: "00f9e0e108bea16b5c55a8e5bb6f9e0793e41cfa by session context; no firmware commit/hash in log"
+  - date: "2026-10-31 (received)"
+    required_action: "烧录并保存完整启动日志、预览照片，验证BACK返回首页"
+    executed_at: "实际执行时刻未提供；证据接收日2026-10-31"
+    item: "TC-201静态迷宫实际显示"
+    agent_conclusion: "PARTIAL: preview/map/ball/READY/0s visible; corner title/START visibility issue, full physical layout not accepted"
+    evidence_path: "evidence/B2-1/physical-2026-10-31/preview_board_original.jpg"
+    verified_by: "用户提供原图；Codex目视核对"
+  - date: "2026-10-31 (received)"
+    required_action: "烧录并保存完整启动日志、预览照片，验证BACK返回首页"
+    executed_at: "实际执行时刻未提供；证据接收日2026-10-31"
+    item: "TC-205单次BACK返回"
+    agent_conclusion: "PASS (user report): BACK returns to Peripheral Lab; no physical 20-cycle/heap result"
+    evidence_path: "evidence/B2-1/physical-2026-10-31/README.md"
+    verified_by: "用户在本会话明确确认能正常返回"
 
 test_results:
   - test_id: "B@943e762:TC-204～TC-208"
@@ -138,9 +160,9 @@ stage2:
     - "TC-207/208来源、失败/重测、命令与限制已记录"
   limitations:
     - "课程scripts不存在，check_all/check_trace/new_devlog/build_firmware无法运行；等价SCons及主机driver已运行"
-    - "任务书报告旧模型/地图板测PASS，本地未持有两张原图，physical_verification保持空，不伪写本次重测"
+    - "先前两张截图仍未归档；本轮另收启动粘贴日志及UI原图，模型24项/地图4项PASS与显示部分结果见physical_verification"
     - "只支持390x450及16x16的READY静态模拟页；六态/动作/IMU未接入"
     - "A须提供统一request_id与快照回送后再接生产按钮"
     - "known_issues及test_results中旧条目为B@943e762历史，当前状态以本节为准"
   source_commit: "00f9e0e108bea16b5c55a8e5bb6f9e0793e41cfa"
-  delivery_status: "本地提交；未推送；A接口/布局审查与物理UI证据待提供"
+  delivery_status: "本地提交；未推送；已收首次UI证据及BACK报告，圆角边距修复待物理重测，A接口审查待完成"
