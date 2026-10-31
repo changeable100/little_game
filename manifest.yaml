@@ -2,11 +2,11 @@ submission:
   student_id: null
   student_name: "成员 B（姓名待提供）"
   group_id: null
-  milestone: "H0 边界评审 / 按 MAZE_CONTRACT_VERSION v1 同步成员 B 文档"
+  milestone: "B2-0/B2-1：统一编号与静态模拟UI；真实UI/IMU待验收"
   submitted_at: null
 
 dev_agent:
-  tool: "Copilot SDK in VS Code"
+  tool: "Codex desktop（本轮）；既往记录使用Copilot SDK in VS Code"
   model: null
   session_log_path: null
   session_log_hash: null
@@ -44,25 +44,25 @@ code:
 physical_verification: []
 
 test_results:
-  - test_id: "TC-204～TC-208"
+  - test_id: "B@943e762:TC-204～TC-208"
     description: "成员 B 迷宫界面、动作和生命周期用例"
     expected: "依 docs/03-测试计划.md 执行并逐条登记"
     actual: "未执行；LVGL 页面、动作适配和真实 IMU 集成仍待实现"
     pass: false
     evidence_path: null
-  - test_id: "TC-201-host"
+  - test_id: "B@943e762:TC-201-host"
     description: "确认的固定地图结构与四邻接 BFS 主机自检"
     expected: "16×16/256 格，S=(1,1)、G=(14,13)，结构有效且可达"
     actual: "PASS；B 地图启动自检 4 项全部通过"
     pass: true
     evidence_path: "evidence/M2/maze_levels/host_pass_2026-10-17.txt"
-  - test_id: "TC-202-host"
+  - test_id: "B@943e762:TC-202-host"
     description: "BFS 拒绝断路、仅对角相邻和畸形地图"
     expected: "断路和畸形输入判不可达/无效，不越界"
     actual: "PASS；断路、对角相邻及非法尺寸/端点/格值用例通过"
     pass: true
     evidence_path: "evidence/M2/maze_levels/host_pass_2026-10-17.txt"
-  - test_id: "TC-203-host"
+  - test_id: "B@943e762:TC-203-host"
     description: "A 模型在确认地图上连续穿越走廊并到达终点"
     expected: "沿各走廊中心线控制，球不越界/穿墙并进入 WON"
     actual: "PASS；首次自检 harness 误要求到达终点格心，失败记录保留，按契约修正后重测通过"
@@ -96,6 +96,7 @@ known_issues:
   - "任务书引用的 D:\\AGENTS.md 与 D:\\作业下的 01/02/03 文档未找到；项目成员 B 姓名、学号和组别尚未提供。"
 
 self_review: |
+  以下原总结保留为B@943e762历史状态；当前B2-0/B2-1交付与限制见stage2。
   本轮成功获取 A 分支 feat/req-301-maze-model@9595000。由于 A/B 分支无共同 Git
   祖先且 A 树含独立 RGB 工程入口，没有合并整分支；经学生确认，只导入 A 的五个
   契约/模型/自检文件，并在现有 LVGL main 入口增加逐项自检调用。随后按学生确认
@@ -106,6 +107,8 @@ self_review: |
   UI 和 IMU 集成未实现，板端证据待学生提供。
 
 human_checkpoints:
+  - decision_point: "2026-10-31 B2-0/B2-1范围"
+    student_confirmation: "确认统一编号、UI草案与静态预览入口、主机预览和编译；生产按钮/动态状态/IMU后续联评。"
   - decision_point: "体感迷宫玩法"
     student_confirmation: "用户选择倾斜控制连续滚动小球；仍需与成员 A 评审碰撞半径和通道净宽。"
   - decision_point: "游戏推进调度"
@@ -116,3 +119,26 @@ human_checkpoints:
     student_confirmation: "用户确认按最小接入计划只导入 A 的契约、模型和自检文件，保留当前 LVGL 主入口；实际接入五个 A 源文件并修改 main.c。"
   - decision_point: "首版正式固定地图"
     student_confirmation: "用户确认采用 docs/maze-ui-proposal.md 中的16×16蛇形单通道拓扑作为首版固定关卡；先实现静态地图和BFS自检。"
+
+stage2:
+  date: "2026-10-31"
+  baseline: "origin/feat/maze-integration@943e762d30ed6bee64c21cd19ae5e92b6c7e38ea"
+  branch: "codex/maze-ui-stage2"
+  handoff: "docs/maze-stage2-handoff.md"
+  numbering: "统一REQ-201～210、模型REQ-301～306保持原义；旧测试标B@943e762，映射见handoff"
+  interface_review: "maze_ui.h为B草案，待A核对；非NULL生产sink返回未接入"
+  evidence: "evidence/B2-1/README.md"
+  firmware: "SiFli SDK v2.5.1 / GCC14.2.1最终构建PASS；main.bin 1547836字节；RWX和DFU警告保留"
+  host_results:
+    - "TC-201主机静态布局PASS；物理显示/触摸未执行"
+    - "TC-202/210模拟操作禁用与BACK退出PASS；生产动作/六态未执行"
+    - "TC-203固定READY/0s PASS；动态冻结未执行"
+    - "TC-205/209主机20轮重入及2000次render对象/timer基准PASS；真机堆与生产刷新未执行"
+    - "TC-206静态异常输入PASS；旧局/动态异常未执行"
+    - "TC-207/208来源、失败/重测、命令与限制已记录"
+  limitations:
+    - "课程scripts不存在，check_all/check_trace/new_devlog/build_firmware无法运行；等价SCons及主机driver已运行"
+    - "任务书报告旧模型/地图板测PASS，本地未持有两张原图，physical_verification保持空，不伪写本次重测"
+    - "只支持390x450及16x16的READY静态模拟页；六态/动作/IMU未接入"
+    - "A须提供统一request_id与快照回送后再接生产按钮"
+    - "known_issues及test_results中旧条目为B@943e762历史，当前状态以本节为准"
