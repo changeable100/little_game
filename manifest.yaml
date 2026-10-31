@@ -211,7 +211,7 @@ stage2:
     - "A须提供统一request_id与快照回送后再接生产按钮"
     - "known_issues及test_results中旧条目为B@943e762历史，当前状态以本节为准"
   initial_source_commit: "00f9e0e108bea16b5c55a8e5bb6f9e0793e41cfa"
-  delivery_status: "本地提交；未推送；静态显示边距修复已获实机照片及用户确认；A接口审查、动态与IMU后续"
+  delivery_status: "已于2026-10-31按用户要求推送origin/codex/maze-ui-stage2；静态UI及基本导航证据已归档，A接口审查/动态/IMU后续"
   safe_margin_update: "B2-1圆角边距修复后主机/编译PASS；新实机照片和用户确认支持TC-201静态布局复测PASS。动态/生产动作/IMU及完整物理生命周期未验收"
   safe_margin_firmware: "evidence/B2-1/safe_margin_firmware.json"
 
@@ -233,4 +233,15 @@ standalone_ui:
     - "No new game clock, IMU or calibration integration; no physical heap/lifecycle or complete game acceptance"
     - "SDK auto-initialized drivers/services not fully removed; no config or build-skeleton rewrite"
     - "Course scripts absent; errors retained, no claim check_all passed"
-    - "Local commits only, not pushed"
+    - "Published to origin/codex/maze-ui-stage2 on 2026-10-31; integration target remains feat/maze-integration"
+
+github_delivery:
+  date: "2026-10-31"
+  repository: "https://github.com/changeable100/little_game"
+  branch: "codex/maze-ui-stage2"
+  url: "https://github.com/changeable100/little_game/tree/codex/maze-ui-stage2"
+  work_head_published: "601347eb020bd8c69bc2d9d0fd88bb6c79a40d28"
+  work_commits: 9
+  contents: "成员B今日源码、统一编号/设计/测试/日志、主机/构建输出、原始照片/粘贴日志及基本导航报告"
+  integration_target: "feat/maze-integration"
+  scope: "普通推送功能分支；未创建PR、未合并、未强推或改写共享历史"

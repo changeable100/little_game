@@ -70,3 +70,6 @@ B2-1 只允许 NULL sink 的静态预览。START / PAUSE / RESTART 完整绘制�
 
 
 2026-10-31独立UI最新验证：用户提供TILT MAZE首页原图并确认界面正常，随后明确确认两入口及返回正常；首页实物显示PASS，基本导航按用户报告PASS。原图与记录位于evidence/standalone-ui/physical-2026-10-31，源码上下文6e4d33d6fdb7facd8a3b57a8415913362cbeb671。此次无新启动日志/多轮堆测/动态或IMU结果，旧Lab版和首次圆角问题证据继续保留。
+
+
+2026-10-31 GitHub交付：按学生明确要求，今天9项工作提交已普通推送到[https://github.com/changeable100/little_game/tree/codex/maze-ui-stage2](https://github.com/changeable100/little_game/tree/codex/maze-ui-stage2)，工作HEAD `601347eb020bd8c69bc2d9d0fd88bb6c79a40d28`。此前“仅本地/未推送”为当时状态；当前功能分支已发布，供A向feat/maze-integration集成，未合并或强推共享分支。本次另补交付记录。
