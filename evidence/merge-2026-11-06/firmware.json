@@ -1,0 +1,22 @@
+{
+  "a_parent": "f4610d7",
+  "b_parent": "e6bd646",
+  "physical_verified": false,
+  "artifacts": [
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/main.bin",
+      "bytes": 1087800,
+      "sha256": "66bf613befb0bb50478c1b99c888d9fa4843873d3d332461ebe71663776e405e"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/bootloader/bootloader.bin",
+      "bytes": 58496,
+      "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/ftab/ftab.bin",
+      "bytes": 11288,
+      "sha256": "ea1f1140fd8da9f6c2ad2734e2e5447d751e2d18193c9380421ffd0e41570641"
+    }
+  ]
+}

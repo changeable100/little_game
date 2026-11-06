@@ -1,0 +1,8 @@
+12089c6c T lab_init
+1208b1d0 T maze_controller_selftest_run
+1208c820 T maze_menu_create
+1208d090 T maze_runtime_init
+12128330 T __fsym___cmd_maze_diag
+1210cc70 T __fsym___cmd_maze_diag_desc
+1210cc95 T __fsym___cmd_maze_diag_name
+1208ccac t maze_diag

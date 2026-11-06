@@ -1,0 +1,15 @@
+SIMULATED DATA ONLY; no board, IMU or production model actions
+Assertion failed!
+
+Program: D:\peripheral_lab\build\maze-preview\ui-test.exe
+File: D:\peripheral_lab\tests\maze_ui_test.c, Line 78
+
+Expression: text(top, "READY  |  0s")
+Traceback (most recent call last):
+  File "D:\peripheral_lab\tests\render.py", line 54, in <module>
+    subprocess.run([str(exe)], cwd=out, check=True, timeout=30)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\23396\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['D:\\peripheral_lab\\build\\maze-preview\\ui-test']' returned non-zero exit status 3.

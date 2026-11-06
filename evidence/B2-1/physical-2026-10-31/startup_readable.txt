@@ -1,0 +1,556 @@
+# Derived readable copy: UTF-8 BOM/line endings/trailing whitespace normalized. Exact pasted bytes are in startup_original.zip.
+SFBL
+Serial:c2,Chip:4,Package:3,Rev:3  Reason:00000000
+
+
+ \ | /
+- SiFli Corporation
+ / | \     build on Oct 10 2026, 2.5.1 build 421126d9
+ 2020 - 2022 Copyright by SiFli team
+aw32001_init ok,  time consum: 0.00 ms.
+mount /dev sucess
+lwIP-2.1.2 initialized!
+[598] I/drv.rtc main: PSCLR=0x80000100 DivAI=128 DivAF=0 B=256
+
+[628] I/drv.rtc main: RTC use LXT RTC_CR=00000001
+
+
+[649] I/drv.rtc main: Init RTC, wake = 1
+
+
+[672] I/drv.audprc main: init 00 ADC_PATH_CFG0 0x606
+
+
+[694] I/drv.audprc main: HAL_AUDPRC_Init res 0
+
+
+[715] I/drv.audcodec main: HAL_AUDCODEC_Init res 0
+
+
+[737] I/drv.rgb main: rgbled register success, supporting 1 LEDs
+
+[763] I/TOUCH main: Regist touch screen driver, probe=0x12027741
+
+[I/FAL] Flash Abstraction Layer (V0.5.99) initialize success.
+32;22m[I/FAL] The FAL MTD NOR device (dfu) created successfully[0m
+[I/FAL] The FAL MTD NOR device (ble) created successfully
+LV_MEM_RT: using rt_malloc path (psram private heap build condition not met)
+[908] I/drv.epic main: drv_gpu opened.
+
+call par CFG1(3313)
+
+fc 9, xtal 2000, pll 2107
+
+call par CFG1(3313)
+
+fc 7, xtal 2000, pll 1686
+
+[1067] I/audio audiosvr: audio server run
+
+[1086] I/audio bt_downv: audio_btdownlink run
+
+[maze:selftest] TC-301 start-calibrate PASS
+[maze:selftest] TC-302 right PASS
+[maze:selftest] TC-302 left PASS
+[maze:selftest] TC-302 down PASS
+[maze:selftest] TC-302 up PASS
+[maze:selftest] TC-303 thin-wall PASS
+[maze:selftest] TC-303 horizontal-wall PASS
+[maze:selftest] TC-303 corner PASS
+[maze:selftest] TC-303 slide PASS
+[maze:selftest] TC-303 right-edge PASS
+[maze:selftest] TC-303 left-edge PASS
+[maze:selftest] TC-303 bottom-edge PASS
+[maze:selftest] TC-303 top-edge PASS
+[maze:selftest] TC-304 pause-resume PASS
+[maze:selftest] TC-304 restart-stale-back PASS
+[maze:selftest] TC-305 win-freeze PASS
+[maze:selftest] TC-306 bad-maps PASS
+[maze:selftest] TC-306 invalid-sample PASS
+[maze:selftest] TC-306 nan PASS
+[maze:selftest] TC-306 infinity PASS
+[maze:selftest] TC-306 range PASS
+[maze:selftest] TC-306 long-dt PASS
+[maze:selftest] TC-306 counters PASS
+[maze:selftest] TC-306 api-guards PASS
+[maze:selftest] summary PASS failures=0
+[maze:level:selftest] TC-201 fixed-map-structure-and-reachability PASS
+[maze:level:selftest] TC-202 disconnected-map PASS
+[maze:level:selftest] TC-202 diagonal-only-map PASS
+[maze:level:selftest] TC-202 malformed-maps PASS
+[maze:level:selftest] summary PASS failures=0
+[2136] I/drv.lcd main: [NONE] -> [OPENING]
+
+[2155] I/drv.lcd lcd_task: open
+
+[2169] I/drv.lcd lcd_task: HW open
+
+[2204] I/drv.lcd lcd_task: Try registered LCD driver...
+
+msh />
+CO5300_ReadID 0x331100
+[4504] I/co5300 lcd_task: LCD module use CO5300 IC
+
+
+
+CO5300_ReadID 0x331100
+[10757] I/co5300 lcd_task: LCD module use CO5300 IC
+
+
+[10778] I/drv.lcd lcd_task: Found lcd co5300 id:331100h
+
+[10800] I/drv.lcd lcd_task: HW open done.
+
+[10817] I/drv.lcd lcd_task: [OPENING] -> [INITIALIZED]
+
+[10838] I/drv.lcd lcd_task: open done.
+
+[10966] I/drv.lcd_fb main: drv_lcd_fb_init
+
+[10989] I/drv.lcd_fb main: drv_lcd_fb_init done.
+
+[User]	(0.322, +322)	 lv_touchscreen_create: touchscreen touch opening lv_touch.c:153
+[11049] I/TOUCH main: Open
+
+[11065] I/TOUCH tp_init: Find touch screen driver...
+
+[11085] I/TOUCH tp_init: Probe 12027741
+
+[11104] I/TOUCH tp_init: touch screen found driver  0x200319e8, ft6146
+
+[11132] I/TOUCH main: Opened.
+
+[User]	(0.326, +4)	 lv_touchscreen_create: touchscreen touch open success lv_touch.c:172
+[11182] I/LVGL main: [littlevgl2rtt] Welcome to the littlevgl2rtt lib.
+
+[13899] E/drv.ft6146 tp_init: ft6146 id_H=64
+
+[13925] E/drv.ft6146 tp_init: ft6146 id_L=56
+
+[lab:ble] Starting Bluetooth stack...
+[15925] D/nvds mbox: NVDS Update Addr res 6, addr eb-0f-80-52-fd-5c
+
+[15958] I/nvds mbox: read sleep time 3500
+
+[51153] D/sibles_utils mbox: delay
+
+[51459] I/sibles lab_ble: enable BLE Core. Lib ver: bt.2.0.3d25ed62
+
+[52541] I/drv.lcd lcd_task: Auto turn on display.
+
+[52563] I/drv.lcd lcd_task: set brightness 50
+
+[52584] I/drv.lcd lcd_task: display on
+
+[52600] I/drv.lcd lcd_task: [INITIALIZED] -> [ON]
+
+[83931] I/nvds mbox: hci en 32
+
+[84099] I/ble_cm mbox: read_bond_infor_from_flash: 1
+
+[84163] D/bt_common KE_EVT2: dm_set init_gainst_data 565
+
+[84188] D/bt_common KE_EVT2: svc_set init_gainst_data 606
+
+[84221] D/bt_common KE_EVT2: [SPP_DEBUG]spp_uuid_header = 0x200677f4,spp_uuid_list = 0x200677f4,st = 0
+
+[84261] D/bt_common KE_EVT2: hfp state change new_sate 0x 0,old_state 0x 0
+
+[84292] D/bt_common KE_EVT2: AG state change new_sate 0x 0,old_state 0x 0
+
+[84326] D/bt_common KE_EVT2: hid_init
+
+
+[84346] D/bt_common KE_EVT2: bt_gatt_update_state from 0x 0 to 0x 0
+
+[84373] D/bt_common KE_EVT2: bt_dis_update_ctrl_state state 0x 0
+
+[84399] D/bt_common KE_EVT2: bt_l2cap_profile_init
+
+[84474] E/NO_TAG KE_EVT2: read bt bonded failed!
+
+le p256 nvds get 0
+le p256 nvds get 0
+app addr nvds get 1
+[84919] I/sibles KE_EVT2:
+BLE ready!
+
+
+[84941] I/btcomm KE_EVT2: Clear mask 1
+
+act num:0
+set cmd 0x91, stop_status:0, msg_status:1
+[85027] D/BLE_GAP KE_EVT2: evt 145, ret 0
+
+
+
+[85111] I/sibles KE_EVT2: status=0, start_handle=0x10
+
+[lab:ble:identity] MAC=5C:FD:52:80:0F:EB name=SiFli-Lab-800FEB
+[lab:ble] Ready. Choose Scan or Advertise.
+[100880] D/bt_common bts: hciev_send_rd_sec_host_support_cmp sec_host_support:1,st:0
+
+[101295] D/bt_common bts: dm_release gap_dm_sync_reg_cfm_hdl 885
+
+[101325] D/bt_common bts: svc_release gap_dm_sync_reg_cfm_hdl 886
+
+[101353] D/bt_common bts: dm_set gap_rd_local_version_req_hdl 186
+
+[101381] D/bt_common bts: dm_release gap_rd_local_version_req_hdl 193
+
+[101410] D/bt_common bts: svc_set gap_rfc_reg_req_msg_send 2622
+
+[101442] D/bt_common bts: dm_set gap_sm_set_default_sec_mode_req_hdl 430
+
+[101470] D/bt_common bts: dm_release gap_sm_set_default_sec_mode_req_hdl 431
+
+[101507] D/bt_common bts: dm_set gap_rd_bd_req_hdl 4781
+
+[101539] D/bt_common bts: svc_release gap_rfc_reg_cfm_hdl 2726
+
+[101566] D/bt_common bts: [spp_debug]inited_channel_num = 0,srv_chnl = 1
+
+[101594] D/bt_common bts: svc_set gap_rfc_reg_req_msg_send 2622
+
+[101638] D/bt_common bts: svc_release gap_rfc_reg_cfm_hdl 2726
+
+[101664] D/bt_common bts: [spp_debug]inited_channel_num = 1,srv_chnl = 2
+
+[101693] D/bt_common bts: svc_set gap_rfc_reg_req_msg_send 2622
+
+[101732] D/bt_common bts: svc_release gap_rfc_reg_cfm_hdl 2726
+
+[101763] D/bt_common bts: [spp_debug]inited_channel_num = 2,srv_chnl = 3
+
+[101795] D/bt_common bts: svc_set gap_rfc_reg_req_msg_send 2622
+
+[101824] D/bt_common bts: dm_release gap_rd_bd_comp_hdl 4754
+
+[101850] I/btapp_ge bts: << Local device addreess: 5CFD:52:800FEB
+
+
+[101885] D/bt_common bts: dm_set gap_sm_set_sec_mode_req_hdl 404
+
+[101918] D/bt_common bts: svc_release gap_rfc_reg_cfm_hdl 2726
+
+[101944] D/bt_common bts: [spp_debug]inited_channel_num = 3,srv_chnl = 4
+
+[101972] D/bt_common bts: dm_release gap_dm_arrival_hdl 9461
+
+[102000] D/bt_common bts: svc_set gap_rfc_reg_req_msg_send 2622
+
+[102551] D/bt_common bts: dm_release gap_sm_reg_req_hdl 649
+
+[102581] D/bt_common bts: dm_set gap_rd_local_version_req_hdl 186
+
+[102608] D/bt_common bts: dm_release gap_rd_local_version_req_hdl 193
+
+[102637] D/bt_common bts: svc_release gap_rfc_reg_cfm_hdl 2726
+
+[102663] D/bt_common bts: [spp_debug]inited_channel_num = 4,srv_chnl = 5
+
+[102693] D/bt_common bts: svc_set gap_rfc_reg_req_msg_send 2622
+
+[102737] D/bt_common bts: svc_release gap_rfc_reg_cfm_hdl 2726
+
+[102763] D/bt_common bts: [spp_debug]inited_channel_num = 5,srv_chnl = 6
+
+[102791] D/bt_common bts: svc_set gap_rfc_reg_req_msg_send 2622
+
+[102826] D/bt_common bts: svc_release gap_rfc_reg_cfm_hdl 2726
+
+[102852] D/bt_common bts: [spp_debug]inited_channel_num = 6,srv_chnl = 7
+
+[102880] D/bt_common bts: svc_set gap_rfc_reg_req_msg_send 2622
+
+[102924] D/bt_common bts: svc_release gap_rfc_reg_cfm_hdl 2726
+
+[102950] D/bt_common bts: [spp_debug]inited_channel_num = 7,srv_chnl = 8
+
+[102978] D/bt_common bts: svc_set gap_rfc_reg_req_msg_send 2622
+
+[103013] D/bt_common bts: svc_release gap_rfc_reg_cfm_hdl 2726
+
+[103039] D/bt_common bts: [spp_debug]inited_channel_num = 8,srv_chnl = 9
+
+[103067] D/bt_common bts: svc_set gap_rfc_reg_req_msg_send 2622
+
+[103110] D/bt_common bts: svc_release gap_rfc_reg_cfm_hdl 2726
+
+[103137] D/bt_common bts: hfp state change new_sate 0x 1,old_state 0x 0
+
+[103166] D/bt_common bts: svc_set gap_rfc_reg_req_msg_send 2622
+
+[103201] D/bt_common bts: svc_release gap_rfc_reg_cfm_hdl 2726
+
+[103227] D/bt_common bts: hfp_ag_sds_reg_cfm srv_chnl 11
+
+[103250] D/bt_common bts: AG state change new_sate 0x 1,old_state 0x 0
+
+[103278] D/bt_common bts: svc_set gap_l2c_reg_req_msg_send 774
+
+[103313] D/bt_common bts: svc_release gap_l2c_reg_cfm_hdl 852
+
+[103340] D/bt_common bts: svc_set gap_l2c_reg_req_msg_send 774
+
+[103374] D/bt_common bts: svc_release gap_l2c_reg_cfm_hdl 852
+
+[103400] D/bt_common bts: svc_set gap_l2c_reg_req_msg_send 774
+
+[103433] D/bt_common bts: svc_release gap_l2c_reg_cfm_hdl 852
+
+[103459] D/bt_common bts: svc_set gap_l2c_reg_req_msg_send 774
+
+[103493] D/bt_common bts: svc_release gap_l2c_reg_cfm_hdl 852
+
+[103518] D/bt_common bts: hid_gap_l2ca_reg_cfm
+
+
+[103539] D/bt_common bts: svc_set gap_l2c_reg_req_msg_send 774
+
+[103573] D/bt_common bts: svc_release gap_l2c_reg_cfm_hdl 852
+
+[103598] D/bt_common bts: hid_gap_l2ca_reg_cfm
+
+
+[103618] D/bt_common bts: svc_set gap_l2c_reg_req_msg_send 774
+
+[103652] D/bt_common bts: svc_release gap_l2c_reg_cfm_hdl 852
+
+[103678] D/bt_common bts: svc_set gap_rfc_reg_req_msg_send 2622
+
+[103721] D/bt_common bts: svc_release gap_rfc_reg_cfm_hdl 2726
+
+[103748] D/bt_common bts: svc_set gap_sds_reg_req_hdl 2007
+
+[103778] D/bt_common bts: svc_release gap_sds_reg_cfm_hdl 2082
+
+[103806] D/bt_common bts: svc_release gap_app_init_req_hdl 76
+
+[103837] I/btapp_pan bts: >> PAN enable
+
+
+[103854] I/btapp_pan bts: >> PAN register successful
+
+
+[103877] D/bt_common bts: hid_enb_req
+
+
+[103904] D/bt_common bts: hid_enb_req_hdl
+
+
+[103927] D/bt_common bts: hid_enb_req_hdl,rec_byte_num = 341
+
+
+[103957] D/bt_common bts: dm_set gap_set_local_name_req_hdl 3774
+
+[103989] D/bt_common bts: svc_set gap_sds_reg_req_hdl 2007
+
+[104022] D/bt_common bts: svc_release gap_sds_reg_cfm_hdl 2082
+
+[104054] D/bt_common bts: hid_gap_sds_reg_cfm
+
+
+[104098] D/bt_common bts: hid_hid_enb_cfm
+
+
+[104118] I/btsapp_hid bts: >> HID enabled
+
+
+[104135] D/btsapp_hid bts: >> URC hid open
+
+
+[104163] D/bt_common bts: svc_set gap_bnep_reg_req_msg_send 88
+
+[104189] D/bt_common bts: svc_release gap_bnep_reg_req_msg_send 97
+
+[104222] I/btapp_ge bts: << Write eir data success!
+
+
+[104245] D/bt_common bts: svc_set gap_sds_reg_req_hdl 2007
+
+[104272] D/bt_common bts: svc_release gap_sds_reg_cfm_hdl 2082
+
+[104300] D/bt_common bts: svc_set gap_l2c_conn_acpt_req_hdl 2345
+
+[104326] D/bt_common bts: svc_release gap_l2c_profile_st_change_setting_ext 12492
+
+[104358] D/bt_common bts: dm_release gap_l2c_profile_st_change_setting_ext 12493
+
+[104396] D/bt_common bts: svc_set gap_l2c_conn_acpt_req_hdl 2345
+
+[104427] D/bt_common bts: svc_release gap_l2c_profile_st_change_setting_ext 12492
+
+[104459] D/bt_common bts: dm_release gap_l2c_profile_st_change_setting_ext 12493
+
+[104495] D/bt_common bts: dm_set gap_wr_cod_req 7974
+
+[104521] D/bt_common bts: svc_set gap_bnep_conn_acpt_req_hdl 1016
+
+[104550] D/bt_common bts: dm_set gap_rd_local_version_req_hdl 186
+
+[104576] D/bt_common bts: dm_release gap_rd_local_version_req_hdl 193
+
+[104604] I/btapp_ge bts: << Local LMP version: 12
+
+
+[104625] I/btapp_ge bts: << Local LMP subversion: 591
+
+
+[104647] I/btapp_ge bts: << Local controller manufacturer name id: 2636
+
+
+[104676] D/bt_common bts: dm_release dm_hci_change_local_name_comp 3823
+
+[104710] I/btapp_ge bts: << Local device name changed!
+
+
+[104739] D/bt_common bts: svc_release gap_bnep_conn_acpt_cfm_msg_send 815
+
+[104768] D/bt_common bts: dm_release gap_bnep_profile_st_change_setting_ext 12553
+
+[104803] I/btapp_pan bts: >> PAN enable success
+
+
+[104824] D/bt_common bts: dm_release gap_sm_reg_req_hdl 649
+
+[104851] D/bt_common bts: dm_release gap_sm_reg_req_hdl 649
+
+[104878] D/bt_common bts: dm_set gap_rd_local_name_req_hdl 4713
+
+[104907] D/bt_common bts: dm_release gap_wr_dev_cls_comp_hdl 8041
+
+[104935] I/btapp_ge bts: << Class of device has been changed!
+
+
+[104961] D/bt_common bts: dm_release gap_sm_reg_req_hdl 649
+
+[104987] D/bt_common bts: svc_set gap_bnep_conn_acpt_req_hdl 1016
+
+[105016] D/bt_common bts: dm_set gap_rd_cod_req 8075
+
+[105039] D/bt_common bts: svc_release gap_bnep_conn_acpt_cfm_msg_send 815
+
+[105071] D/bt_common bts: dm_release gap_bnep_profile_st_change_setting_ext 12553
+
+[105122] D/bt_common bts: dm_release gap_rd_local_name_comp_hdl 4685
+
+[105151] I/NO_TAG bts: BTS2MU_GAP_RD_LOCAL_NAME_CFM
+
+[105172] I/btcomm bts: Clear mask 2
+
+[105187] I/btapp_ge bts: << Local device name: SifliDemo-eb-f-80-52-fd-5c
+
+
+[105216] I/btapp_ge bts: service state 1
+
+[105233] I/btapp_ge bts: bt stack ready
+
+
+[105250] D/bt_common bts: dm_set gap_wr_scan_enb_req_hdl 8731
+
+[105344] D/bt_common bts: dm_release gap_rd_dev_cls_comp_hdl 8108
+
+[105373] I/btapp_ge bts: << Class of device: 0x65020300
+
+
+[105464] D/bt_common bts: dm_release gap_send_wr_scan_enb_comp_to_app 8657
+
+[105496] D/bt_common bts: dm_release gap_wr_scan_enb_gap_comp_hdl 8563
+
+[105527] I/btapp_ge bts: << Write scan enable success
+
+
+[105550] D/bt_common bts: dm_set gap_rd_scan_enb_req_hdl 8768
+
+[105597] D/bt_common bts: dm_release gap_rd_scan_enb_comp_hdl 8689
+
+[105626] I/btapp_ge bts: << Scan mode: 3
+
+
+[105646] I/btapp_ge bts: <<            Inquiry scan enbd.
+<<            Page scan enbd.
+
+
+[lab:pan:event] type=0 id=7 len=6
+[lab:pan:event] type=0 id=24 len=1
+[lab:pan:event] type=0 id=0 len=0
+[105876] I/btapp_intf lab_pan: bt_interface_set_scan_mode target_scan_mode:0 scan_mode:3 fsm:0 0
+
+
+[105918] D/bt_common bts: dm_set gap_wr_scan_enb_req_hdl 8731
+
+[105965] I/btapp_intf lab_pan: set name 	SiFli-Lab-800FEB �
+�
+x" (" ��
+
+
+[106006] D/bt_common bts: dm_release gap_send_wr_scan_enb_comp_to_app 8657
+
+[106037] D/bt_common bts: dm_release gap_wr_scan_enb_gap_comp_hdl 8563
+
+[106066] I/btapp_ge bts: << Write scan enable success
+
+
+[106088] D/bt_common bts: dm_set gap_set_local_name_req_hdl 3774
+
+[106137] D/bt_common bts: dm_set gap_rd_scan_enb_req_hdl 8768
+
+[lab:pan:identity] MAC=5C:FD:52:80:0F:EB name=SiFli-Lab-800FEB
+[lab:pan] Ready. Enable phone hotspot / Bluetooth tethering first
+[106230] D/bt_common bts: dm_release dm_hci_change_local_name_comp 3823
+
+[106266] I/btapp_ge bts: << Local device name changed!
+
+
+[106292] D/bt_common bts: dm_set gap_rd_local_name_req_hdl 4713
+
+[106321] D/bt_common bts: dm_release gap_rd_scan_enb_comp_hdl 8689
+
+[106347] I/btapp_ge bts: << Scan mode: 0
+
+
+[106365] I/btapp_ge bts: <<            No scans enbd.
+
+
+[lab:pan:event] type=0 id=22 len=1
+[lab:pan:scan] mode=3 (3=discoverable+connectable)
+[106444] I/btapp_ge bts: << Write eir data success!
+
+
+[lab:pan:event] type=0 id=22 len=1
+[106518] D/bt_common bts: dm_release gap_rd_local_name_comp_hdl 4685
+
+[106548] I/NO_TAG bts: BTS2MU_GAP_RD_LOCAL_NAME_CFM
+
+[106568] I/btcomm bts: Clear mask 2
+
+[106583] I/btapp_ge bts: << Local device name: SiFli-Lab-800FEB
+
+
+[106608] I/btapp_ge bts: service state 2
+
+[106625] D/bt_common bts: dm_set gap_wr_scan_enb_req_hdl 8731
+
+[lab:pan:scan] mode=0 (3=discoverable+connectable)
+[lab:pan:event] type=0 id=24 len=1
+[106709] D/bt_common bts: dm_release gap_send_wr_scan_enb_comp_to_app 8657
+
+[106739] D/bt_common bts: dm_release gap_wr_scan_enb_gap_comp_hdl 8563
+
+[106769] I/btapp_ge bts: << Write scan enable success
+
+
+[106792] D/bt_common bts: dm_set gap_rd_scan_enb_req_hdl 8768
+
+[106834] D/bt_common bts: dm_release gap_rd_scan_enb_comp_hdl 8689
+
+[106861] I/btapp_ge bts: << Scan mode: 3
+
+
+[106879] I/btapp_ge bts: <<            Inquiry scan enbd.
+<<            Page scan enbd.
+
+
+[lab:pan:event] type=0 id=22 len=1
+[lab:pan:scan] mode=3 (3=discoverable+connectable)

@@ -1,0 +1,12 @@
+{
+  "received_date": "2026-10-31",
+  "capture_run_time": "not provided",
+  "source_commit_context": "00f9e0e108bea16b5c55a8e5bb6f9e0793e41cfa (session context; log has no firmware commit/hash banner)",
+  "photo_sha256": "a105ed905381a04a802ac1a89282b32f3a5b9eed21d364f9d41915a4047d2d0d",
+  "pasted_log_sha256": "d1412740afe9e743b45b24364b8854bbc5830a126a42c6098943c0aca0824f0b",
+  "model_cases": 24,
+  "model_failures": 0,
+  "map_cases": 4,
+  "map_failures": 0,
+  "back_result": "User explicitly confirmed BACK returns to Peripheral Lab in this chat."
+}

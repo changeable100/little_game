@@ -1,15 +1,14 @@
 /*
- * main.c — 程序入口：初始化外设测试与蓝牙服务，在主线程中驱动 LVGL 界面。
+ * main.c — B独立菜单与A输入运行时共用UI线程；串口诊断验证真实输入。
  */
 #include "lab.h"
-#include "lab_ble.h"
-#include "lab_pan.h"
 #include "lvgl.h"
 #include "littlevgl2rtt.h"
 #include "maze_levels_selftest.h"
 #include "maze_selftest.h"
 #include "maze_controller_selftest.h"
 #include "maze_runtime.h"
+#include "maze_menu.h"
 
 static void maze_adapter_test_report(const char *name, bool passed)
 {
@@ -54,10 +53,13 @@ int main(void)
         rt_kprintf("Peripheral Lab: initialization failed\n");
         return -1;
     }
-    /* 先注册经典蓝牙事件接收，再由 BLE 任务统一启用共享协议栈。 */
-    if (lab_pan_init() != RT_EOK) rt_kprintf("PAN initialization failed\n");
-    if (lab_ble_init() != RT_EOK) rt_kprintf("Peripheral Lab: BLE initialization failed\n");
-    lab_ui_create();
+    /* Internal lab_io is needed by A's sampler; the product entry is B's menu. */
+    int ui_result = maze_menu_create();
+    if (ui_result != MAZE_UI_SUCCESS) {
+        rt_kprintf("[maze] menu initialization failed: %d\n", ui_result);
+        return -1;
+    }
+    rt_kprintf("[maze:app] AB merge 2026-11-06; standalone preview + motion diagnostics\n");
     if (maze_runtime_init(maze_tests_ok) != MAZE_OK)
         rt_kprintf("[maze] runtime disabled: initialization or self-test failure\n");
     while (1) {

@@ -1,0 +1,9 @@
+Command: arm-none-eabi-nm --defined-only project/build_sf32lb52-lchspi-ulp_hcpu/main.elf
+maze_menu_create: PRESENT
+maze_selftest_run: PRESENT
+maze_levels_selftest_run: PRESENT
+lab_ui_create: ABSENT
+lab_init: ABSENT
+lab_ble_init: ABSENT
+lab_pan_init: ABSENT
+A five files and build/config files unchanged PASS

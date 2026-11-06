@@ -1,3 +1,5 @@
+> 当前默认启动已改为体感迷宫独立游戏UI：游戏首页 → 迷宫 / 玩法说明。Peripheral Lab测试页面与其任务不再作为开机流程。独立UI说明见 [maze-standalone-ui](docs/maze-standalone-ui.md)；下方Lab文档保留为历史排障资料。当前运动控制仍未接入，界面明确标注PREVIEW。
+
 # Peripheral Lab · 黄山派外设验证台
 
 ## 体感迷宫集成（2026-10-31）

@@ -1,0 +1,10 @@
+{
+  "received_date": "2026-10-31",
+  "capture_time": "not provided",
+  "source_commit_by_session_context": "e42af465ce9486d02f5e06be05f35dd2b73c79ef",
+  "independent_firmware_version_attestation": "not present in photograph",
+  "sha256": "bcc0a14a23d12c41c63ea563e992b1ed80e189bdb92869925401dfbf30435a25",
+  "user_confirmation": "现在可以了",
+  "observation": "MAZE, READY/0s, full map, start ball, goal G, PREVIEW banner and all four button labels visible",
+  "result": "TC-201 physical static visual layout PASS; no new serial log, dynamic/IMU/heap result or explicit repeated BACK report supplied"
+}

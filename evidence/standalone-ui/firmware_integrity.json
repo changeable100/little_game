@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-31",
+  "physical_validation": "pending; old Lab-entry evidence retained separately",
+  "artifacts": [
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/main.bin",
+      "bytes": 905548,
+      "sha256": "daad268ba1367c3dbf42a128e2cd9722e34ecb7a178b914153a0b3c53e4a36e5"
+    },
+    {
+      "path": "src/main.c",
+      "bytes": 2035,
+      "sha256": "ee909ab5ca40cd3fb9cb4b543b5bd32ec60fdc3ced737a3705b114882aeb70a1"
+    },
+    {
+      "path": "src/maze_menu.c",
+      "bytes": 6143,
+      "sha256": "af112dce00f2d2160149c205d1807c368dd403bbac543cb8576071a02166f30b"
+    },
+    {
+      "path": "src/maze_menu.h",
+      "bytes": 424,
+      "sha256": "236d00e6afee0320971e73bb83488103c78f5f5f305eccc63f397402605c5155"
+    },
+    {
+      "path": "src/maze_ui.h",
+      "bytes": 1703,
+      "sha256": "2130bf17b904860c13160c784de94fd5882fe47b136413c66574216367c7c6c9"
+    }
+  ]
+}
