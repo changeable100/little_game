@@ -12,6 +12,7 @@
 static uint32_t clock_ms, worker_session;
 static bool busy, stop_requested;
 static unsigned starts, stops, wrong_stops, timers, draws;
+static unsigned truncated_logs, complete_input_logs;
 static rt_thread_t current_thread=(void *)1;
 static lv_timer_t ui_timer;
 static lab_motion_t motion;
@@ -23,7 +24,14 @@ uint32_t rt_tick_get_millisecond(void) { return clock_ms; }
 int rt_kprintf(const char *format, ...)
 {
     int result;
-    va_list args; va_start(args,format); result=vprintf(format,args); va_end(args);
+    char output[128];
+    va_list args;
+    va_start(args,format);
+    result=vsnprintf(output,sizeof(output)-1,format,args);
+    va_end(args);
+    if (result >= (int)sizeof(output)-1) ++truncated_logs;
+    if (strstr(output,"tilt_milli=") && strstr(output,"pos_milli=")) ++complete_input_logs;
+    fputs(output,stdout);
     return result;
 }
 rt_err_t rt_mq_init(struct rt_messagequeue *q, const char *name, void *pool,
@@ -153,6 +161,8 @@ int main(void)
         CHECK(queue->count==0);
     }
     CHECK(timers==1 && starts==2 && stops==2);
+    CHECK(truncated_logs==0 && complete_input_logs>0);
+    printf("TC-406 board-console-no-truncation PASS\n");
     printf("TC-406 shell-bounded-ui-queue PASS\nsummary PASS failures=0\n");
     return 0;
 }

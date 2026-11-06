@@ -1,3 +1,11 @@
+# 2026-11-06轴向与日志修复版
+
+学生确认实际倾斜顺序为右、左、上、下；结合原始读数，屏幕映射改为x=ay/y=ax，均不反号。偏置仍按传感器ax/ay记录，tilt_milli按屏幕x/y输出。诊断拆为[maze:diag]状态/时间、[maze:imu]原始加速度/年龄、[maze:gyro]角速度、[maze:input]偏置/归一化/球位置四条短行，用run/seq关联，不改变500ms报告周期。
+
+请重新烧录本目录最新uart_download.bat生成的完整镜像，平放后maze_diag start，按右/左/上/下倾斜并回平。右应tilt_x正、左负、上tilt_y负、下正；保存包括四种短行的原文，再做暂停/继续/重开/返回。原合并版固件指纹见旧firmware.json，只描述修复前版本；修复版新指纹保存在board-run01/fix_software/firmware.json。新固件未经上板，不把旧读数当成修复后PASS。
+
+---
+
 # A 第二阶段：IMU 联调与 B 接入
 
 2026-10-31。负责人王若豪，分支`codex/maze-a-stage2`，基于共同分支`feat/maze-integration`的943e762。

@@ -1,0 +1,23 @@
+{
+  "base_commit": "29475fc",
+  "uncommitted_at_build": true,
+  "physical_verified": false,
+  "mapping": "screen_x=sensor_ay; screen_y=sensor_ax",
+  "artifacts": [
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/main.bin",
+      "bytes": 1087864,
+      "sha256": "597cff5b8153808c6800786bc1266ebe0ba22cb3564c0bcf81ec8d2c743d06cd"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/bootloader/bootloader.bin",
+      "bytes": 58496,
+      "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/ftab/ftab.bin",
+      "bytes": 11288,
+      "sha256": "c62588c24c75ff99c5f06fb4bdac68ef0206fea10becc92b8541ed4bd6a006a5"
+    }
+  ]
+}

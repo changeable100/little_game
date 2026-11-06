@@ -143,11 +143,18 @@ static void report(uint32_t now)
     if (now - last_report < 500) return;
     last_report = now;
     /* Fixed point output works even if rt_kprintf has no float support. */
-    rt_kprintf("[maze:diag] run=%u rev=%u state=%d error=%d elapsed=%u cal=%u seq=%u age=%u a_mg=%d,%d,%d g_mdps=%d,%d,%d bias_mg=%d,%d tilt_milli=%d,%d pos_milli=%d,%d\n",
+    /* RT_CONSOLEBUF_SIZE is 128 on this board. Each call must fit, including
+     * its newline. run/seq associate the short records without a large buffer. */
+    rt_kprintf("[maze:diag] run=%u rev=%u state=%d error=%d elapsed=%u cal=%u\n",
         s->run_id, s->revision, s->state, s->error_code, s->elapsed_ms,
-        controller.calibration_count, latest.sequence, now-latest.sampled_ms,
-        milli(latest.a[0]), milli(latest.a[1]), milli(latest.a[2]),
-        milli(latest.g[0]), milli(latest.g[1]), milli(latest.g[2]),
+        controller.calibration_count);
+    rt_kprintf("[maze:imu] run=%u seq=%u age=%u a_mg=%d,%d,%d\n",
+        s->run_id, latest.sequence, now-latest.sampled_ms,
+        milli(latest.a[0]), milli(latest.a[1]), milli(latest.a[2]));
+    rt_kprintf("[maze:gyro] seq=%u g_mdps=%d,%d,%d\n",
+        latest.sequence, milli(latest.g[0]), milli(latest.g[1]), milli(latest.g[2]));
+    rt_kprintf("[maze:input] seq=%u bias_mg=%d,%d tilt_milli=%d,%d pos_milli=%d,%d\n",
+        latest.sequence,
         milli(controller.bias[0]), milli(controller.bias[1]),
         milli(controller.input.tilt_x), milli(controller.input.tilt_y),
         milli(s->ball_x), milli(s->ball_y));

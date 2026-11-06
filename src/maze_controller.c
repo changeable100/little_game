@@ -123,8 +123,10 @@ static maze_result_t consume(maze_controller_t *c, uint32_t now, const maze_moti
     {
         for (i = 0; i < 2; ++i)
             c->filtered[i] += 0.25f * (s->a[i] - c->bias[i] - c->filtered[i]);
-        c->input.tilt_x = normalize(c->filtered[0]);
-        c->input.tilt_y = normalize(c->filtered[1]);
+        /* Board evidence + confirmed right/left/up/down sequence:
+         * sensor ay controls screen x; sensor ax controls screen y. */
+        c->input.tilt_x = normalize(c->filtered[1]);
+        c->input.tilt_y = normalize(c->filtered[0]);
         c->input.valid = true;
     }
     for (i = 0; i < 3; ++i) c->previous[i] = s->a[i];

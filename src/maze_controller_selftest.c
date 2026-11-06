@@ -108,7 +108,8 @@ static bool axes(unsigned axis, float sign)
     for (i=33; i<=52; ++i)
     {
         maze_motion_t s = sample(&c, i, i*20);
-        s.a[axis] += sign*0.5f;
+        /* Screen x follows sensor ay; screen y follows sensor ax. */
+        s.a[1u-axis] += sign*0.5f;
         CHECK(maze_controller_tick(&c, i*20, &s) == MAZE_OK);
     }
     CHECK(axis ? c.input.tilt_y*sign>0.9f : c.input.tilt_x*sign>0.9f);
@@ -121,9 +122,9 @@ static bool deadband_filter(void)
     maze_controller_t c;
     maze_motion_t s;
     CHECK(calibrated(&c, 0));
-    s = sample(&c, 33, 660); s.a[0]+=0.02f;
+    s = sample(&c, 33, 660); s.a[1]+=0.02f;
     CHECK(maze_controller_tick(&c, 660, &s) == MAZE_OK && c.input.tilt_x == 0);
-    s = sample(&c, 34, 680); s.a[0]+=0.35f;
+    s = sample(&c, 34, 680); s.a[1]+=0.35f;
     CHECK(maze_controller_tick(&c, 680, &s) == MAZE_OK);
     CHECK(c.input.tilt_x>0 && c.input.tilt_x<0.5f);
     CHECK(c.input.tilt_y == 0);
