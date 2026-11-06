@@ -102,6 +102,16 @@ physical_verification:
     claimed'
   evidence_path: evidence/standalone-ui/physical-2026-10-31/README.md
   verified_by: 用户在本会话明确答复两个入口和返回都正常
+- item: 合并版本第四步IMU运行态和倾斜响应（部分证据）
+  required_action: 平放校准后按屏幕方向倾斜并保存实际读数
+  executed_at: 准确采集时间未提供；2026-11-06收到粘贴日志
+  evidence_path: evidence/merge-2026-11-06/board-run01/step4_original.txt
+  agent_conclusion: 95条state=2/error=0/cal=32，样本年龄18～19ms，四段原始加速度明显变化；WHO/版本和完整校准过程缺失，后半字段被128字节打印缓冲截断，屏幕方向映射待确认，不判完整第四步通过
+- item: 学生补充第四步真实动作顺序
+  required_action: 确认四段原始轴响应对应的实际屏幕方向
+  executed_at: 2026-11-06用户文字回复，未提供精确采集时间
+  evidence_path: evidence/merge-2026-11-06/board-run01/direction_confirmation.txt
+  agent_conclusion: 学生明确右左上下，对应ay正/ay负/ax负/ax正；据此确定软件映射x=ay/y=ax，不反号。修复后闭环仍待板端新日志。
 test_results:
 - test_id: A2-sdk-build
   description: A第二阶段最终SDK固件编译
@@ -233,6 +243,7 @@ known_issues:
 - 任务书引用的 D:\AGENTS.md 与 D:\作业下的 01/02/03 文档未找到；项目成员 B 姓名、学号和组别尚未提供。
 - 16×16蛇形地图和BFS已实现并通过主机自检；LVGL UI、动作适配、真实 IMU 与生产刷新调度仍未实现。
 - 2026-11-06集成：B仍为静态模拟预览；生产按钮/六态渲染未连接A运行时。内部保留lab_init供A采样，首页不恢复Lab、不启动BLE/PAN。合并版本尚待真实取证。
+- 第四步原始长日志超过板端128字节缓冲，被截断；完整输入/位置尚不可判定。用户已确认动作顺序右左上下；软件修复另行提交，未有新板端结论。
 self_review: '以下为B在2026-10-17的历史自述。2026-10-31已补齐旧28项板端截图，
 
   并在codex/maze-a-stage2完成A适配器软件和56项主机测试；新硬件证据仍待提供。
