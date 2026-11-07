@@ -14,6 +14,7 @@
 static lv_obj_t *page, *status_label, *ball;
 static lv_obj_t *tiles[MAZE_MAX_ROWS * MAZE_MAX_COLS];
 static lv_obj_t *start_mark, *goal_mark;
+static lv_obj_t *hint_label, *pause_text;
 
 static lv_obj_t *box(lv_obj_t *parent, int x, int y, int w, int h,
                      uint32_t color)
@@ -51,6 +52,7 @@ static void deleted(lv_event_t *event)
     (void)event;
     page = NULL;
     status_label = ball = start_mark = goal_mark = NULL;
+    hint_label = pause_text = NULL;
     for (unsigned i = 0; i < MAZE_MAX_ROWS * MAZE_MAX_COLS; ++i)
         tiles[i] = NULL;
 }
@@ -97,12 +99,17 @@ int maze_ui_create(maze_action_sink_t sink, void *context)
         lv_obj_t *text = label(button, names[i], 0, 0,
                                &lv_font_montserrat_12, TEXT);
         lv_obj_center(text);
+        if (i == 1) pause_text = text;
         if (i == 3) lv_obj_add_event_cb(button, back, LV_EVENT_CLICKED, NULL);
         else {
             lv_obj_add_state(button, LV_STATE_DISABLED);
             lv_obj_set_style_opa(button, LV_OPA_40, LV_STATE_DISABLED);
         }
     }
+    hint_label = label(page, "Waiting for snapshot", 35, 40,
+                        &lv_font_montserrat_12, MUTED);
+    lv_obj_set_width(hint_label, 320);
+    lv_label_set_long_mode(hint_label, LV_LABEL_LONG_CLIP);
     return MAZE_UI_SUCCESS;
 }
 
@@ -134,15 +141,34 @@ void maze_ui_render(const maze_snapshot_t *snapshot, const maze_level_t *level)
     lv_obj_add_flag(ball, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(start_mark, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(goal_mark, LV_OBJ_FLAG_HIDDEN);
-    if (!valid(snapshot, level) || snapshot->state != MAZE_READY ||
-        snapshot->error_code != MAZE_ERROR_NONE) {
-        lv_label_set_text(status_label, "INVALID / UNSUPPORTED PREVIEW");
+    lv_label_set_text(pause_text, snapshot && snapshot->state == MAZE_PAUSED ? "RESUME" : "PAUSE");
+    if (!snapshot || snapshot->state < MAZE_READY || snapshot->state > MAZE_ERROR ||
+        snapshot->input_status < MAZE_INPUT_NOT_READY || snapshot->input_status > MAZE_INPUT_FAILED ||
+        snapshot->error_code < MAZE_ERROR_NONE || snapshot->error_code > MAZE_ERROR_TIMING) {
+        lv_label_set_text(status_label, "INVALID SNAPSHOT");
+        lv_label_set_text(hint_label, "Unknown state or data; use BACK");
         for (unsigned i = 0; i < 256; ++i)
             lv_obj_set_style_bg_color(tiles[i], lv_color_hex(0x263D55), 0);
         return;
     }
-    lv_label_set_text_fmt(status_label, "READY  |  %lus",
+    static const char *states[] = {"READY", "CALIBRATING", "RUNNING", "PAUSED", "WON", "ERROR"};
+    static const char *hints[] = {"Ready to start", "Hold the board flat; calibrating",
+        "Follow the path to the gold goal", "Paused; position and time held",
+        "Goal reached; final time", "Error; use BACK"};
+    static const char *errors[] = {"No error detail; use BACK", "LEVEL ERROR: return to menu",
+        "INPUT ERROR: restart or back", "TIMING ERROR: restart or back"};
+    lv_label_set_text_fmt(status_label, "%s  |  %lus", states[snapshot->state],
                           (unsigned long)(snapshot->elapsed_ms / 1000u));
+    lv_label_set_text(hint_label, snapshot->error_code != MAZE_ERROR_NONE || snapshot->state == MAZE_ERROR
+        ? errors[snapshot->error_code] : hints[snapshot->state]);
+    if (!valid(snapshot, level)) {
+        if (snapshot->state != MAZE_ERROR) lv_label_set_text(status_label, "INVALID SNAPSHOT");
+        lv_label_set_text(hint_label, snapshot->state == MAZE_ERROR && snapshot->error_code == MAZE_ERROR_LEVEL
+            ? errors[MAZE_ERROR_LEVEL] : "Invalid map or ball; use BACK");
+        for (unsigned i = 0; i < 256; ++i)
+            lv_obj_set_style_bg_color(tiles[i], lv_color_hex(0x263D55), 0);
+        return;
+    }
     for (unsigned i = 0; i < 256; ++i)
         lv_obj_set_style_bg_color(tiles[i], lv_color_hex(
             level->cells[i] == MAZE_CELL_WALL ? 0x263D55 : 0x101B2B), 0);

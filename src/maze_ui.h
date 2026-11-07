@@ -3,7 +3,7 @@
 
 #include "maze_contract.h"
 
-/* B2-0 draft: A review and request-id adapter are pending.
+/* P0/P1: runtime request allocation exists; production UI binding is P2 work.
  * UI errors are separate from maze_result_t; never pass them to the model. */
 enum maze_ui_result {
     MAZE_UI_SUCCESS = 0,
@@ -13,15 +13,15 @@ enum maze_ui_result {
 };
 
 /* All calls belong to the LVGL/model owning thread.
- * B2-1 implements ONLY a simulated preview: sink must be NULL. Non-NULL
+ * P1 implements ONLY simulated rendering: sink must be NULL. Non-NULL
  * returns NOT_CONNECTED without creating objects or retaining context.
- * Later production integration requires A's monotonic request-id provider
- * and refreshed-snapshot delivery; sink/context must then outlive the UI.
+ * P2 will bind the existing runtime request allocator and snapshot callbacks;
+ * sink/context must then outlive the UI, with detach before object deletion.
  * No game instance, clock, input sampling or timer is owned by this module. */
 int maze_ui_create(maze_action_sink_t sink, void *context);
 
-/* B2-1 accepts a READY snapshot of a valid 16x16 level. Other states show
- * an explicit unsupported-preview message, not a simulated running game.
+/* P1 renders six states of a valid 16x16 level, with distinct error reasons.
+ * Unknown enums, invalid maps/coordinates show a safe message and hide ball.
  * Inputs are read only during this call; no caller pointers are retained.
  * Invalid data hides the ball. Repeated calls allocate no objects/timers. */
 void maze_ui_render(const maze_snapshot_t *snapshot,

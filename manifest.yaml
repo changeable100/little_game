@@ -411,3 +411,20 @@ human_checkpoints:
   student_confirmation: 用户确认采用 docs/maze-ui-proposal.md 中的16×16蛇形单通道拓扑作为首版固定关卡；先实现静态地图和BFS自检。
 - decision_point: 2026-10-31 B2-0/B2-1范围
   student_confirmation: 确认统一编号、UI草案与静态预览入口、主机预览和编译；生产按钮/动态状态/IMU后续联评。
+
+b_stage3_render:
+  date: "2026-11-07"
+  baseline: "cfa87d01a4f5c7e560ed3314469a06c5847ef1fb"
+  branch: "codex/maze-ui-stage3-render"
+  scope: "P0/P1 only; user confirmed first batch"
+  review: "docs/maze-stage3-render-review.md; B interface review, A signoff still pending"
+  changed_sources: "src/maze_ui.c/.h, tests/maze_ui_test.c"
+  host: "PASS: six synthetic states/errors/time/bounds; 20 lifecycle cycles; 2000 six-state renders; objects/timers return to baseline"
+  regression: "PASS: existing 58 production logic/runtime-boundary cases; transport fakes remain host-only"
+  firmware: "SDK v2.5.1 GCC14.2.1 PASS; main.bin 1089824 bytes; RWX/newlib/entry/DFU warnings retained"
+  evidence: "evidence/M3/ui-render-2026-11-07/README.md"
+  fingerprint: "evidence/M3/ui-render-2026-11-07/firmware.json"
+  course_checks: "Trace PASS; 8 historical attribution findings, 14-day historical gap FAIL; 4 manifest missing fields WARN; original checker unchanged"
+  physical: "Not executed for this batch; six screenshots are synthetic host previews, physical_verification unchanged"
+  pending: "A review; P2 production attach/actions/reread; P3 detach/lifecycle; P4 actual screen/IMU/buttons/WON/resource evidence"
+  submission: "Student read and approved both drafts; two local commits; no push in this batch"

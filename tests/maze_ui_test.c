@@ -128,7 +128,12 @@ int main(void)
         }
         assert(text(top, "READY  |  0s"));
         unsigned count = objects(top);
-        for (unsigned i = 0; i < 100; ++i) maze_ui_render(&s, level);
+        for (unsigned i = 0; i < 100; ++i) {
+            maze_snapshot_t repeated = s;
+            repeated.state = (maze_state_t)(i % 6);
+            maze_ui_render(&repeated, level);
+        }
+        maze_ui_render(&s, level);
         assert(objects(top) == count && timers() == clock_count);
         lv_obj_update_layout(top);
         lv_obj_t *page = lv_obj_get_child(top, -1);
@@ -153,7 +158,7 @@ int main(void)
         lv_tick_inc(2000); lv_timer_handler();
         assert(text(top, "READY  |  0s"));
         maze_ui_render(NULL, level);
-        assert(text(top, "INVALID / UNSUPPORTED PREVIEW"));
+        assert(text(top, "INVALID SNAPSHOT"));
         assert(lv_obj_has_flag(ball, LV_OBJ_FLAG_HIDDEN));
         maze_ui_render(&s, NULL);
         maze_snapshot_t bad = s; bad.ball_x = NAN;
@@ -165,7 +170,7 @@ int main(void)
         bad = s; bad.ball_x = 16.0f;
         maze_ui_render(&bad, level);
         assert(lv_obj_has_flag(ball, LV_OBJ_FLAG_HIDDEN));
-        bad = s; bad.state = MAZE_RUNNING;
+        bad = s; bad.state = (maze_state_t)99;
         maze_ui_render(&bad, level);
         assert(lv_obj_has_flag(ball, LV_OBJ_FLAG_HIDDEN));
         maze_level_t invalid = *level; invalid.cell_count--;
@@ -178,10 +183,71 @@ int main(void)
         maze_ui_render(&s, level);
         assert(objects(top) == base && timers() == clock_count);
     }
+    assert(maze_ui_create(NULL, NULL) == MAZE_UI_SUCCESS);
+    const char *states[] = {"READY", "CALIBRATING", "RUNNING", "PAUSED", "WON", "ERROR"};
+    unsigned six_count = objects(top);
+    for (unsigned state = 0; state < 6; ++state) {
+        maze_snapshot_t frame = s;
+        frame.state = (maze_state_t)state;
+        frame.input_status = state < 2 ? MAZE_INPUT_NOT_READY : MAZE_INPUT_VALID;
+        frame.elapsed_ms = state < 2 ? 20 : 12345;
+        frame.ball_x = state < 2 ? 1.5f : (state == MAZE_WON ? 14.5f : 4.5f);
+        frame.ball_y = state == MAZE_WON ? 13.5f : 1.5f;
+        frame.error_code = state == MAZE_ERROR ? MAZE_ERROR_INPUT : MAZE_ERROR_NONE;
+        maze_ui_render(&frame, level);
+        char expected[80], filename[80];
+        snprintf(expected, sizeof(expected), "%s  |  %lus", states[state], (unsigned long)(frame.elapsed_ms / 1000));
+        assert(text(top, expected));
+        assert(text(top, state == MAZE_PAUSED ? "RESUME" : "PAUSE"));
+        if (state == MAZE_ERROR) assert(text(top, "INPUT ERROR: restart or back"));
+        lv_obj_update_layout(top);
+        lv_obj_t *b = lv_obj_get_child(lv_obj_get_child(top, -1), 260);
+        assert(lv_obj_get_x(b) == 35 + (int)(frame.ball_x * 20) - 4);
+        assert(lv_obj_get_y(b) == 61 + (int)(frame.ball_y * 20) - 4);
+        assert(!lv_obj_has_flag(b, LV_OBJ_FLAG_HIDDEN));
+        snprintf(filename, sizeof(filename), "state-%s.ppm", states[state]);
+        screenshot(filename);
+        /* Same revision, borrowed stack value mutated after render. No UI clock. */
+        frame.elapsed_ms = 99000;
+        lv_tick_inc(3000); lv_timer_handler();
+        assert(text(top, expected));
+        assert(objects(top) == six_count && timers() == clock_count);
+    }
+    maze_snapshot_t extreme = s;
+    extreme.state = MAZE_RUNNING; extreme.elapsed_ms = UINT32_MAX;
+    maze_ui_render(&extreme, level);
+    assert(text(top, "RUNNING  |  4294967s"));
+    const char *causes[] = {"No error detail; use BACK", "LEVEL ERROR: return to menu",
+                            "INPUT ERROR: restart or back", "TIMING ERROR: restart or back"};
+    for (unsigned cause = 0; cause < 4; ++cause) {
+        extreme = s; extreme.state = MAZE_ERROR; extreme.error_code = (maze_error_t)cause;
+        maze_ui_render(&extreme, cause == MAZE_ERROR_LEVEL ? NULL : level);
+        assert(text(top, causes[cause]));
+    }
+    extreme = s; extreme.state = (maze_state_t)-1;
+    maze_ui_render(&extreme, level); assert(text(top, "INVALID SNAPSHOT"));
+    extreme = s; extreme.input_status = (maze_input_status_t)99;
+    maze_ui_render(&extreme, level); assert(text(top, "INVALID SNAPSHOT"));
+    extreme = s; extreme.error_code = (maze_error_t)99;
+    maze_ui_render(&extreme, level); assert(text(top, "INVALID SNAPSHOT"));
+    extreme = s; extreme.ball_radius = INFINITY;
+    maze_ui_render(&extreme, level); assert(text(top, "INVALID SNAPSHOT"));
+    uint8_t malformed[256]; memcpy(malformed, level->cells, sizeof(malformed));
+    maze_level_t invalid_level = *level; invalid_level.cells = malformed;
+    malformed[5] = 99;
+    maze_ui_render(&s, &invalid_level); assert(text(top, "INVALID SNAPSHOT"));
+    maze_ui_render(&s, level);
+    screenshot("state-recovered.ppm");
+    assert(text(top, "READY  |  0s"));
+    maze_ui_destroy();
+    assert(objects(top) == base && timers() == clock_count);
+    maze_ui_preview_open(); /* New instance with initial revision must render. */
+    assert(text(top, "READY  |  0s")); maze_ui_destroy();
+    puts("TC-201/203/206 six simulated states, error reasons, enums, UINT32 time, borrowed input, recovery PASS");
     assert(sink_calls == 0);
     puts("TC-201 host layout PASS; screenshot maze-preview.ppm");
     puts("TC-202/210 preview disabled controls PASS; production actions NOT TESTED");
-    puts("TC-203 fixed READY/time PASS; dynamic states NOT TESTED");
+    puts("TC-203 six synthetic states/time PASS; production runtime UI binding NOT TESTED");
     puts("TC-205/209 20 cycles, 2000 renders, object/timer baseline PASS; physical heap NOT TESTED");
     puts("TC-206 static invalid inputs PASS; stale/dynamic coverage NOT TESTED");
     return 0;

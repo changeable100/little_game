@@ -1,0 +1,37 @@
+{
+  "baseline": "cfa87d01a4f5c7e560ed3314469a06c5847ef1fb",
+  "branch": "codex/maze-ui-stage3-render",
+  "stage": "P0/P1 simulated six-state rendering; P2/P3 not integrated",
+  "artifacts": [
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/main.bin",
+      "bytes": 1089824,
+      "sha256": "153ef0e325cf74dc76931bbe81d14aa9271f6b4b6b1d3912d67f514858bfaa04"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/bootloader/bootloader.bin",
+      "bytes": 58496,
+      "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/ftab/ftab.bin",
+      "bytes": 11288,
+      "sha256": "570159e6049b7ae4607815fbbd2d97025e4a3d2e5ec32a625bd20625331b16c5"
+    },
+    {
+      "path": "src/maze_ui.c",
+      "bytes": 9248,
+      "sha256": "7e5abfe1f01a5f8cb92dbf98cb6963881f130aee44378160f02829d60c0d0c90"
+    },
+    {
+      "path": "src/maze_ui.h",
+      "bytes": 1734,
+      "sha256": "eeebc990df18162e0a8abbd21e40a0645994ef052324ed47c29f8f229a37c83f"
+    },
+    {
+      "path": "tests/maze_ui_test.c",
+      "bytes": 12697,
+      "sha256": "fb948efa6f94fdd502b36da96bee4a8b63cbd3d9e7ade6c27e66c0ed749e2366"
+    }
+  ]
+}

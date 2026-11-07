@@ -1,0 +1,2 @@
+Compared with cfa87d01a4f5c7e560ed3314469a06c5847ef1fb: A main/runtime/controller/motion/contract/model, menu and build/config unchanged PASS
+Physical verification not added; this batch uses synthetic UI inputs only.
