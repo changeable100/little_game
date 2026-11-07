@@ -14,6 +14,7 @@ static rt_thread_t owner;
 static maze_render_t renderer;
 static void *render_context;
 static bool initialized, sampling, stopping, suspended, diagnostics;
+static maze_runtime_init_status_t init_status = MAZE_RUNTIME_NOT_INITIALIZED;
 static uint32_t sampling_run, last_report, last_revision;
 static lab_motion_t latest;
 static struct rt_messagequeue commands;
@@ -207,18 +208,53 @@ static void tick(lv_timer_t *unused)
     if (diagnostics) report(now);
 }
 
+maze_runtime_init_status_t maze_runtime_init_status(void)
+{
+    return init_status;
+}
+
+maze_result_t maze_runtime_cancel_startup(void)
+{
+    if (!is_owner() || renderer || sampling || stopping ||
+        controller.game.snapshot.run_id != 0) return MAZE_WRONG_STATE;
+    initialized = false;
+    lv_timer_delete(timer);
+    timer = NULL;
+    rt_mq_detach(&commands);
+    owner = NULL;
+    init_status = MAZE_RUNTIME_NOT_INITIALIZED;
+    return MAZE_OK;
+}
+
 maze_result_t maze_runtime_init(bool selftests_passed)
 {
     if (initialized) return MAZE_WRONG_STATE;
-    if (!selftests_passed) return MAZE_WRONG_STATE;
+    if (!selftests_passed)
+    {
+        init_status = MAZE_RUNTIME_SELFTEST_FAILED;
+        return MAZE_WRONG_STATE;
+    }
     if (maze_controller_init(&controller, maze_levels_default(), now_ms()) != MAZE_OK)
+    {
+        init_status = MAZE_RUNTIME_LEVEL_FAILED;
         return MAZE_INVALID;
+    }
     if (rt_mq_init(&commands, "maze_cmd", command_pool, sizeof(uint32_t),
-                   sizeof(command_pool), RT_IPC_FLAG_FIFO) != RT_EOK) return MAZE_INVALID;
-    owner = rt_thread_self();
+                   sizeof(command_pool), RT_IPC_FLAG_FIFO) != RT_EOK)
+    {
+        init_status = MAZE_RUNTIME_QUEUE_FAILED;
+        return MAZE_INVALID;
+    }
     timer = lv_timer_create(tick, 20, NULL);
-    if (!timer) { rt_mq_detach(&commands); return MAZE_INVALID; }
+    if (!timer)
+    {
+        rt_mq_detach(&commands);
+        init_status = MAZE_RUNTIME_TIMER_FAILED;
+        return MAZE_INVALID;
+    }
+    owner = rt_thread_self();
     initialized = true;
+    init_status = MAZE_RUNTIME_READY;
     return MAZE_OK;
 }
 

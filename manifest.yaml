@@ -333,7 +333,14 @@ test_results:
   actual: PASS；暂停259140不变，继续259560到271180；restart新run2/state1到2/cal32/elapsed0；back run3/state0，stopped result0/settings_saved1。寄存器恢复仅验证调用结果，不代表资源复用/UI验收
   pass: true
   evidence_path: evidence/merge-2026-11-06/board-run08/analysis.md
+- test_id: TC-408-host-startup
+  description: A启动状态、资源失败清理及生产main入口顺序
+  expected: runtime先于菜单；失败拒绝业务API，已建资源正确回收，重试只一个timer，READY不被重复init覆盖
+  actual: PASS；69项主机回归（含11组新增启动/main测试）及SDK编译成功；真实新启动/首页未验证
+  pass: true
+  evidence_path: evidence/M2/maze_adapter/host_2026-11-07_220226.txt
 known_issues:
+- REQ-408软件已提供只读启动状态及启动失败清理，69项主机和SDK编译通过；新板端启动待日志/首页证据，B生产入口禁用/提示仍须按状态接口接入。不得把READY启动状态当校准完成。
 - 最新run08第五步四项状态/计时/采样停止子验证通过，不再等待该组日志；独立固件哈希、精确操作时刻及退出后其他外设资源复用未提供，B动态UI与整机通关仍待接入验证。旧待验证条目保留为历史。
 - 2026-11-07最新run07四向主输入与模型响应按本轮动作上下文通过，解除当前轴向复核阻塞；此前run04/05失败和冲突原因未知的记录保留为历史。暂停/继续/重开/返回完整第五步仍待证据，UI仍为静态预览。
 - run06按上沿压低回复上下文观察到纵向负号正确；当前只修正横向x=+ay，保留y=-ax。run04横向动作标签冲突原因仍未知，完整四向与第五步待新固件证据。

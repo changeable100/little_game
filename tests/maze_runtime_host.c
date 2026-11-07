@@ -13,6 +13,8 @@ static uint32_t clock_ms, worker_session;
 static bool busy, stop_requested;
 static unsigned starts, stops, wrong_stops, timers, draws;
 static unsigned truncated_logs, complete_input_logs;
+static bool fail_queue, fail_timer;
+static unsigned queue_inits, queue_detaches, timer_attempts;
 static rt_thread_t current_thread=(void *)1;
 static lv_timer_t ui_timer;
 static lab_motion_t motion;
@@ -38,9 +40,11 @@ rt_err_t rt_mq_init(struct rt_messagequeue *q, const char *name, void *pool,
                     size_t size, size_t pool_size, unsigned flag)
 {
     (void)name; (void)pool; (void)size; (void)pool_size; (void)flag;
+    ++queue_inits;
+    if (fail_queue) return -1;
     memset(q,0,sizeof(*q)); queue=q; return RT_EOK;
 }
-rt_err_t rt_mq_detach(struct rt_messagequeue *q) { (void)q; return RT_EOK; }
+rt_err_t rt_mq_detach(struct rt_messagequeue *q) { (void)q; ++queue_detaches; return RT_EOK; }
 rt_err_t rt_mq_send(struct rt_messagequeue *q, void *data, size_t size)
 {
     if (q->count==8 || size!=sizeof(uint32_t)) return -1;
@@ -56,9 +60,12 @@ rt_err_t rt_mq_recv(struct rt_messagequeue *q, void *out, size_t size, int wait)
 lv_timer_t *lv_timer_create(void (*callback)(lv_timer_t *), uint32_t period, void *data)
 {
     (void)data;
+    ++timer_attempts;
+    if (fail_timer) return NULL;
     if (period!=20) return NULL;
     ++timers; ui_timer.callback=callback; return &ui_timer;
 }
+void lv_timer_delete(lv_timer_t *t) { if (t==&ui_timer && timers) --timers; }
 bool lab_maze_motion_state(uint32_t session, bool *is_busy, bool *owned)
 {
     *is_busy=busy; *owned=busy && worker_session==session && session!=0; return true;
@@ -107,10 +114,44 @@ int main(void)
 {
     maze_snapshot_t s, paused;
     unsigned i, detached_draws;
+    CHECK(maze_runtime_init_status()==MAZE_RUNTIME_NOT_INITIALIZED);
+    CHECK(maze_runtime_snapshot(&s)==MAZE_WRONG_STATE);
+    CHECK(maze_runtime_attach(render,(void *)7)==MAZE_WRONG_STATE);
+    CHECK(maze_runtime_detach()==MAZE_WRONG_STATE);
+    CHECK(maze_runtime_action(NULL,NULL)==MAZE_WRONG_STATE);
+    CHECK(maze_runtime_next_request(&s.run_id)==MAZE_WRONG_STATE);
+    CHECK(queue_inits==0 && timers==0 && starts==0);
+    printf("TC-408 cold-status-and-unavailable-guards PASS\n");
     CHECK(maze_runtime_init(false)==MAZE_WRONG_STATE && timers==0);
+    CHECK(maze_runtime_init_status()==MAZE_RUNTIME_SELFTEST_FAILED && queue_inits==0);
+    printf("TC-408 selftest-failure-no-resources PASS\n");
+    fail_queue=true;
+    CHECK(maze_runtime_init(true)==MAZE_INVALID);
+    CHECK(maze_runtime_init_status()==MAZE_RUNTIME_QUEUE_FAILED);
+    CHECK(queue_inits==1 && queue_detaches==0 && timer_attempts==0);
+    CHECK(maze_runtime_snapshot(&s)==MAZE_WRONG_STATE && maze_runtime_detach()==MAZE_WRONG_STATE);
+    printf("TC-408 queue-failure-no-detach PASS\n");
+    fail_queue=false; fail_timer=true;
+    CHECK(maze_runtime_init(true)==MAZE_INVALID);
+    CHECK(maze_runtime_init_status()==MAZE_RUNTIME_TIMER_FAILED);
+    CHECK(queue_inits==2 && queue_detaches==1 && timers==0);
+    CHECK(maze_runtime_attach(render,(void *)7)==MAZE_WRONG_STATE);
+    CHECK(maze_runtime_action(NULL,NULL)==MAZE_WRONG_STATE);
+    fail_timer=false;
     CHECK(maze_runtime_init(true)==MAZE_OK && timers==1);
+    CHECK(maze_runtime_init_status()==MAZE_RUNTIME_READY && queue_inits==3 && queue_detaches==1);
+    printf("TC-408 timer-cleanup-and-retry PASS\n");
     CHECK(maze_runtime_init(true)==MAZE_WRONG_STATE && timers==1);
+    CHECK(maze_runtime_init(false)==MAZE_WRONG_STATE);
+    CHECK(maze_runtime_init_status()==MAZE_RUNTIME_READY && queue_inits==3 && timer_attempts==2);
+    printf("TC-408 ready-not-overwritten PASS\n");
+    CHECK(maze_runtime_cancel_startup()==MAZE_OK && timers==0 && queue_detaches==2);
+    CHECK(maze_runtime_init_status()==MAZE_RUNTIME_NOT_INITIALIZED);
+    CHECK(maze_runtime_snapshot(&s)==MAZE_WRONG_STATE);
+    CHECK(maze_runtime_init(true)==MAZE_OK && timers==1);
+    printf("TC-408 startup-cancel-cleanup-retry PASS\n");
     CHECK(maze_runtime_attach(render,(void *)7)==MAZE_OK);
+    CHECK(maze_runtime_cancel_startup()==MAZE_WRONG_STATE && timers==1);
     CHECK(maze_runtime_attach(render,(void *)7)==MAZE_WRONG_STATE);
     current_thread=(void *)2;
     CHECK(maze_runtime_snapshot(&s)==MAZE_WRONG_STATE);
@@ -118,6 +159,7 @@ int main(void)
     CHECK(maze_runtime_action(NULL,NULL)==MAZE_WRONG_STATE);
     current_thread=(void *)1;
     CHECK(action(MAZE_ACTION_START)==MAZE_OK && starts==1);
+    CHECK(maze_runtime_cancel_startup()==MAZE_WRONG_STATE && timers==1);
     for (i=0;i<32;++i) pump(20,true);
     CHECK(maze_runtime_snapshot(&s)==MAZE_OK && s.state==MAZE_RUNNING && s.elapsed_ms==0);
     printf("TC-406 runtime-single-owner-and-timer PASS\n");

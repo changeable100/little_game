@@ -53,15 +53,24 @@ int main(void)
         rt_kprintf("Peripheral Lab: initialization failed\n");
         return -1;
     }
+    /* Finish runtime initialization before any product entry can be opened.
+     * B's production adapter must use init_status to gate its controls. */
+    maze_result_t runtime_result = maze_runtime_init(maze_tests_ok);
+    rt_kprintf("[maze:boot] runtime=%d result=%d\n",
+               (int)maze_runtime_init_status(), (int)runtime_result);
+    if (runtime_result != MAZE_OK)
+        rt_kprintf("[maze] runtime unavailable; production entry must stay disabled\n");
     /* Internal lab_io is needed by A's sampler; the product entry is B's menu. */
     int ui_result = maze_menu_create();
     if (ui_result != MAZE_UI_SUCCESS) {
         rt_kprintf("[maze] menu initialization failed: %d\n", ui_result);
+        if (runtime_result == MAZE_OK)
+            rt_kprintf("[maze:boot] startup cleanup=%d\n",
+                       (int)maze_runtime_cancel_startup());
         return -1;
     }
+    rt_kprintf("[maze:boot] menu ready\n");
     rt_kprintf("[maze:app] AB merge 2026-11-06; standalone preview + motion diagnostics\n");
-    if (maze_runtime_init(maze_tests_ok) != MAZE_OK)
-        rt_kprintf("[maze] runtime disabled: initialization or self-test failure\n");
     while (1) {
         /* 处理界面定时器、输入与重绘，返回建议的下次调用间隔。 */
         uint32_t delay = lv_timer_handler();

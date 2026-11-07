@@ -10,6 +10,7 @@ typedef void *rt_thread_t;
 struct rt_messagequeue { uint32_t values[8]; unsigned head, count; };
 rt_thread_t rt_thread_self(void);
 uint32_t rt_tick_get_millisecond(void);
+void rt_thread_mdelay(int);
 int rt_kprintf(const char *format, ...);
 rt_err_t rt_mq_init(struct rt_messagequeue *, const char *, void *, size_t, size_t, unsigned);
 rt_err_t rt_mq_detach(struct rt_messagequeue *);
