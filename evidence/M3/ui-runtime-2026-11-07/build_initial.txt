@@ -1,0 +1,71 @@
+# SDK diagnostics complete; trailing whitespace normalized.
+scons: Reading SConscript files ...
+Board: sf32lb52-lchspi-ulp_hcpu
+-----
+Adding ftab subproject for chip: SF32LB52X (ptab v1/v2)
+========
+Multi-Project Info
+--------
+full_name       main.bootloader
+parent          main
+bsp_root        D:\sifli\SiFli-SDK\v2.5.1\example\boot_loader\project\butterflmicro\ram_v2
+build_dir       build_sf32lb52-lchspi-ulp_hcpu/bootloader
+link_script     D:/sifli/SiFli-SDK/v2.5.1\example/boot_loader/project/butterflmicro/ram_v2\link
+ptab            D:\sifli\SiFli-SDK\v2.5.1\customer\boards\sf32lb52-lchspi-ulp\ptab.json
+embedded:       False
+--------
+full_name       main.lcpu
+parent          main
+bsp_root        D:\sifli\SiFli-SDK\v2.5.1\example\ble\lcpu_general\project\common
+build_dir       build_sf32lb52-lchspi-ulp_hcpu/lcpu
+link_script     D:/sifli/SiFli-SDK/v2.5.1\drivers/cmsis/sf32lb52x/Templates/gcc/lcpu/link
+ptab            D:\sifli\SiFli-SDK\v2.5.1\customer\boards\sf32lb52-lchspi-ulp\ptab.json
+embedded:       True
+--------
+full_name       main
+parent
+bsp_root        D:\peripheral_lab\project
+build_dir       build_sf32lb52-lchspi-ulp_hcpu/
+link_script     D:/sifli/SiFli-SDK/v2.5.1\drivers/cmsis/sf32lb52x/Templates/gcc/hcpu/link
+ptab            D:\sifli\SiFli-SDK\v2.5.1\customer\boards\sf32lb52-lchspi-ulp\ptab.json
+--------
+full_name       main.ftab
+parent          main
+bsp_root        D:\sifli\SiFli-SDK\v2.5.1\example\flash_table\sf32lb52x_common_v2
+build_dir       build_sf32lb52-lchspi-ulp_hcpu/ftab
+link_script     D:/sifli/SiFli-SDK/v2.5.1\drivers/cmsis/sf32lb52x/Templates/gcc/hcpu/link
+ptab            D:\sifli\SiFli-SDK\v2.5.1\customer\boards\sf32lb52-lchspi-ulp\ptab.json
+embedded:       False
+========
+scons: done reading SConscript files.
+scons: Building targets ...
+scons: building associated VariantDir targets: build_sf32lb52-lchspi-ulp_hcpu
+Generating build_sf32lb52-lchspi-ulp_hcpu\bootloader\link_copy.lds ...
+Generating build_sf32lb52-lchspi-ulp_hcpu\lcpu\link_copy.lds ...
+Building compilation database build_sf32lb52-lchspi-ulp_hcpu\compile_commands.json
+Building compilation database build_sf32lb52-lchspi-ulp_hcpu\bootloader\compile_commands.json
+CC build_sf32lb52-lchspi-ulp_hcpu\src\lab_ui.o
+CC build_sf32lb52-lchspi-ulp_hcpu\src\main.o
+CC build_sf32lb52-lchspi-ulp_hcpu\src\maze_menu.o
+CC build_sf32lb52-lchspi-ulp_hcpu\src\maze_runtime.o
+CC build_sf32lb52-lchspi-ulp_hcpu\src\maze_ui.o
+CC build_sf32lb52-lchspi-ulp_hcpu\src\maze_ui_runtime.o
+D:\peripheral_lab\src\maze_ui_runtime.c: In function 'render':
+D:\peripheral_lab\src\maze_ui_runtime.c:48:22: error: 'NULL' undeclared (first use in this function)
+   48 |     have_snapshot=s!=NULL;
+      |                      ^~~~
+D:\peripheral_lab\src\maze_ui_runtime.c:4:1: note: 'NULL' is defined in header '<stddef.h>'; this is probably fixable by adding '#include <stddef.h>'
+    3 | #include "maze_levels.h"
+  +++ |+#include <stddef.h>
+    4 | #include <stdint.h>
+D:\peripheral_lab\src\maze_ui_runtime.c:48:22: note: each undeclared identifier is reported only once for each function it appears in
+   48 |     have_snapshot=s!=NULL;
+      |                      ^~~~
+D:\peripheral_lab\src\maze_ui_runtime.c: In function 'submit':
+D:\peripheral_lab\src\maze_ui_runtime.c:64:55: error: 'NULL' undeclared (first use in this function)
+   64 |         if(result==MAZE_OK)result=maze_runtime_action(NULL,&action);
+      |                                                       ^~~~
+D:\peripheral_lab\src\maze_ui_runtime.c:64:55: note: 'NULL' is defined in header '<stddef.h>'; this is probably fixable by adding '#include <stddef.h>'
+Generating build_sf32lb52-lchspi-ulp_hcpu\link_copy.lds ...
+scons: *** [build_sf32lb52-lchspi-ulp_hcpu\src\maze_ui_runtime.o] Error 1
+scons: building terminated because of errors.

@@ -1,5 +1,7 @@
 #include "maze_menu.h"
 #include "maze_levels.h"
+#include "maze_ui_runtime.h"
+#include "maze_runtime.h"
 #include "lvgl.h"
 #include <stddef.h>
 
@@ -9,7 +11,8 @@
 #define MUTED 0x97A8C0
 #define MINT 0x86F5CA
 
-static lv_obj_t *home, *help;
+static lv_obj_t *home, *help, *entry_feedback;
+static bool preview_mode;
 
 static lv_obj_t *panel(lv_obj_t *parent, int x, int y, int w, int h,
                        uint32_t color, int radius)
@@ -37,7 +40,7 @@ static lv_obj_t *text(lv_obj_t *parent, const char *s, int x, int y,
     return o;
 }
 
-static void button(lv_obj_t *parent, const char *s, int y, uint32_t color,
+static lv_obj_t *button(lv_obj_t *parent, const char *s, int y, uint32_t color,
                     lv_event_cb_t cb)
 {
     lv_obj_t *o = panel(parent, 44, y, 302, 48, color, 12);
@@ -48,6 +51,7 @@ static void button(lv_obj_t *parent, const char *s, int y, uint32_t color,
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_center(label);
     lv_obj_add_event_cb(o, cb, LV_EVENT_CLICKED, NULL);
+    return o;
 }
 
 /* Draw the actual shared level; no copied map and no extra pixel buffer. */
@@ -108,7 +112,7 @@ static void open_help(lv_event_t *event)
         text(help, titles[i], 90, y, 256, &lv_font_montserrat_16, TEXT);
         text(help, details[i], 90, y + 24, 256, &lv_font_montserrat_14, MUTED);
     }
-    text(help, "Preview only: motion controls\nare not enabled yet.",
+    text(help, preview_mode ? "Preview only: motion controls\nare not enabled yet." : "Press START, then hold flat\nuntil calibration completes.",
           44, 328, 302, &lv_font_montserrat_14, 0xFFD67D);
     button(help, "BACK TO MENU", 380, PANEL, close_help);
 }
@@ -116,30 +120,38 @@ static void open_help(lv_event_t *event)
 static void enter_maze(lv_event_t *event)
 {
     (void)event;
-    if (!help) maze_ui_preview_open();
+    if (help || !home) return;
+    if(preview_mode){maze_ui_preview_open();return;}
+    if(maze_runtime_init_status()!=MAZE_RUNTIME_READY) {
+        lv_label_set_text(entry_feedback,maze_ui_runtime_startup_text());return;
+    }
+    if(maze_ui_runtime_open()!=MAZE_UI_SUCCESS)
+        lv_label_set_text_fmt(entry_feedback,"Cannot open game (%d)",(int)maze_ui_runtime_last_result());
 }
 
 static void home_deleted(lv_event_t *event)
 {
     (void)event;
     /* Even external parent deletion must not leave the preview orphaned. */
+    (void)maze_ui_runtime_release();
     maze_ui_destroy();
-    home = NULL;
+    home = NULL; entry_feedback=NULL;
 }
 
-int maze_menu_create(void)
+static int create_menu(bool preview)
 {
     if (home) return MAZE_UI_ERR_EXISTS;
     if (!lv_display_get_default() ||
         lv_display_get_horizontal_resolution(NULL) != 390 ||
         lv_display_get_vertical_resolution(NULL) != 450)
         return MAZE_UI_ERR_DISPLAY;
+    preview_mode=preview;
     home = panel(lv_screen_active(), 0, 0, 390, 450, BG, 0);
     lv_obj_add_flag(home, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(home, home_deleted, LV_EVENT_DELETE, NULL);
     text(home, "MOTION / PUZZLE", 44, 30, 206, &lv_font_montserrat_12, MINT);
     lv_obj_t *badge = panel(home, 264, 26, 82, 26, PANEL, 13);
-    lv_obj_t *badge_text = text(badge, "PREVIEW", 0, 0, 82,
+    lv_obj_t *badge_text = text(badge, preview ? "PREVIEW" : (maze_runtime_init_status()==MAZE_RUNTIME_READY ? "READY" : "NOT READY"), 0, 0, 82,
                                 &lv_font_montserrat_12, 0xFFD67D);
     lv_obj_set_style_text_align(badge_text, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_center(badge_text);
@@ -153,14 +165,21 @@ int maze_menu_create(void)
     text(home, "SNAKE PATH", 232, 197, 114, &lv_font_montserrat_12, TEXT);
     text(home, "16 x 16 grid\nOne fixed maze", 232, 224, 114,
           &lv_font_montserrat_12, MUTED);
-    text(home, "Static preview", 232, 286, 114, &lv_font_montserrat_12, 0xFFD67D);
-    button(home, "ENTER MAZE", 330, MINT, enter_maze);
+    entry_feedback=text(home, preview ? "Static preview" : maze_ui_runtime_startup_text(), 232, 264, 114, &lv_font_montserrat_12, 0xFFD67D);
+    lv_obj_t *entry=button(home, "ENTER MAZE", 330, MINT, enter_maze);
+    lv_obj_set_style_opa(entry,LV_OPA_40,LV_STATE_DISABLED);
+    if(!preview && maze_runtime_init_status()!=MAZE_RUNTIME_READY)
+        lv_obj_add_state(entry,LV_STATE_DISABLED);
     button(home, "HOW TO PLAY", 388, PANEL, open_help);
     return MAZE_UI_SUCCESS;
 }
 
+int maze_menu_create(void) { return create_menu(false); }
+int maze_menu_create_preview(void) { return create_menu(true); }
+
 void maze_menu_destroy(void)
 {
+    (void)maze_ui_runtime_release();
     maze_ui_destroy();
     if (home) lv_obj_delete(home);
 }
