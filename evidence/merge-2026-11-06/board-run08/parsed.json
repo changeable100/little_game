@@ -1,0 +1,959 @@
+{
+  "received_date": "2026-11-07",
+  "capture_time": "not supplied",
+  "firmware_hash": "not independently supplied",
+  "separate_files": true,
+  "continuity": "ordered by user attachments and command context; inter-file gaps unrecorded",
+  "files": [
+    {
+      "file": "pause_original.txt",
+      "bytes": 9466,
+      "sha256": "8fd8fca905bd5281038b5a2e72b2bd5c6f850cf627b0d6fdeff579d36534fc88",
+      "diagnostics": 39,
+      "status_commands": 2
+    },
+    {
+      "file": "resume_original.txt",
+      "bytes": 6045,
+      "sha256": "c1a37c265448f9e0e3534ed4929a0cc1a3d053adc5a054afc34409c7429422dc",
+      "diagnostics": 25,
+      "status_commands": 1
+    },
+    {
+      "file": "restart_original.txt",
+      "bytes": 6493,
+      "sha256": "d4835798994ed73310118f06512b5abed7baaa10132f44be2a47270ac1ecb16f",
+      "diagnostics": 27,
+      "status_commands": 1
+    },
+    {
+      "file": "back_original.txt",
+      "bytes": 5514,
+      "sha256": "3e4848f0814e2b8ca105cc5827a06622056b665cc19d8ff3a0e5aa126d411406",
+      "diagnostics": 23,
+      "status_commands": 1
+    }
+  ],
+  "diagnostics": {
+    "pause": [
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 12961,
+        "state": 3,
+        "error": 0,
+        "elapsed": 259140,
+        "cal": 32
+      }
+    ],
+    "resume": [
+      {
+        "run": 1,
+        "rev": 12983,
+        "state": 2,
+        "error": 0,
+        "elapsed": 259560,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13008,
+        "state": 2,
+        "error": 0,
+        "elapsed": 260060,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13033,
+        "state": 2,
+        "error": 0,
+        "elapsed": 260560,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13058,
+        "state": 2,
+        "error": 0,
+        "elapsed": 261060,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13083,
+        "state": 2,
+        "error": 0,
+        "elapsed": 261560,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13108,
+        "state": 2,
+        "error": 0,
+        "elapsed": 262060,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13133,
+        "state": 2,
+        "error": 0,
+        "elapsed": 262560,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13158,
+        "state": 2,
+        "error": 0,
+        "elapsed": 263060,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13183,
+        "state": 2,
+        "error": 0,
+        "elapsed": 263560,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13208,
+        "state": 2,
+        "error": 0,
+        "elapsed": 264060,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13233,
+        "state": 2,
+        "error": 0,
+        "elapsed": 264560,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13258,
+        "state": 2,
+        "error": 0,
+        "elapsed": 265060,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13283,
+        "state": 2,
+        "error": 0,
+        "elapsed": 265560,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13308,
+        "state": 2,
+        "error": 0,
+        "elapsed": 266060,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13333,
+        "state": 2,
+        "error": 0,
+        "elapsed": 266560,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13358,
+        "state": 2,
+        "error": 0,
+        "elapsed": 267060,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13364,
+        "state": 2,
+        "error": 0,
+        "elapsed": 267180,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13389,
+        "state": 2,
+        "error": 0,
+        "elapsed": 267680,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13414,
+        "state": 2,
+        "error": 0,
+        "elapsed": 268180,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13439,
+        "state": 2,
+        "error": 0,
+        "elapsed": 268680,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13464,
+        "state": 2,
+        "error": 0,
+        "elapsed": 269180,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13489,
+        "state": 2,
+        "error": 0,
+        "elapsed": 269680,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13514,
+        "state": 2,
+        "error": 0,
+        "elapsed": 270180,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13539,
+        "state": 2,
+        "error": 0,
+        "elapsed": 270680,
+        "cal": 32
+      },
+      {
+        "run": 1,
+        "rev": 13564,
+        "state": 2,
+        "error": 0,
+        "elapsed": 271180,
+        "cal": 32
+      }
+    ],
+    "restart": [
+      {
+        "run": 2,
+        "rev": 15904,
+        "state": 1,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 7
+      },
+      {
+        "run": 2,
+        "rev": 15905,
+        "state": 2,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 15930,
+        "state": 2,
+        "error": 0,
+        "elapsed": 500,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 15955,
+        "state": 2,
+        "error": 0,
+        "elapsed": 1000,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 15980,
+        "state": 2,
+        "error": 0,
+        "elapsed": 1500,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16005,
+        "state": 2,
+        "error": 0,
+        "elapsed": 2000,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16030,
+        "state": 2,
+        "error": 0,
+        "elapsed": 2500,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16055,
+        "state": 2,
+        "error": 0,
+        "elapsed": 3000,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16080,
+        "state": 2,
+        "error": 0,
+        "elapsed": 3500,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16105,
+        "state": 2,
+        "error": 0,
+        "elapsed": 4000,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16130,
+        "state": 2,
+        "error": 0,
+        "elapsed": 4500,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16155,
+        "state": 2,
+        "error": 0,
+        "elapsed": 5000,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16180,
+        "state": 2,
+        "error": 0,
+        "elapsed": 5500,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16205,
+        "state": 2,
+        "error": 0,
+        "elapsed": 6000,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16230,
+        "state": 2,
+        "error": 0,
+        "elapsed": 6500,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16255,
+        "state": 2,
+        "error": 0,
+        "elapsed": 7000,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16279,
+        "state": 2,
+        "error": 0,
+        "elapsed": 7480,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16304,
+        "state": 2,
+        "error": 0,
+        "elapsed": 7980,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16329,
+        "state": 2,
+        "error": 0,
+        "elapsed": 8480,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16354,
+        "state": 2,
+        "error": 0,
+        "elapsed": 8980,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16379,
+        "state": 2,
+        "error": 0,
+        "elapsed": 9480,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16404,
+        "state": 2,
+        "error": 0,
+        "elapsed": 9980,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16429,
+        "state": 2,
+        "error": 0,
+        "elapsed": 10480,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16454,
+        "state": 2,
+        "error": 0,
+        "elapsed": 10980,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16479,
+        "state": 2,
+        "error": 0,
+        "elapsed": 11480,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16504,
+        "state": 2,
+        "error": 0,
+        "elapsed": 11980,
+        "cal": 32
+      },
+      {
+        "run": 2,
+        "rev": 16529,
+        "state": 2,
+        "error": 0,
+        "elapsed": 12480,
+        "cal": 32
+      }
+    ],
+    "back": [
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      },
+      {
+        "run": 3,
+        "rev": 17728,
+        "state": 0,
+        "error": 0,
+        "elapsed": 0,
+        "cal": 0
+      }
+    ]
+  }
+}

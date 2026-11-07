@@ -1,0 +1,164 @@
+maze_diag pause
+
+[maze:command] queued=1 result=0
+msh />msh />msh />[maze:command] action=1 result=0 run=1
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=12999 age=16 a_mg=-1,-2,-959
+[maze:gyro] seq=12999 g_mdps=1671,-3508,-323
+[maze:input] seq=12999 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13024 age=16 a_mg=-2,-4,-957
+[maze:gyro] seq=13024 g_mdps=1785,-3482,-315
+[maze:input] seq=13024 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13049 age=16 a_mg=0,-3,-956
+[maze:gyro] seq=13049 g_mdps=1706,-3456,-280
+[maze:input] seq=13049 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13074 age=16 a_mg=0,-2,-958
+[maze:gyro] seq=13074 g_mdps=1645,-3456,-280
+[maze:input] seq=13074 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13099 age=16 a_mg=-1,-2,-958
+[maze:gyro] seq=13099 g_mdps=1680,-3517,-306
+[maze:input] seq=13099 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13124 age=16 a_mg=-1,-3,-957
+[maze:gyro] seq=13124 g_mdps=1715,-3368,-280
+[maze:input] seq=13124 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13149 age=16 a_mg=0,-2,-959
+[maze:gyro] seq=13149 g_mdps=1706,-3438,-262
+[maze:input] seq=13149 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13174 age=16 a_mg=0,-4,-960
+[maze:gyro] seq=13174 g_mdps=1802,-3430,-262
+[maze:input] seq=13174 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13199 age=16 a_mg=0,-3,-959
+[maze:gyro] seq=13199 g_mdps=1645,-3176,-210
+[maze:input] seq=13199 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13224 age=16 a_mg=0,-2,-960
+[maze:gyro] seq=13224 g_mdps=1758,-3482,-332
+[maze:input] seq=13224 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13249 age=16 a_mg=-1,-2,-960
+[maze:gyro] seq=13249 g_mdps=1776,-3412,-218
+[maze:input] seq=13249 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13274 age=16 a_mg=-3,3,-960
+[maze:gyro] seq=13274 g_mdps=1295,-3937,-280
+[maze:input] seq=13274 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13299 age=16 a_mg=0,-2,-958
+[maze:gyro] seq=13299 g_mdps=1881,-3263,-245
+[maze:input] seq=13299 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13324 age=16 a_mg=0,-2,-959
+[maze:gyro] seq=13324 g_mdps=1723,-3412,-245
+[maze:input] seq=13324 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13349 age=16 a_mg=-1,-3,-959
+[maze:gyro] seq=13349 g_mdps=1855,-3342,-280
+[maze:input] seq=13349 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+maze_diag status
+[maze:command] queued=5 result=0
+msh />msh />[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13359 age=16 a_mg=-1,-2,-958
+[maze:gyro] seq=13359 g_mdps=1758,-3438,-280
+[maze:input] seq=13359 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13384 age=16 a_mg=-1,-2,-958
+[maze:gyro] seq=13384 g_mdps=1715,-3430,-280
+[maze:input] seq=13384 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13409 age=16 a_mg=-1,-1,-957
+[maze:gyro] seq=13409 g_mdps=1610,-3491,-288
+[maze:input] seq=13409 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13434 age=16 a_mg=-1,-3,-959
+[maze:gyro] seq=13434 g_mdps=1741,-3456,-245
+[maze:input] seq=13434 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13459 age=16 a_mg=0,-2,-960
+[maze:gyro] seq=13459 g_mdps=1802,-3491,-271
+[maze:input] seq=13459 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13484 age=16 a_mg=0,-1,-958
+[maze:gyro] seq=13484 g_mdps=1732,-3438,-271
+[maze:input] seq=13484 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13509 age=16 a_mg=-1,-2,-959
+[maze:gyro] seq=13509 g_mdps=1706,-3447,-280
+[maze:input] seq=13509 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13534 age=16 a_mg=-2,-3,-960
+[maze:gyro] seq=13534 g_mdps=1758,-3421,-280
+[maze:input] seq=13534 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13559 age=16 a_mg=0,-3,-960
+[maze:gyro] seq=13559 g_mdps=1732,-3447,-253
+[maze:input] seq=13559 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13584 age=16 a_mg=-1,-3,-961
+[maze:gyro] seq=13584 g_mdps=1723,-3482,-253
+[maze:input] seq=13584 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13609 age=16 a_mg=-1,-3,-960
+[maze:gyro] seq=13609 g_mdps=1758,-3473,-236
+[maze:input] seq=13609 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13634 age=16 a_mg=-5,2,-965
+[maze:gyro] seq=13634 g_mdps=1251,-4663,-315
+[maze:input] seq=13634 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13659 age=16 a_mg=-2,0,-963
+[maze:gyro] seq=13659 g_mdps=1671,-3578,-323
+[maze:input] seq=13659 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13684 age=16 a_mg=2,-5,-953
+[maze:gyro] seq=13684 g_mdps=1933,-2940,-236
+[maze:input] seq=13684 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+maze_diag status
+[maze:command] queued=5 result=0
+msh />msh />[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13698 age=16 a_mg=-1,-2,-959
+[maze:gyro] seq=13698 g_mdps=1723,-3473,-315
+[maze:input] seq=13698 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13723 age=16 a_mg=-1,-1,-960
+[maze:gyro] seq=13723 g_mdps=1706,-3430,-271
+[maze:input] seq=13723 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13748 age=16 a_mg=-1,-2,-959
+[maze:gyro] seq=13748 g_mdps=1732,-3430,-262
+[maze:input] seq=13748 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13773 age=16 a_mg=-1,-2,-959
+[maze:gyro] seq=13773 g_mdps=1715,-3447,-253
+[maze:input] seq=13773 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13798 age=16 a_mg=-1,-2,-958
+[maze:gyro] seq=13798 g_mdps=1732,-3473,-306
+[maze:input] seq=13798 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13823 age=16 a_mg=0,-2,-958
+[maze:gyro] seq=13823 g_mdps=1767,-3403,-236
+[maze:input] seq=13823 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13848 age=16 a_mg=-1,-3,-959
+[maze:gyro] seq=13848 g_mdps=1706,-3465,-288
+[maze:input] seq=13848 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13873 age=16 a_mg=-1,-2,-958
+[maze:gyro] seq=13873 g_mdps=1723,-3526,-253
+[maze:input] seq=13873 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13898 age=16 a_mg=-2,-3,-959
+[maze:gyro] seq=13898 g_mdps=1706,-3438,-280
+[maze:input] seq=13898 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794
+[maze:diag] run=1 rev=12961 state=3 error=0 elapsed=259140 cal=32
+[maze:imu] run=1 seq=13923 age=16 a_mg=-1,-3,-960
+[maze:gyro] seq=13923 g_mdps=1767,-3482,-280
+[maze:input] seq=13923 bias_mg=-7,-4 tilt_milli=0,0 pos_milli=1504,1794

@@ -159,3 +159,8 @@ run05/06单方向取证后仅修正横向，58项主机测试及SDK最终编译�
 ## run07四向复核后：第五步计时与返回验证
 
 本轮已见校准和四向输入/模型位置对应，按约定动作上下文PASS。保持当前固件，不需重烧。板放平后逐条发送`maze_diag pause`、`maze_diag status`；等约3秒再发`maze_diag status`，两次state3的elapsed应相同。随后发`maze_diag resume`，等约2秒后发`maze_diag status`，应state2且用时增加。再发`maze_diag restart`，手离开等约6秒后发`maze_diag status`；应看到run增加、elapsed重置并重新校准（随后运行会再次累计，不要求6秒后的elapsed仍为0）。最后发`maze_diag back`，等约1秒再发`maze_diag status`，应state0并保留stopped result0/settings_saved1。整段日志回传即可，不用实时盯屏。失败另存，不覆盖run07；物理实际结果以新证据为准。
+
+
+## run08之后：等待时间不需要精确卡秒
+
+用户已提供暂停、继续、重开、返回四份日志，比较判据均通过，证据见evidence/merge-2026-11-06/board-run08/analysis.md，无需因输入慢而重做。此前“等1秒/2秒/3秒”的含义是给命令处理和状态变化留时间，不是必须在该秒数内完成输入；等5～10秒、准备好再发下一条也可以。暂停比较仍须elapsed严格相同；重开数秒后状态已经RUNNING、elapsed重新增长是正常现象，清零与校准过程看自动日志。READY后旧样本age增加也符合主动停止。此说明不改变任何状态/计时判据，后续物理任务逐项另行安排。

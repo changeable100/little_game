@@ -147,6 +147,11 @@ physical_verification:
   executed_at: 2026-11-07收到附件，精确采集时刻未提供
   evidence_path: evidence/merge-2026-11-06/board-run07/analysis.md
   agent_conclusion: WHO0x6a/result0、cal32/state2/error0；主输入依次x正/x负/y负/y正，模型有对应位移。按本轮操作要求与回复上下文关联方向子项PASS，缺独立动作标签和固件哈希；完整第五步尚未执行。
+- item: 第五步暂停/继续/重开/返回真实串口证据
+  required_action: 顺序执行操作并比较状态、elapsed、run和采样停止结果；等待时间不是输入截止时间
+  executed_at: 2026-11-07收到四份附件，精确采集时刻未提供
+  evidence_path: evidence/merge-2026-11-06/board-run08/analysis.md
+  agent_conclusion: 暂停state3的elapsed均259140，两次status一致；继续state2用时增加；重开run2/elapsed0且重新cal32；返回run3/READY并停止旧run2，恢复调用result0。四项子验证PASS，文件间时间不猜测，其他资源复用和动态UI仍待物理验证。
 test_results:
 - test_id: A2-sdk-build
   description: A第二阶段最终SDK固件编译
@@ -322,7 +327,14 @@ test_results:
   actual: PASS（按本轮动作上下文）；四段主输入正负符合预期并有对应位移，墙边位置保持。缺独立动作标签和固件哈希，不代表整机/UI/第五步通过
   pass: true
   evidence_path: evidence/merge-2026-11-06/board-run07/analysis.md
+- test_id: TC-404/405-board-run08
+  description: 暂停冻结、继续、重开与返回采样停止的真实板端验证
+  expected: 暂停elapsed保持相等，继续增加，重开清零/新run/重新校准，返回READY并停止采样
+  actual: PASS；暂停259140不变，继续259560到271180；restart新run2/state1到2/cal32/elapsed0；back run3/state0，stopped result0/settings_saved1。寄存器恢复仅验证调用结果，不代表资源复用/UI验收
+  pass: true
+  evidence_path: evidence/merge-2026-11-06/board-run08/analysis.md
 known_issues:
+- 最新run08第五步四项状态/计时/采样停止子验证通过，不再等待该组日志；独立固件哈希、精确操作时刻及退出后其他外设资源复用未提供，B动态UI与整机通关仍待接入验证。旧待验证条目保留为历史。
 - 2026-11-07最新run07四向主输入与模型响应按本轮动作上下文通过，解除当前轴向复核阻塞；此前run04/05失败和冲突原因未知的记录保留为历史。暂停/继续/重开/返回完整第五步仍待证据，UI仍为静态预览。
 - run06按上沿压低回复上下文观察到纵向负号正确；当前只修正横向x=+ay，保留y=-ax。run04横向动作标签冲突原因仍未知，完整四向与第五步待新固件证据。
 - 当前run05右侧边缘压低仍向左，58项主机通过不等于方向正确。当前x=-ay应据此重新核对，y尚待上沿压低的独立读数；不猜测run04与run05原始轴符号冲突原因。已审阅迭代保存0cbf53a/73be66f，本条和run05尚未提交。
