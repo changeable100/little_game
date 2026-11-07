@@ -1,0 +1,166 @@
+reboot
+SFBL
+Serial:c2,Chip:4,Package:3,Rev:3  Reason:00000000
+
+
+ \ | /
+- SiFli Corporation
+ / | \     build on Oct 31 2026, 2.5.1 build 421126d9
+ 2020 - 2022 Copyright by SiFli team
+aw32001_init ok,  time consum: 0.00 ms.
+mount /dev sucess
+lwIP-2.1.2 initialized!
+[571] I/drv.rtc main: PSCLR=0x80000100 DivAI=128 DivAF=0 B=256
+
+[600] I/drv.rtc main: RTC use LXT RTC_CR=00000001
+
+
+[621] I/drv.rtc main: Init RTC, wake = 1
+
+
+[643] I/drv.audprc main: init 00 ADC_PATH_CFG0 0x606
+
+
+[666] I/drv.audprc main: HAL_AUDPRC_Init res 0
+
+
+[687] I/drv.audcodec main: HAL_AUDCODEC_Init res 0
+
+
+[709] I/drv.rgb main: rgbled register success, supporting 1 LEDs
+
+[734] I/TOUCH main: Regist touch screen driver, probe=0x12027719 
+
+[I/FAL] Flash Abstraction Layer (V0.5.99) initialize success.
+32;22m[I/FAL] The FAL MTD NOR device (dfu) created successfully[0m
+[I/FAL] The FAL MTD NOR device (ble) created successfully
+LV_MEM_RT: using rt_malloc path (psram private heap build condition not met)
+[879] I/drv.epic main: drv_gpu opened.
+
+call par CFG1(3313)
+
+fc 9, xtal 2000, pll 2108
+
+call par CFG1(3313)
+
+fc 7, xtal 2000, pll 1688
+
+[1037] I/audio audiosvr: audio server run
+
+[1056] I/audio bt_downv: audio_btdownlink run
+
+[maze:selftest] TC-301 start-calibrate PASS
+[maze:selftest] TC-302 right PASS
+[maze:selftest] TC-302 left PASS
+[maze:selftest] TC-302 down PASS
+[maze:selftest] TC-302 up PASS
+[maze:selftest] TC-303 thin-wall PASS
+[maze:selftest] TC-303 horizontal-wall PASS
+[maze:selftest] TC-303 corner PASS
+[maze:selftest] TC-303 slide PASS
+[maze:selftest] TC-303 right-edge PASS
+[maze:selftest] TC-303 left-edge PASS
+[maze:selftest] TC-303 bottom-edge PASS
+[maze:selftest] TC-303 top-edge PASS
+[maze:selftest] TC-304 pause-resume PASS
+[maze:selftest] TC-304 restart-stale-back PASS
+[maze:selftest] TC-305 win-freeze PASS
+[maze:selftest] TC-306 bad-maps PASS
+[maze:selftest] TC-306 invalid-sample PASS
+[maze:selftest] TC-306 nan PASS
+[maze:selftest] TC-306 infinity PASS
+[maze:selftest] TC-306 range PASS
+[maze:selftest] TC-306 long-dt PASS
+[maze:selftest] TC-306 counters PASS
+[maze:selftest] TC-306 api-guards PASS
+[maze:selftest] summary PASS failures=0
+[maze:level:selftest] TC-201 fixed-map-structure-and-reachability PASS
+[maze:level:selftest] TC-202 disconnected-map PASS
+[maze:level:selftest] TC-202 diagonal-only-map PASS
+[maze:level:selftest] TC-202 malformed-maps PASS
+[maze:level:selftest] summary PASS failures=0
+[maze:adapter:selftest] TC-401 request-stale-exhaustion PASS
+[maze:adapter:selftest] TC-401 old-run-and-sample PASS
+[maze:adapter:selftest] TC-402 calibration-32-unique PASS
+[maze:adapter:selftest] TC-402 unstable-restarts-window PASS
+[maze:adapter:selftest] TC-402 timeout PASS
+[maze:adapter:selftest] TC-403 right PASS
+[maze:adapter:selftest] TC-403 left PASS
+[maze:adapter:selftest] TC-403 down PASS
+[maze:adapter:selftest] TC-403 up PASS
+[maze:adapter:selftest] TC-403 deadband-filter PASS
+[maze:adapter:selftest] TC-403 board-edge-direction-replay PASS
+[maze:adapter:selftest] TC-403 duplicate-not-refiltered PASS
+[maze:adapter:selftest] TC-403 invalid PASS
+[maze:adapter:selftest] TC-403 nan PASS
+[maze:adapter:selftest] TC-403 infinity PASS
+[maze:adapter:selftest] TC-403 stale-sample PASS
+[maze:adapter:selftest] TC-403 reversed-sequence PASS
+[maze:adapter:selftest] TC-403 future-timestamp PASS
+[maze:adapter:selftest] TC-403 range PASS
+[maze:adapter:selftest] TC-403 missing-sample PASS
+[maze:adapter:selftest] TC-404 pause-resume-clock PASS
+[maze:adapter:selftest] TC-404 long-dt-error PASS
+[maze:adapter:selftest] TC-404 clock-wrap PASS
+[maze:adapter:selftest] TC-406 api-and-calibration-failure PASS
+[maze:adapter:selftest] TC-406 reconnect-preserves-game PASS
+[maze:adapter:selftest] summary PASS failures=0
+[2694] I/drv.lcd main: [NONE] -> [OPENING]
+
+[2713] I/drv.lcd lcd_task: open
+
+[2726] I/drv.lcd lcd_task: HW open
+
+[2761] I/drv.lcd lcd_task: Try registered LCD driver...
+
+msh />
+CO5300_ReadID 0x331100 
+[5083] I/co5300 lcd_task: LCD module use CO5300 IC 
+
+
+
+CO5300_ReadID 0x331100 
+[11356] I/co5300 lcd_task: LCD module use CO5300 IC 
+
+
+[11377] I/drv.lcd lcd_task: Found lcd co5300 id:331100h
+
+[11399] I/drv.lcd lcd_task: HW open done.
+
+[11415] I/drv.lcd lcd_task: [OPENING] -> [INITIALIZED]
+
+[11436] I/drv.lcd lcd_task: open done.
+
+[11567] I/drv.lcd_fb main: drv_lcd_fb_init
+
+[11590] I/drv.lcd_fb main: drv_lcd_fb_init done.
+
+[User]	(0.340, +340)	 lv_touchscreen_create: touchscreen touch opening lv_touch.c:153
+[11649] I/TOUCH main: Open
+
+[11664] I/TOUCH tp_init: Find touch screen driver...
+
+[11685] I/TOUCH tp_init: Probe 12027719
+
+[11703] I/TOUCH tp_init: touch screen found driver  0x200317b0, ft6146
+
+[11732] I/TOUCH main: Opened.
+
+[User]	(0.344, +4)	 lv_touchscreen_create: touchscreen touch open success lv_touch.c:172
+[11781] I/LVGL main: [littlevgl2rtt] Welcome to the littlevgl2rtt lib.
+
+[maze:boot] runtime=1 result=0
+[maze:boot] menu ready
+[maze:app] AB merge 2026-11-06; standalone preview + motion diagnostics
+[14505] E/drv.ft6146 tp_init: ft6146 id_H=64
+
+[14532] E/drv.ft6146 tp_init: ft6146 id_L=56
+
+[14925] I/drv.lcd lcd_task: Auto turn on display.
+
+[14945] I/drv.lcd lcd_task: set brightness 50
+
+[14965] I/drv.lcd lcd_task: display on
+
+[14980] I/drv.lcd lcd_task: [INITIALIZED] -> [ON]
+

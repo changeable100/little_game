@@ -152,6 +152,11 @@ physical_verification:
   executed_at: 2026-11-07收到四份附件，精确采集时刻未提供
   evidence_path: evidence/merge-2026-11-06/board-run08/analysis.md
   agent_conclusion: 暂停state3的elapsed均259140，两次status一致；继续state2用时增加；重开run2/elapsed0且重新cal32；返回run3/READY并停止旧run2，恢复调用result0。四项子验证PASS，文件间时间不猜测，其他资源复用和动态UI仍待物理验证。
+- item: A启动保障正常启动及首页实物复核
+  required_action: 烧录后复位，保存完整启动日志与首页照片
+  executed_at: 2026-11-07收到附件，精确拍摄/运行时刻未提供
+  evidence_path: evidence/M3/a-startup-2026-11-07/board-run01/analysis.md
+  agent_conclusion: 24+4+25项板上自检及summary全部PASS；runtime1/result0先于menu ready；首页内容与两个入口完整可见。按602eaf7烧录回复上下文关联，缺独立板端哈希；正常启动/首页子项PASS，未扩大为分配失败路径、实际触摸或生产游戏通过。
 test_results:
 - test_id: A2-sdk-build
   description: A第二阶段最终SDK固件编译
@@ -339,7 +344,14 @@ test_results:
   actual: PASS；69项主机回归（含11组新增启动/main测试）及SDK编译成功；真实新启动/首页未验证
   pass: true
   evidence_path: evidence/M2/maze_adapter/host_2026-11-07_220226.txt
+- test_id: TC-408/201-board-startup-normal
+  description: A启动保障正常路径与首页实物可见性
+  expected: 三组逻辑自检通过、runtime READY先于菜单创建、真实首页可见
+  actual: PASS；53项板上逻辑自检、runtime1/result0及menu ready顺序可见，原照片显示完整首页；失败注入仍为主机覆盖，触摸/动态UI未验收
+  pass: true
+  evidence_path: evidence/M3/a-startup-2026-11-07/board-run01/analysis.md
 known_issues:
+- 最新A启动保障board-run01正常启动和首页复核通过，关闭“新正常启动待证据”这一当前等待；失败分配/回收路径保留主机覆盖边界。ft6146两个E级ID日志经SDK源码核对为读成功后的LOG_E输出，不据此推定触摸故障；实际按钮/生产UI待后续验证。
 - REQ-408软件已提供只读启动状态及启动失败清理，69项主机和SDK编译通过；新板端启动待日志/首页证据，B生产入口禁用/提示仍须按状态接口接入。不得把READY启动状态当校准完成。
 - 最新run08第五步四项状态/计时/采样停止子验证通过，不再等待该组日志；独立固件哈希、精确操作时刻及退出后其他外设资源复用未提供，B动态UI与整机通关仍待接入验证。旧待验证条目保留为历史。
 - 2026-11-07最新run07四向主输入与模型响应按本轮动作上下文通过，解除当前轴向复核阻塞；此前run04/05失败和冲突原因未知的记录保留为历史。暂停/继续/重开/返回完整第五步仍待证据，UI仍为静态预览。

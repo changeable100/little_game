@@ -1,0 +1,24 @@
+{
+  "received_date": "2026-11-07",
+  "capture_time": "not supplied",
+  "firmware_context": "user follow-up to flashing instructions for 602eaf7; no independent board commit/hash",
+  "files": [
+    {
+      "file": "startup_original.txt",
+      "bytes": 5407,
+      "sha256": "20151e5ddff79b9646e60f48097d4c9c46593b9f84c2316b93156628ba3b5d76"
+    },
+    {
+      "file": "home_original.jpg",
+      "bytes": 10603073,
+      "sha256": "e9ecc0cb7c5b2b3c0563812b0f462ed3d1aa6c0e3f1fa46ce560e98002dbe2bf"
+    }
+  ],
+  "selftests": {
+    "model": 24,
+    "level": 4,
+    "adapter": 25
+  },
+  "boot": "runtime=1 result=0 before menu ready",
+  "photo_observation": "home visible; no button interaction or dynamic game demonstrated"
+}
