@@ -132,6 +132,16 @@ physical_verification:
   executed_at: 2026-11-07用户文字回复，精确采集时间未提供
   evidence_path: evidence/merge-2026-11-06/board-run04/direction_confirmation.txt
   agent_conclusion: 用户明确右左上下且朝向一致；结合完整日志判定127e830映射符号错误，已据此软件改为x=-ay/y=-ax，新方向仍待板端复核。
+- item: 单方向复核，明确右侧屏幕边缘压低
+  required_action: 平放校准后右侧边缘压低，再回平；明确动作定义
+  executed_at: 2026-11-07收到附件及用户确认，精确采集时刻未提供
+  evidence_path: evidence/merge-2026-11-06/board-run05/analysis.md
+  agent_conclusion: 28组完整记录；WHO0x6a/result0、state1到2/cal32，校准通过；用户确认右侧边缘压低，但ay正、tilt_x负、位置向左，右向FAIL。与run04右段原始符号冲突，原因未定；先保持固件测上沿压低，不据软件回放宣称物理通过。
+- item: 上沿压低约定下的纵向输入日志
+  required_action: 平放restart后抬高下边缘，让屏幕上边缘靠近桌面
+  executed_at: 2026-11-07收到回复附件，准确采集时间未提供
+  evidence_path: evidence/merge-2026-11-06/board-run06/analysis.md
+  agent_conclusion: cal32/state2/error0，主a_x正和tilt_y负符合本轮约定向上；无单独动作时间标签，按回复上下文关联。结合run05只纠正横向为x=+ay，保留y=-ax；完整四向和第五步未验收。
 test_results:
 - test_id: A2-sdk-build
   description: A第二阶段最终SDK固件编译
@@ -283,7 +293,21 @@ test_results:
   actual: 先6项FAIL，修复后58项PASS；SDK编译PASS，1088224字节。新板端方向待验证
   pass: true
   evidence_path: evidence/M2/maze_adapter/host_2026-11-07_144505.txt
+- test_id: TC-402-board-run05-calibration
+  description: 单向重测前真实静置校准
+  expected: 32个稳定样本完成校准并进入RUNNING
+  actual: PASS；cal0/22/32、state1到2/error0，WHO0x6a/result0，偏置-13,5mg
+  pass: true
+  evidence_path: evidence/merge-2026-11-06/board-run05/original.txt
+- test_id: TC-403-board-run05-right-edge
+  description: 明确屏幕右侧边缘压低时模型的横向符号
+  expected: 右侧边缘压低产生正tilt_x，模型向右
+  actual: FAIL；用户确认右侧边缘压低，ay约+300mg，tilt_x最低-894，x从1500到1200。与run04动作标签有冲突，先测上沿压低后统一修正；未验证第五步
+  pass: false
+  evidence_path: evidence/merge-2026-11-06/board-run05/analysis.md
 known_issues:
+- run06按上沿压低回复上下文观察到纵向负号正确；软件应只修正横向x=+ay，保留y=-ax，另次保存。run04横向动作标签冲突原因仍未知，完整四向与第五步待新固件证据。
+- 当前run05右侧边缘压低仍向左，58项主机通过不等于方向正确。当前x=-ay应据此重新核对，y尚待上沿压低的独立读数；不猜测run04与run05原始轴符号冲突原因。已审阅迭代保存0cbf53a/73be66f，本条和run05尚未提交。
 - 本阶段check_all的追踪PASS；历史8条提交的合法Copilot署名被占位符规则误报，开发日志因最后提交距今14天FAIL；manifest还缺学号、组别、提交时间和会话导出路径。保留原结果，不改检查器或历史凑通过。
 - 任务书中的旧基线、提交 4d9eb23 和无游戏 UI 描述与当前工作副本不符；当前仓库只有 1672326 初始提交，且已有鹈鹕自行车 UI。
 - 本次固件构建成功，但仍输出 RWX LOAD segment、newlib _close/_lseek/_read/_write 未实现、缺少 entry 符号及 img 'dfu' not found 警告；未改 SDK 工程骨架，板上影响未验证。

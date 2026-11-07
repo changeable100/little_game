@@ -1,0 +1,217 @@
+{
+  "received_date": "2026-11-07",
+  "capture_time": "not supplied",
+  "firmware_hash": "not independently supplied",
+  "sha256": "66106426e72386887452e7c76e2c6945c115ee6e621399153fab5e40462bf8d3",
+  "action_context": "reply to request to lower top screen edge; no separately supplied action labels",
+  "diagnostics": [
+    {
+      "run": 2,
+      "rev": 36799,
+      "state": 1,
+      "error": 0,
+      "elapsed": 0,
+      "cal": 13
+    },
+    {
+      "run": 2,
+      "rev": 36806,
+      "state": 2,
+      "error": 0,
+      "elapsed": 120,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 36831,
+      "state": 2,
+      "error": 0,
+      "elapsed": 620,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 36856,
+      "state": 2,
+      "error": 0,
+      "elapsed": 1120,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 36881,
+      "state": 2,
+      "error": 0,
+      "elapsed": 1620,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 36906,
+      "state": 2,
+      "error": 0,
+      "elapsed": 2120,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 36931,
+      "state": 2,
+      "error": 0,
+      "elapsed": 2620,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 36956,
+      "state": 2,
+      "error": 0,
+      "elapsed": 3120,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 36981,
+      "state": 2,
+      "error": 0,
+      "elapsed": 3620,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 37006,
+      "state": 2,
+      "error": 0,
+      "elapsed": 4120,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 37031,
+      "state": 2,
+      "error": 0,
+      "elapsed": 4620,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 37056,
+      "state": 2,
+      "error": 0,
+      "elapsed": 5120,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 37081,
+      "state": 2,
+      "error": 0,
+      "elapsed": 5620,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 37106,
+      "state": 2,
+      "error": 0,
+      "elapsed": 6120,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 37131,
+      "state": 2,
+      "error": 0,
+      "elapsed": 6620,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 37156,
+      "state": 2,
+      "error": 0,
+      "elapsed": 7120,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 37181,
+      "state": 2,
+      "error": 0,
+      "elapsed": 7620,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 37206,
+      "state": 2,
+      "error": 0,
+      "elapsed": 8120,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 37231,
+      "state": 2,
+      "error": 0,
+      "elapsed": 8620,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 37256,
+      "state": 2,
+      "error": 0,
+      "elapsed": 9120,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 37281,
+      "state": 2,
+      "error": 0,
+      "elapsed": 9620,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 37306,
+      "state": 2,
+      "error": 0,
+      "elapsed": 10120,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 37331,
+      "state": 2,
+      "error": 0,
+      "elapsed": 10620,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 37356,
+      "state": 2,
+      "error": 0,
+      "elapsed": 11120,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 37381,
+      "state": 2,
+      "error": 0,
+      "elapsed": 11620,
+      "cal": 32
+    },
+    {
+      "run": 2,
+      "rev": 37406,
+      "state": 2,
+      "error": 0,
+      "elapsed": 12120,
+      "cal": 32
+    }
+  ]
+}

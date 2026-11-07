@@ -1,0 +1,111 @@
+maze_diag restart
+[maze:command] queued=3 result=0
+msh />msh />[maze:command] action=3 result=0 run=2
+[maze:imu] run=1 stopped result=0 settings_saved=1
+[lab:6-axis IMU] state=4 Maze sampling stopped | Settings restored; physical response awaits confirmation.
+[maze:imu] run=2 WHO_AM_I=0x6a result=0
+[maze:diag] run=2 rev=36799 state=1 error=0 elapsed=0 cal=13
+[maze:imu] run=2 seq=19 age=19 a_mg=-5,-63,-959
+[maze:gyro] seq=19 g_mdps=1715,-3465,-280
+[maze:input] seq=19 bias_mg=0,0 tilt_milli=0,0 pos_milli=1500,1500
+[maze:diag] run=2 rev=36806 state=2 error=0 elapsed=120 cal=32
+[maze:imu] run=2 seq=44 age=17 a_mg=-10,-51,-976
+[maze:gyro] seq=44 g_mdps=-113,-3771,245
+[maze:input] seq=44 bias_mg=-5,-62 tilt_milli=0,0 pos_milli=1500,1500
+[maze:diag] run=2 rev=36831 state=2 error=0 elapsed=620 cal=32
+[maze:imu] run=2 seq=69 age=17 a_mg=-99,195,-870
+[maze:gyro] seq=69 g_mdps=-23791,-11375,8881
+[maze:input] seq=69 bias_mg=-5,-62 tilt_milli=-616,38 pos_milli=1419,1494
+[maze:diag] run=2 rev=36856 state=2 error=0 elapsed=1120 cal=32
+[maze:imu] run=2 seq=94 age=17 a_mg=92,15,-929
+[maze:gyro] seq=94 g_mdps=-16887,-30380,10263
+[maze:input] seq=94 bias_mg=-5,-62 tilt_milli=-104,-238 pos_milli=1200,1405
+[maze:diag] run=2 rev=36881 state=2 error=0 elapsed=1620 cal=32
+[maze:imu] run=2 seq=119 age=17 a_mg=45,4,-958
+[maze:gyro] seq=119 g_mdps=8356,-14971,4585
+[maze:input] seq=119 bias_mg=-5,-62 tilt_milli=-89,-84 pos_milli=1200,1200
+[maze:diag] run=2 rev=36906 state=2 error=0 elapsed=2120 cal=32
+[maze:imu] run=2 seq=144 age=17 a_mg=10,-25,-955
+[maze:gyro] seq=144 g_mdps=-1802,-11690,-420
+[maze:input] seq=144 bias_mg=-5,-62 tilt_milli=-23,0 pos_milli=1200,1200
+[maze:diag] run=2 rev=36931 state=2 error=0 elapsed=2620 cal=32
+[maze:imu] run=2 seq=169 age=17 a_mg=5,-30,-942
+[maze:gyro] seq=169 g_mdps=3465,-5153,3368
+[maze:input] seq=169 bias_mg=-5,-62 tilt_milli=-11,0 pos_milli=1200,1200
+[maze:diag] run=2 rev=36956 state=2 error=0 elapsed=3120 cal=32
+[maze:imu] run=2 seq=194 age=17 a_mg=11,-28,-969
+[maze:gyro] seq=194 g_mdps=-3263,26355,936
+[maze:input] seq=194 bias_mg=-5,-62 tilt_milli=-6,0 pos_milli=1200,1200
+[maze:diag] run=2 rev=36981 state=2 error=0 elapsed=3620 cal=32
+[maze:imu] run=2 seq=219 age=17 a_mg=435,-12,-876
+[maze:gyro] seq=219 g_mdps=4961,5267,87
+[maze:input] seq=219 bias_mg=-5,-62 tilt_milli=-59,-1000 pos_milli=1200,1200
+[maze:diag] run=2 rev=37006 state=2 error=0 elapsed=4120 cal=32
+[maze:imu] run=2 seq=244 age=17 a_mg=511,-39,-803
+[maze:gyro] seq=244 g_mdps=201,-8470,-1347
+[maze:input] seq=244 bias_mg=-5,-62 tilt_milli=0,-1000 pos_milli=1200,1200
+[maze:diag] run=2 rev=37031 state=2 error=0 elapsed=4620 cal=32
+[maze:imu] run=2 seq=269 age=17 a_mg=478,-18,-802
+[maze:gyro] seq=269 g_mdps=-11838,-1627,-3972
+[maze:input] seq=269 bias_mg=-5,-62 tilt_milli=-54,-1000 pos_milli=1200,1200
+[maze:diag] run=2 rev=37056 state=2 error=0 elapsed=5120 cal=32
+[maze:imu] run=2 seq=294 age=17 a_mg=494,-16,-830
+[maze:gyro] seq=294 g_mdps=3937,-10535,3500
+[maze:input] seq=294 bias_mg=-5,-62 tilt_milli=-48,-1000 pos_milli=1200,1200
+[maze:diag] run=2 rev=37081 state=2 error=0 elapsed=5620 cal=32
+[maze:imu] run=2 seq=319 age=17 a_mg=451,-8,-853
+[maze:gyro] seq=319 g_mdps=61,-1163,-1478
+[maze:input] seq=319 bias_mg=-5,-62 tilt_milli=-58,-1000 pos_milli=1200,1200
+[maze:diag] run=2 rev=37106 state=2 error=0 elapsed=6120 cal=32
+[maze:imu] run=2 seq=344 age=17 a_mg=457,-38,-843
+[maze:gyro] seq=344 g_mdps=-2318,-6160,-1242
+[maze:input] seq=344 bias_mg=-5,-62 tilt_milli=0,-1000 pos_milli=1200,1200
+
+msh />msh />[maze:diag] run=2 rev=37131 state=2 error=0 elapsed=6620 cal=32
+[maze:imu] run=2 seq=369 age=17 a_mg=386,0,-839
+[maze:gyro] seq=369 g_mdps=-2196,-9371,-5845
+[maze:input] seq=369 bias_mg=-5,-62 tilt_milli=-49,-1000 pos_milli=1200,1200
+[maze:diag] run=2 rev=37156 state=2 error=0 elapsed=7120 cal=32
+[maze:imu] run=2 seq=394 age=17 a_mg=384,-40,-876
+[maze:gyro] seq=394 g_mdps=-5503,-9633,-10438
+[maze:input] seq=394 bias_mg=-5,-62 tilt_milli=0,-1000 pos_milli=1200,1200
+[maze:diag] run=2 rev=37181 state=2 error=0 elapsed=7620 cal=32
+[maze:imu] run=2 seq=419 age=17 a_mg=400,-52,-862
+[maze:gyro] seq=419 g_mdps=551,-3360,52
+[maze:input] seq=419 bias_mg=-5,-62 tilt_milli=0,-1000 pos_milli=1200,1200
+[maze:diag] run=2 rev=37206 state=2 error=0 elapsed=8120 cal=32
+[maze:imu] run=2 seq=444 age=17 a_mg=382,-35,-886
+[maze:gyro] seq=444 g_mdps=3447,-8120,-210
+[maze:input] seq=444 bias_mg=-5,-62 tilt_milli=0,-1000 pos_milli=1200,1200
+[maze:diag] run=2 rev=37231 state=2 error=0 elapsed=8620 cal=32
+[maze:imu] run=2 seq=469 age=17 a_mg=363,-48,-895
+[maze:gyro] seq=469 g_mdps=2432,-4453,1496
+[maze:input] seq=469 bias_mg=-5,-62 tilt_milli=0,-1000 pos_milli=1200,1200
+[maze:diag] run=2 rev=37256 state=2 error=0 elapsed=9120 cal=32
+[maze:imu] run=2 seq=494 age=17 a_mg=325,-58,-899
+[maze:gyro] seq=494 g_mdps=11392,-29960,393
+[maze:input] seq=494 bias_mg=-5,-62 tilt_milli=0,-976 pos_milli=1200,1200
+[maze:diag] run=2 rev=37281 state=2 error=0 elapsed=9620 cal=32
+[maze:imu] run=2 seq=519 age=17 a_mg=-55,-62,-948
+[maze:gyro] seq=519 g_mdps=-4051,-25698,-12066
+[maze:input] seq=519 bias_mg=-5,-62 tilt_milli=0,0 pos_milli=1200,1200
+[maze:diag] run=2 rev=37306 state=2 error=0 elapsed=10120 cal=32
+[maze:imu] run=2 seq=544 age=17 a_mg=50,-121,-988
+[maze:gyro] seq=544 g_mdps=15443,22680,-7743
+[maze:input] seq=544 bias_mg=-5,-62 tilt_milli=22,0 pos_milli=1200,1257
+[maze:diag] run=2 rev=37331 state=2 error=0 elapsed=10620 cal=32
+[maze:imu] run=2 seq=569 age=17 a_mg=66,-119,-939
+[maze:gyro] seq=569 g_mdps=210,-3430,-612
+[maze:input] seq=569 bias_mg=-5,-62 tilt_milli=97,-118 pos_milli=1275,1201
+[maze:diag] run=2 rev=37356 state=2 error=0 elapsed=11120 cal=32
+[maze:imu] run=2 seq=594 age=17 a_mg=52,-113,-958
+[maze:gyro] seq=594 g_mdps=3640,-2835,796
+[maze:input] seq=594 bias_mg=-5,-62 tilt_milli=92,-97 pos_milli=1410,1200
+[maze:diag] run=2 rev=37381 state=2 error=0 elapsed=11620 cal=32
+[maze:imu] run=2 seq=619 age=17 a_mg=47,-102,-954
+[maze:gyro] seq=619 g_mdps=1417,-3981,-1540
+[maze:input] seq=619 bias_mg=-5,-62 tilt_milli=49,-76 pos_milli=1542,1200
+[maze:diag] run=2 rev=37406 state=2 error=0 elapsed=12120 cal=32
+[maze:imu] run=2 seq=644 age=17 a_mg=43,-117,-959
+[maze:gyro] seq=644 g_mdps=2178,-3185,-498
+[maze:input] seq=644 bias_mg=-5,-62 tilt_milli=58,-58 pos_milli=1632,1200
