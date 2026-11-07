@@ -305,8 +305,14 @@ test_results:
   actual: FAIL；用户确认右侧边缘压低，ay约+300mg，tilt_x最低-894，x从1500到1200。与run04动作标签有冲突，先测上沿压低后统一修正；未验证第五步
   pass: false
   evidence_path: evidence/merge-2026-11-06/board-run05/analysis.md
+- test_id: TC-403-edge-vector-replay
+  description: run05右沿与run06上沿向量及横向符号修复的软件回归
+  expected: 右沿x正、上沿y负；按既定滤波公式核对实测幅度，其他模型与时序判据保持
+  actual: 旧代码4项FAIL，修复后新回放饱和断言错误1项FAIL；改为计算值误差<0.001后58项PASS，SDK最终编译成功；板端四向待重测
+  pass: true
+  evidence_path: evidence/M2/maze_adapter/host_2026-11-07_150653.txt
 known_issues:
-- run06按上沿压低回复上下文观察到纵向负号正确；软件应只修正横向x=+ay，保留y=-ax，另次保存。run04横向动作标签冲突原因仍未知，完整四向与第五步待新固件证据。
+- run06按上沿压低回复上下文观察到纵向负号正确；当前只修正横向x=+ay，保留y=-ax。run04横向动作标签冲突原因仍未知，完整四向与第五步待新固件证据。
 - 当前run05右侧边缘压低仍向左，58项主机通过不等于方向正确。当前x=-ay应据此重新核对，y尚待上沿压低的独立读数；不猜测run04与run05原始轴符号冲突原因。已审阅迭代保存0cbf53a/73be66f，本条和run05尚未提交。
 - 本阶段check_all的追踪PASS；历史8条提交的合法Copilot署名被占位符规则误报，开发日志因最后提交距今14天FAIL；manifest还缺学号、组别、提交时间和会话导出路径。保留原结果，不改检查器或历史凑通过。
 - 任务书中的旧基线、提交 4d9eb23 和无游戏 UI 描述与当前工作副本不符；当前仓库只有 1672326 初始提交，且已有鹈鹕自行车 UI。

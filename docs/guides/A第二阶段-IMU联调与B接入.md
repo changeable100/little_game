@@ -142,3 +142,15 @@ uv run --no-project --with ziglang==0.13.0 python tests/run_maze_host.py --zig
 ```
 
 也可用原生GCC/Clang：`python tests/run_maze_host.py --cc gcc`。不依赖WSL。逻辑52项使用生产C源码；另4项使用生产runtime.c及RT/LVGL/传感器传输替身，验证唯一线程/定时器、退出重进、槽归属和队列有界性；替身不验证实际I2C/LVGL时延。原始输出按真实执行时间自动另存，不覆盖旧失败。
+
+
+## 2026-11-07 run05之后：先确认上沿压低
+
+最新右沿压低已确认，但日志向左，方向仍FAIL；前面的软件修复记录不是物理验收结果。暂时保持当前固件，不需再烧录。屏幕正面朝上、文字正向，平放发`maze_diag restart`，手离开等6秒；随后把屏幕上边缘压低（或垫高下边缘），保持约2秒再平放。整段日志复制回传，不用实时盯state或cal。预期主tilt_y为负，但由实际原文判定；在取得该证据前不再次切换轴符号，也不宣称第五步通过。最新证据见evidence/merge-2026-11-06/board-run05/analysis.md。
+
+
+## 最新可烧录版本：x=+ay，y=-ax
+
+run05/06单方向取证后仅修正横向，58项主机测试及SDK最终编译通过。三镜像指纹见evidence/merge-2026-11-06/board-run06/software/firmware.json；此前“保持当前固件”仅适用于采集run06阶段，现在需要重烧本次生成的固件。
+
+关闭串口监视器让出COM端口，在已激活SDK的终端进入D:\course_starter\build\maze-integration，运行`.\project\build_sf32lb52-lchspi-ulp_hcpu\uart_download.bat`。重连1000000 baud/CRLF，板放平，发`maze_diag restart`后手离开等6秒；按右沿→左沿→上沿→下沿依次压低（更靠近桌面），每次约2秒并回平约2秒，始终保持屏幕文字正向。整段日志直接回传，无需实时读数；预期x正/x负/y负/y正。完整四向及第五步必须以新证据判断，静态预览球不属于这一步的真实输入显示。

@@ -108,8 +108,8 @@ static bool axes(unsigned axis, float sign)
     for (i=33; i<=52; ++i)
     {
         maze_motion_t s = sample(&c, i, i*20);
-        /* Confirmed board directions: screen x=-ay and screen y=-ax. */
-        s.a[1u-axis] -= sign*0.5f;
+        /* Lower right screen edge: +ay; lower top edge: +ax. */
+        s.a[1u-axis] += (axis ? -sign : sign)*0.5f;
         CHECK(maze_controller_tick(&c, i*20, &s) == MAZE_OK);
     }
     CHECK(axis ? c.input.tilt_y*sign>0.9f : c.input.tilt_x*sign>0.9f);
@@ -122,9 +122,9 @@ static bool deadband_filter(void)
     maze_controller_t c;
     maze_motion_t s;
     CHECK(calibrated(&c, 0));
-    s = sample(&c, 33, 660); s.a[1]-=0.02f;
+    s = sample(&c, 33, 660); s.a[1]+=0.02f;
     CHECK(maze_controller_tick(&c, 660, &s) == MAZE_OK && c.input.tilt_x == 0);
-    s = sample(&c, 34, 680); s.a[1]-=0.35f;
+    s = sample(&c, 34, 680); s.a[1]+=0.35f;
     CHECK(maze_controller_tick(&c, 680, &s) == MAZE_OK);
     CHECK(c.input.tilt_x>0 && c.input.tilt_x<0.5f);
     CHECK(c.input.tilt_y == 0);
@@ -133,13 +133,13 @@ static bool deadband_filter(void)
 
 static bool board_direction_replay(void)
 {
-    /* board-run04, elapsed 19800/26321/34321/39821 ms; user confirmed
-     * right/left/up/down with unchanged screen orientation. */
-    static const struct { float a[3]; unsigned axis; float sign; } cases[] = {
-        {{-0.057f,-0.806f,-0.536f},0, 1},
-        {{-0.049f, 0.488f,-0.820f},0,-1},
-        {{ 0.490f,-0.007f,-0.823f},1,-1},
-        {{-0.644f, 0.043f,-0.724f},1, 1}
+    /* run05 seq424 right-edge down; run06 seq244 top-edge down.
+     * Use each recording's native calibration bias, not run04 labels. */
+    /* After 20 filter steps: ((0.304*(1-0.75^20))-0.03)/0.32 = 0.85324.
+     * The top vector saturates at -1; synthetic full-scale tests stay >0.9. */
+    static const struct { float a[3]; float bias[2]; unsigned axis; float expected; } cases[] = {
+        {{-0.042f,0.309f,-0.895f},{-0.013f,0.005f},0, 0.85324f},
+        {{ 0.511f,-0.039f,-0.803f},{-0.005f,-0.062f},1,-1.0f}
     };
     unsigned k,i;
     for (k=0; k<sizeof(cases)/sizeof(cases[0]); ++k)
@@ -150,12 +150,12 @@ static bool board_direction_replay(void)
         for (i=1; i<=52; ++i)
         {
             maze_motion_t s=sample(&c,i,i*20);
-            if (i<=32) { s.a[0]=0.016f; s.a[1]=-0.024f; s.a[2]=-0.963f; }
+            if (i<=32) { s.a[0]=cases[k].bias[0]; s.a[1]=cases[k].bias[1]; s.a[2]=-0.963f; }
             else memcpy(s.a,cases[k].a,sizeof(s.a));
             CHECK(maze_controller_tick(&c,i*20,&s)==MAZE_OK);
         }
         CHECK(c.game.snapshot.state==MAZE_RUNNING);
-        CHECK((cases[k].axis ? c.input.tilt_y : c.input.tilt_x)*cases[k].sign>0.9f);
+        CHECK(fabsf((cases[k].axis ? c.input.tilt_y : c.input.tilt_x)-cases[k].expected)<0.001f);
     }
     return true;
 }
@@ -343,7 +343,7 @@ int maze_controller_selftest_run(maze_test_report_t report)
     RUN("TC-403 down",axes(1,1));
     RUN("TC-403 up",axes(1,-1));
     RUN("TC-403 deadband-filter",deadband_filter());
-    RUN("TC-403 board-run04-direction-replay",board_direction_replay());
+    RUN("TC-403 board-edge-direction-replay",board_direction_replay());
     RUN("TC-403 duplicate-not-refiltered",duplicate_filter());
     RUN("TC-403 invalid",bad_sample(0));
     RUN("TC-403 nan",bad_sample(1));

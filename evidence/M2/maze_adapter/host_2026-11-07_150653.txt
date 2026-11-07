@@ -1,0 +1,93 @@
+COMMAND C:\Users\10436\AppData\Local\uv\cache\builds-v0\.tmpZlud9k\Scripts\python.exe -m ziglang cc --version
+clang version 18.1.6 (https://github.com/ziglang/zig-bootstrap 98bc6bf4fc4009888d33941daf6b600d20a42a56)
+Target: x86_64-unknown-windows-gnu
+Thread model: posix
+InstalledDir: D:/course_starter/build/maze-integration
+
+exit_code=0
+COMMAND C:\Users\10436\AppData\Local\uv\cache\builds-v0\.tmpZlud9k\Scripts\python.exe -m ziglang cc -std=c11 -Wall -Wextra -Werror -O2 -Isrc src/maze_game.c src/maze_selftest.c src/maze_levels.c src/maze_levels_selftest.c src/maze_controller.c src/maze_controller_selftest.c tests/maze_adapter_host.c -o D:\course_starter\build\maze-integration\build\maze_adapter_host.exe
+
+exit_code=0
+COMMAND D:\course_starter\build\maze-integration\build\maze_adapter_host.exe
+TC-301 start-calibrate PASS
+TC-302 right PASS
+TC-302 left PASS
+TC-302 down PASS
+TC-302 up PASS
+TC-303 thin-wall PASS
+TC-303 horizontal-wall PASS
+TC-303 corner PASS
+TC-303 slide PASS
+TC-303 right-edge PASS
+TC-303 left-edge PASS
+TC-303 bottom-edge PASS
+TC-303 top-edge PASS
+TC-304 pause-resume PASS
+TC-304 restart-stale-back PASS
+TC-305 win-freeze PASS
+TC-306 bad-maps PASS
+TC-306 invalid-sample PASS
+TC-306 nan PASS
+TC-306 infinity PASS
+TC-306 range PASS
+TC-306 long-dt PASS
+TC-306 counters PASS
+TC-306 api-guards PASS
+TC-201 fixed-map-structure-and-reachability PASS
+TC-202 disconnected-map PASS
+TC-202 diagonal-only-map PASS
+TC-202 malformed-maps PASS
+TC-401 request-stale-exhaustion PASS
+TC-401 old-run-and-sample PASS
+TC-402 calibration-32-unique PASS
+TC-402 unstable-restarts-window PASS
+TC-402 timeout PASS
+TC-403 right PASS
+TC-403 left PASS
+TC-403 down PASS
+TC-403 up PASS
+TC-403 deadband-filter PASS
+TC-403 board-edge-direction-replay PASS
+TC-403 duplicate-not-refiltered PASS
+TC-403 invalid PASS
+TC-403 nan PASS
+TC-403 infinity PASS
+TC-403 stale-sample PASS
+TC-403 reversed-sequence PASS
+TC-403 future-timestamp PASS
+TC-403 range PASS
+TC-403 missing-sample PASS
+TC-404 pause-resume-clock PASS
+TC-404 long-dt-error PASS
+TC-404 clock-wrap PASS
+TC-406 api-and-calibration-failure PASS
+TC-406 reconnect-preserves-game PASS
+summary PASS failures=0
+
+exit_code=0
+COMMAND C:\Users\10436\AppData\Local\uv\cache\builds-v0\.tmpZlud9k\Scripts\python.exe -m ziglang cc -std=c11 -Wall -Wextra -Werror -O2 -Itests/runtime_stubs -Isrc src/maze_game.c src/maze_levels.c src/maze_controller.c src/maze_runtime.c tests/maze_runtime_host.c -o D:\course_starter\build\maze-integration\build\maze_runtime_host.exe
+
+exit_code=0
+COMMAND D:\course_starter\build\maze-integration\build\maze_runtime_host.exe
+TC-406 runtime-single-owner-and-timer PASS
+TC-406 detach-reopen-no-reset-no-callback PASS
+[maze] sampling slot unavailable
+TC-405 busy-slot-and-stop-ownership PASS
+[maze:command] queued=5 result=0
+[maze:command] queued=5 result=0
+[maze:command] queued=5 result=0
+[maze:command] queued=5 result=0
+[maze:command] queued=5 result=0
+[maze:command] queued=5 result=0
+[maze:command] queued=5 result=0
+[maze:command] queued=5 result=0
+[maze:command] queued=5 result=-1
+[maze:diag] run=3 rev=10 state=5 error=2 elapsed=0 cal=0
+[maze:imu] run=3 seq=2 age=40 a_mg=100,-100,1000
+[maze:gyro] seq=2 g_mdps=0,0,0
+[maze:input] seq=2 bias_mg=0,0 tilt_milli=0,0 pos_milli=1500,1500
+TC-406 board-console-no-truncation PASS
+TC-406 shell-bounded-ui-queue PASS
+summary PASS failures=0
+
+exit_code=0
