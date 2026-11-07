@@ -427,4 +427,4 @@ b_stage3_render:
   course_checks: "Trace PASS; 8 historical attribution findings, 14-day historical gap FAIL; 4 manifest missing fields WARN; original checker unchanged"
   physical: "Not executed for this batch; six screenshots are synthetic host previews, physical_verification unchanged"
   pending: "A review; P2 production attach/actions/reread; P3 detach/lifecycle; P4 actual screen/IMU/buttons/WON/resource evidence"
-  submission: "Two commit drafts await student review; no push in this batch"
+  submission: "Student read and approved both drafts; two local commits; no push in this batch"
