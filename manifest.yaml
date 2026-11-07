@@ -142,6 +142,11 @@ physical_verification:
   executed_at: 2026-11-07收到回复附件，准确采集时间未提供
   evidence_path: evidence/merge-2026-11-06/board-run06/analysis.md
   agent_conclusion: cal32/state2/error0，主a_x正和tilt_y负符合本轮约定向上；无单独动作时间标签，按回复上下文关联。结合run05只纠正横向为x=+ay，保留y=-ax；完整四向和第五步未验收。
+- item: 横向修复后的四向复测
+  required_action: 校准后依次压低右沿、左沿、上沿、下沿并回平
+  executed_at: 2026-11-07收到附件，精确采集时刻未提供
+  evidence_path: evidence/merge-2026-11-06/board-run07/analysis.md
+  agent_conclusion: WHO0x6a/result0、cal32/state2/error0；主输入依次x正/x负/y负/y正，模型有对应位移。按本轮操作要求与回复上下文关联方向子项PASS，缺独立动作标签和固件哈希；完整第五步尚未执行。
 test_results:
 - test_id: A2-sdk-build
   description: A第二阶段最终SDK固件编译
@@ -311,7 +316,14 @@ test_results:
   actual: 旧代码4项FAIL，修复后新回放饱和断言错误1项FAIL；改为计算值误差<0.001后58项PASS，SDK最终编译成功；板端四向待重测
   pass: true
   evidence_path: evidence/M2/maze_adapter/host_2026-11-07_150653.txt
+- test_id: TC-402/403-board-run07
+  description: 横向符号修复后校准与四向模型响应复测
+  expected: cal32/state2/error0；右x正、左x负、上y负、下y正，位置相应变化
+  actual: PASS（按本轮动作上下文）；四段主输入正负符合预期并有对应位移，墙边位置保持。缺独立动作标签和固件哈希，不代表整机/UI/第五步通过
+  pass: true
+  evidence_path: evidence/merge-2026-11-06/board-run07/analysis.md
 known_issues:
+- 2026-11-07最新run07四向主输入与模型响应按本轮动作上下文通过，解除当前轴向复核阻塞；此前run04/05失败和冲突原因未知的记录保留为历史。暂停/继续/重开/返回完整第五步仍待证据，UI仍为静态预览。
 - run06按上沿压低回复上下文观察到纵向负号正确；当前只修正横向x=+ay，保留y=-ax。run04横向动作标签冲突原因仍未知，完整四向与第五步待新固件证据。
 - 当前run05右侧边缘压低仍向左，58项主机通过不等于方向正确。当前x=-ay应据此重新核对，y尚待上沿压低的独立读数；不猜测run04与run05原始轴符号冲突原因。已审阅迭代保存0cbf53a/73be66f，本条和run05尚未提交。
 - 本阶段check_all的追踪PASS；历史8条提交的合法Copilot署名被占位符规则误报，开发日志因最后提交距今14天FAIL；manifest还缺学号、组别、提交时间和会话导出路径。保留原结果，不改检查器或历史凑通过。

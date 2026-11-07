@@ -154,3 +154,8 @@ uv run --no-project --with ziglang==0.13.0 python tests/run_maze_host.py --zig
 run05/06单方向取证后仅修正横向，58项主机测试及SDK最终编译通过。三镜像指纹见evidence/merge-2026-11-06/board-run06/software/firmware.json；此前“保持当前固件”仅适用于采集run06阶段，现在需要重烧本次生成的固件。
 
 关闭串口监视器让出COM端口，在已激活SDK的终端进入D:\course_starter\build\maze-integration，运行`.\project\build_sf32lb52-lchspi-ulp_hcpu\uart_download.bat`。重连1000000 baud/CRLF，板放平，发`maze_diag restart`后手离开等6秒；按右沿→左沿→上沿→下沿依次压低（更靠近桌面），每次约2秒并回平约2秒，始终保持屏幕文字正向。整段日志直接回传，无需实时读数；预期x正/x负/y负/y正。完整四向及第五步必须以新证据判断，静态预览球不属于这一步的真实输入显示。
+
+
+## run07四向复核后：第五步计时与返回验证
+
+本轮已见校准和四向输入/模型位置对应，按约定动作上下文PASS。保持当前固件，不需重烧。板放平后逐条发送`maze_diag pause`、`maze_diag status`；等约3秒再发`maze_diag status`，两次state3的elapsed应相同。随后发`maze_diag resume`，等约2秒后发`maze_diag status`，应state2且用时增加。再发`maze_diag restart`，手离开等约6秒后发`maze_diag status`；应看到run增加、elapsed重置并重新校准（随后运行会再次累计，不要求6秒后的elapsed仍为0）。最后发`maze_diag back`，等约1秒再发`maze_diag status`，应state0并保留stopped result0/settings_saved1。整段日志回传即可，不用实时盯屏。失败另存，不覆盖run07；物理实际结果以新证据为准。
