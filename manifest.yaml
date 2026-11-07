@@ -112,6 +112,26 @@ physical_verification:
   executed_at: 2026-11-06用户文字回复，未提供精确采集时间
   evidence_path: evidence/merge-2026-11-06/board-run01/direction_confirmation.txt
   agent_conclusion: 学生明确右左上下，对应ay正/ay负/ax负/ax正；据此确定软件映射x=ay/y=ax，不反号。修复后闭环仍待板端新日志。
+- item: 修复后日志校准重测：未进入运行态
+  required_action: 静置完成32样本校准后再倾斜和测试暂停
+  executed_at: 准确采集时间未提供；2026-11-06收到粘贴日志
+  evidence_path: evidence/merge-2026-11-06/board-run02/original.txt
+  agent_conclusion: WHO0x6a读取成功；cal最高22后清零，状态只有1和5/error2，约5s后停止采样；与校准窗口受运动打断后超时相符。没有新四向或第五步通过证据，保留失败待静置重测。
+- item: 新版静置校准重测成功（原文摘录）
+  required_action: 平放不动，发送restart并等待校准完成
+  executed_at: 精确采集时间未提供；2026-11-06收到用户直接粘贴
+  evidence_path: evidence/merge-2026-11-06/board-run03/inline_log_excerpt.txt
+  agent_conclusion: 可见WHO0x6a/result0、state1/cal22→state2/cal32，静置elapsed300至9300ms、age16ms，偏置-32/-21mg，输入0/0、位置1500/1500。只判静置校准和稳定输入通过，不扩展为四向/第五步通过；前次失败保留。
+- item: 新版动态两轴输入和模型位置响应，物理方向待确认
+  required_action: 校准后按实际屏幕四向倾斜，确认顺序和朝向，保存完整短行
+  executed_at: 精确采集时间未提供；2026-11-07收到附件
+  evidence_path: evidence/merge-2026-11-06/board-run04/original.txt
+  agent_conclusion: 93组匹配，校准完成且error0，两轴正负均有输入及位置响应；主序列x负/x正/y正/y负，需要确认实际顺序与朝向，不能判屏幕四向映射通过；无第五步命令
+- item: 完整四向顺序与屏幕朝向确认：旧实现符号反向
+  required_action: 确认本次四向顺序和板子屏幕朝向
+  executed_at: 2026-11-07用户文字回复，精确采集时间未提供
+  evidence_path: evidence/merge-2026-11-06/board-run04/direction_confirmation.txt
+  agent_conclusion: 用户明确右左上下且朝向一致；结合完整日志判定127e830映射符号错误；软件修复单独保存，方向需另行板端复核。
 test_results:
 - test_id: A2-sdk-build
   description: A第二阶段最终SDK固件编译
@@ -239,6 +259,24 @@ test_results:
   actual: 先复现轴向5项FAIL及runtime截断FAIL；修复后52+5项主机PASS，SDK编译成功；新物理测试未执行
   pass: true
   evidence_path: evidence/M2/maze_adapter/host_2026-11-06_133631.txt
+- test_id: TC-402/405-board-run02
+  description: 新版静置校准重测（板端）
+  expected: 连续32稳定样本后state2/cal32，随后才可测试四向与暂停
+  actual: FAIL；49条diag无state2，cal最高22后清零，最后state5/error2；WHO读取成功、停止恢复调用result0。先静置restart重测，不放宽判据
+  pass: false
+  evidence_path: evidence/merge-2026-11-06/board-run02/original.txt
+- test_id: TC-402-board-calibration-retry
+  description: 新版32样本校准及静置输入重测，非完整TC-405
+  expected: 观察校准完成、静止时归一化输入零且位置不漂移，短行字段可读
+  actual: PASS；明确state1→2、cal32，bias_mg=-32,-21，静置9秒可见输入0/0及位置1500/1500；动态方向和第五步尚未取证
+  pass: true
+  evidence_path: evidence/merge-2026-11-06/board-run03/inline_log_excerpt.txt
+- test_id: TC-403-board-run04-screen-direction
+  description: 127e830四向物理方向映射
+  expected: 右x正、左x负、上y负、下y正
+  actual: FAIL；用户确认右左上下、朝向一致，但日志为x负/x正/y正/y负。原始采样和模型位移存在，不代表屏幕方向正确
+  pass: false
+  evidence_path: evidence/merge-2026-11-06/board-run04/original.txt
 known_issues:
 - 本阶段check_all的追踪PASS；历史8条提交的合法Copilot署名被占位符规则误报，开发日志因最后提交距今14天FAIL；manifest还缺学号、组别、提交时间和会话导出路径。保留原结果，不改检查器或历史凑通过。
 - 任务书中的旧基线、提交 4d9eb23 和无游戏 UI 描述与当前工作副本不符；当前仓库只有 1672326 初始提交，且已有鹈鹕自行车 UI。
@@ -252,6 +290,10 @@ known_issues:
 - 第四步实测暴露maze_runtime诊断单次输出超过RT_CONSOLEBUF_SIZE=128，偏置/tilt/pos及换行被截断。需拆短行后重测；原始证据已保存，不猜缺失字段或提前改变轴映射。
 - 最新修复状态：x=ay/y=ax、诊断四条短行已经实现并通过57项主机及SDK编译；前述截断/待确认记录保留为历史。未取得修复后四向完整字段或第五步物理证据，尚未提交。
 - 提交状态更新：学生已审阅并确认hw/fix两份正文，硬件证据已保存f5efe57；当前软件修复按已批准草稿提交，完整四向与第五步仍须修复后板端证据，不能把旧读数标新版本通过。
+- board-run02新版实测校准未完成；先静置restart等待state2，再验证四向和暂停。旧FAIL原文保留，当前不改阈值或猜测传感器损坏。
+- board-run03静置校准/零输入重测已通过，关闭board-run02未完成校准这一当前阻塞；旧FAIL保留。新映射四向、暂停/继续/重开/返回仍待板端日志，不能宣称完整游戏已验收。
+- board-run04动态响应已见，但主输入顺序与此前右左上下的预期相反；本次实际顺序/屏幕朝向待学生确认，暂不自动反号。第五步仍待日志。
+- board-run04顺序/朝向已确认，旧屏幕方向明确FAIL；保留11月6日正号推断及全部失败，软件修复和新板端复核单独跟进。
 self_review: '以下为B在2026-10-17的历史自述。2026-10-31已补齐旧28项板端截图，
 
   并在codex/maze-a-stage2完成A适配器软件和56项主机测试；新硬件证据仍待提供。

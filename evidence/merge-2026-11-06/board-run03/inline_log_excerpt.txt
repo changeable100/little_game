@@ -1,0 +1,30 @@
+本文件为2026-11-06用户直接粘贴日志的原文摘录，不是完整串口录制。未提供精确采集时间或独立固件哈希。
+选取校准前、首次RUNNING、随后静置和最后一组；省略的中间记录仍在本次聊天用户消息中。以下字段原样保留。
+
+maze_diag restart
+
+msh />msh />msh />[maze:command] action=3 result=0 run=1
+[maze:diag] run=1 rev=2 state=1 error=0 elapsed=0 cal=0
+[maze:imu] run=1 seq=0 age=12795 a_mg=0,0,0
+[maze:gyro] seq=0 g_mdps=0,0,0
+[maze:input] seq=0 bias_mg=0,0 tilt_milli=0,0 pos_milli=1500,1500
+[maze:imu] run=1 WHO_AM_I=0x6a result=0
+[maze:diag] run=1 rev=2 state=1 error=0 elapsed=0 cal=22
+[maze:imu] run=1 seq=24 age=16 a_mg=-33,-23,-963
+[maze:gyro] seq=24 g_mdps=1732,-3395,-428
+[maze:input] seq=24 bias_mg=0,0 tilt_milli=0,0 pos_milli=1500,1500
+[maze:diag] run=1 rev=18 state=2 error=0 elapsed=300 cal=32
+[maze:imu] run=1 seq=49 age=16 a_mg=-35,-20,-963
+[maze:gyro] seq=49 g_mdps=1671,-3508,-420
+[maze:input] seq=49 bias_mg=-32,-21 tilt_milli=0,0 pos_milli=1500,1500
+[maze:diag] run=1 rev=43 state=2 error=0 elapsed=800 cal=32
+[maze:imu] run=1 seq=74 age=16 a_mg=-34,-21,-961
+[maze:gyro] seq=74 g_mdps=1785,-3290,-315
+[maze:input] seq=74 bias_mg=-32,-21 tilt_milli=0,0 pos_milli=1500,1500
+
+（中间记录省略）
+
+[maze:diag] run=1 rev=468 state=2 error=0 elapsed=9300 cal=32
+[maze:imu] run=1 seq=499 age=16 a_mg=-33,-18,-960
+[maze:gyro] seq=499 g_mdps=1837,-3237,-350
+[maze:input] seq=499 bias_mg=-32,-21 tilt_milli=0,0 pos_milli=1500,1500
