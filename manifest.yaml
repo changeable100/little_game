@@ -131,7 +131,7 @@ physical_verification:
   required_action: 确认本次四向顺序和板子屏幕朝向
   executed_at: 2026-11-07用户文字回复，精确采集时间未提供
   evidence_path: evidence/merge-2026-11-06/board-run04/direction_confirmation.txt
-  agent_conclusion: 用户明确右左上下且朝向一致；结合完整日志判定127e830映射符号错误；软件修复单独保存，方向需另行板端复核。
+  agent_conclusion: 用户明确右左上下且朝向一致；结合完整日志判定127e830映射符号错误，已据此软件改为x=-ay/y=-ax，新方向仍待板端复核。
 test_results:
 - test_id: A2-sdk-build
   description: A第二阶段最终SDK固件编译
@@ -277,6 +277,12 @@ test_results:
   actual: FAIL；用户确认右左上下、朝向一致，但日志为x负/x正/y正/y负。原始采样和模型位移存在，不代表屏幕方向正确
   pass: false
   evidence_path: evidence/merge-2026-11-06/board-run04/original.txt
+- test_id: TC-403-signed-board-vector-replay
+  description: 两轴反号及实际原始向量回放软件回归
+  expected: 既定四向符号与其他模型/时序/短日志用例通过
+  actual: 先6项FAIL，修复后58项PASS；SDK编译PASS，1088224字节。新板端方向待验证
+  pass: true
+  evidence_path: evidence/M2/maze_adapter/host_2026-11-07_144505.txt
 known_issues:
 - 本阶段check_all的追踪PASS；历史8条提交的合法Copilot署名被占位符规则误报，开发日志因最后提交距今14天FAIL；manifest还缺学号、组别、提交时间和会话导出路径。保留原结果，不改检查器或历史凑通过。
 - 任务书中的旧基线、提交 4d9eb23 和无游戏 UI 描述与当前工作副本不符；当前仓库只有 1672326 初始提交，且已有鹈鹕自行车 UI。
@@ -293,7 +299,7 @@ known_issues:
 - board-run02新版实测校准未完成；先静置restart等待state2，再验证四向和暂停。旧FAIL原文保留，当前不改阈值或猜测传感器损坏。
 - board-run03静置校准/零输入重测已通过，关闭board-run02未完成校准这一当前阻塞；旧FAIL保留。新映射四向、暂停/继续/重开/返回仍待板端日志，不能宣称完整游戏已验收。
 - board-run04动态响应已见，但主输入顺序与此前右左上下的预期相反；本次实际顺序/屏幕朝向待学生确认，暂不自动反号。第五步仍待日志。
-- board-run04顺序/朝向已确认，旧屏幕方向明确FAIL；保留11月6日正号推断及全部失败，软件修复和新板端复核单独跟进。
+- board-run04顺序/朝向已确认，旧屏幕方向明确FAIL；最新符号修复x=-ay/y=-ax通过58项主机与SDK编译，未取到新板端方向。保留11月6日正号推断及全部失败，不再据旧日志宣称新映射成功。
 self_review: '以下为B在2026-10-17的历史自述。2026-10-31已补齐旧28项板端截图，
 
   并在codex/maze-a-stage2完成A适配器软件和56项主机测试；新硬件证据仍待提供。
