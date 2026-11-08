@@ -1,0 +1,40 @@
+{
+  "received_date": "2026-11-08",
+  "execution_time": "not provided",
+  "firmware_context": "reply to f276000 P0 burn instructions; independent board hash not provided",
+  "startup_pass_counts": {
+    "[maze:selftest]": 24,
+    "[maze:level:selftest]": 4,
+    "[maze:adapter:selftest]": 31
+  },
+  "runtime": "ready result=0; menu ready",
+  "running": {
+    "run": 1,
+    "state": 2,
+    "error": 0,
+    "cal": 32,
+    "elapsed_ms": [
+      302900,
+      304400
+    ],
+    "age_ms": 9,
+    "pause": 0,
+    "interrupted_ms": 0,
+    "pending_ms": 4
+  },
+  "files": {
+    "startup_original.txt": {
+      "bytes": 5794,
+      "sha256": "86b2c636248231cad9db9c6f2fa50f8323b3b0eb1be129b12ea61b9ddc153dc7"
+    },
+    "running_original.jpg": {
+      "bytes": 8978681,
+      "sha256": "29d1260b63064b70f5cb93e836c8ddcb5ecd07da58b1839fc79a8168fa39fb42"
+    },
+    "running_inline_excerpt.txt": {
+      "bytes": 1337,
+      "sha256": "d491e2f8638e7c3139f0a2330e71cd80665dc659e1aa634171ed2fae237befb8"
+    }
+  },
+  "limits": "Photo shows 280s; not synchronized to serial. Severe-delay branch not naturally triggered; no measured FPS/input latency. E/drv.ft6146 ID lines preserved, not removed or independently diagnosed."
+}

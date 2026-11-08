@@ -57,6 +57,11 @@ code:
   commit_range: A阶段二f4610d7与B已发布main e6bd646合并；本次合并版本未上板，HEAD见git log
   a_model_source: origin/feat/req-301-maze-model@9595000；模型实现源提交 77b15d3
 physical_verification:
+- item: P0迟帧容错固件启动与正常游玩
+  required_action: 新镜像启动日志、游玩status与实际画面
+  executed_at: 2026-11-08收到附件/内联片段及照片，精确操作时刻未知
+  evidence_path: evidence/M4/p0-delay-2026-11-08/board-run01/analysis.md
+  agent_conclusion: 模型24/地图4/控制器31项启动自检PASS，runtime1/result0/menu ready；运行state2/error0/cal32，elapsed302900至304400ms、age9、pause0/interrupted0/pending4，照片中文进行中280秒。学生反馈可玩且无感知延迟，正常运行子项PASS；未测严重迟帧恢复/FPS/WON不阻塞P1纯逻辑开发，不要求重做旧页面。
 - item: B基线模型24项启动自检截图
   required_action: 真实板启动后回传模型逐项及汇总输出
   executed_at: 精确执行时间未提供；2026-10-31收到截图
@@ -581,5 +586,6 @@ p0_delay_tolerance:
   software: "81项核心主机回归、真实LVGL合成视图/生产连接、273字形复现检查与SDK编译PASS；RT/传感器替身不代表板端"
   evidence: "evidence/M4/p0-delay-2026-11-08/README.md"
   fingerprint: "evidence/M4/p0-delay-2026-11-08/firmware.json"
-  physical: "新固件尚未上板取证，不登记physical_verification通过；真3D模型/任务/手感未实现或验收"
-  submission: "王若豪已读两份hw/feat正文并确认分两次保存；本轮未授权新推送，P0板端待证据"
+  physical: "board-run01新日志和实物画面支持59项启动自检、正常运行/可玩子项PASS；严重迟帧恢复未自然触发，真3D模型/任务/手感另行验证"
+  user_feedback: "用户报告可以正常玩、没有感觉到延迟，随后已补齐启动/status/新画面；见board-run01/analysis.md。正常运行子项PASS，不推定定量时延或严重迟帧恢复通过"
+  submission: "前轮已按正文保存5c0121e/f276000；当前P0 board-run01新证据正文已读并确认hw本地保存，正常运行结论见physical_verification，本轮不推送"
