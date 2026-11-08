@@ -28,7 +28,8 @@ platform_flags = shlex.split(os.environ.get('CFLAGS', ''))
 flags = platform_flags + ['-std=c11', '-O1', '-DLV_KCONFIG_IGNORE', '-DLV_CONF_INCLUDE_SIMPLE',
          '-I' + str(root / 'include'), '-I' + str(root.parent / 'src'), '-I' + str(lvgl)]
 sources = sorted((lvgl / 'src').rglob('*.c'))
-app_sources = ('maze_menu.c', 'maze_ui.c', 'maze_ui_runtime.c', 'maze_levels.c', 'maze_game.c')
+app_sources = ('maze_menu.c', 'maze_ui.c', 'maze_ui_runtime.c', 'maze_levels.c', 'maze_game.c',
+               'maze_font_16.c', 'maze_font_20.c', 'maze_font_28.c')
 if args.runtime_ui:
     flags.insert(0, '-I' + str(root / 'ui_runtime_stubs'))
     app_sources += ('maze_runtime.c', 'maze_controller.c')

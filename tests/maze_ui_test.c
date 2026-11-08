@@ -44,8 +44,27 @@ static lv_obj_t *text(lv_obj_t *o, const char *s)
     }
     return NULL;
 }
+static void chinese_glyphs(lv_obj_t *object)
+{
+    if(lv_obj_check_type(object,&lv_label_class)) {
+        const unsigned char *s=(const unsigned char *)lv_label_get_text(object);
+        const lv_font_t *font=lv_obj_get_style_text_font(object,0);
+        while(*s) {
+            uint32_t cp=*s++;unsigned extra=0;
+            if(cp>=0xf0){cp&=7;extra=3;}else if(cp>=0xe0){cp&=15;extra=2;}else if(cp>=0xc0){cp&=31;extra=1;}
+            while(extra--){assert((*s&0xc0)==0x80);cp=(cp<<6)|(*s++&63);}
+            if(cp=='\n')continue;
+            assert(!(cp>='A'&&cp<='Z') && !(cp>='a'&&cp<='z'));
+            lv_font_glyph_dsc_t glyph;
+            assert(lv_font_get_glyph_dsc(font,&glyph,cp,0) && !glyph.is_placeholder);
+            if(cp>=0x4e00 && cp<=0x9fff)assert(glyph.box_w && glyph.box_h);
+        }
+    }
+    for(unsigned i=0;i<lv_obj_get_child_count(object);++i)chinese_glyphs(lv_obj_get_child(object,i));
+}
 static void screenshot(const char *name)
 {
+    chinese_glyphs(lv_screen_active());chinese_glyphs(lv_layer_top());
     lv_tick_inc(20);
     lv_timer_handler();
     lv_refr_now(NULL);
@@ -89,7 +108,7 @@ static void partial_refresh_test(lv_display_t *d, lv_obj_t *top,
     lv_refr_now(d); invalidations=0;
     frame.elapsed_ms=1000; /* Same revision still changes visible text. */
     maze_ui_render(&frame,level);
-    assert(text(top,"RUNNING  |  1s") && invalidations>0);
+    assert(text(top,"进行中｜1秒") && invalidations>0);
     uint8_t cells[256]; memcpy(cells,level->cells,sizeof(cells));
     maze_level_t map=*level; map.cells=cells;
     maze_ui_render(&frame,&map); lv_refr_now(d); invalidations=0;
@@ -100,8 +119,8 @@ static void partial_refresh_test(lv_display_t *d, lv_obj_t *top,
     assert(lv_color_eq(lv_obj_get_style_bg_color(tile,0),lv_color_hex(
         cells[5]==MAZE_CELL_WALL?0x263D55:0x101B2B)));
     cells[5]=99; maze_ui_render(&frame,&map);
-    assert(text(top,"INVALID SNAPSHOT"));
-    maze_ui_render(&frame,level); assert(text(top,"RUNNING  |  1s"));
+    assert(text(top,"游戏数据异常"));
+    maze_ui_render(&frame,level); assert(text(top,"进行中｜1秒"));
     maze_ui_destroy();
     lv_display_set_buffers(d,buffer,NULL,sizeof(buffer),LV_DISPLAY_RENDER_MODE_FULL);
     puts("TC-209 stationary-no-invalidation, ball-only region, same-revision/map mutation and recovery PASS");
@@ -125,30 +144,30 @@ int main(void)
     for (unsigned round = 0; round < 20; ++round) {
         assert(maze_menu_create_preview() == MAZE_UI_SUCCESS);
         assert(maze_menu_create_preview() == MAZE_UI_ERR_EXISTS);
-        assert(text(screen, "TILT MAZE"));
+        assert(text(screen, "体感迷宫"));
         assert(!text(screen, "Peripheral Lab"));
         assert(!text(screen, "RGB light"));
-        assert(text(screen, "PREVIEW"));
+        assert(text(screen, "预览"));
         lv_obj_update_layout(screen);
-        lv_obj_t *enter = lv_obj_get_parent(text(screen, "ENTER MAZE"));
-        lv_obj_t *instructions = lv_obj_get_parent(text(screen, "HOW TO PLAY"));
+        lv_obj_t *enter = lv_obj_get_parent(text(screen, "进入游戏"));
+        lv_obj_t *instructions = lv_obj_get_parent(text(screen, "玩法说明"));
         assert(lv_obj_get_x(enter) == 44 && lv_obj_get_y(enter) == 330);
         assert(lv_obj_get_width(enter) == 302 && lv_obj_get_height(enter) == 48);
         assert(lv_obj_get_y(instructions) == 388);
         unsigned menu_count = objects(screen);
         if (round == 0) screenshot("game-home.ppm");
         lv_obj_send_event(instructions, LV_EVENT_CLICKED, NULL);
-        assert(text(screen, "HOW TO PLAY"));
-        assert(text(screen, "Preview only: motion controls\nare not enabled yet."));
+        assert(text(screen, "玩法说明"));
+        assert(text(screen, "当前为模拟预览，\n未启用体感控制。"));
         if (round == 0) screenshot("game-help.ppm");
-        lv_obj_send_event(lv_obj_get_parent(text(screen, "BACK TO MENU")), LV_EVENT_CLICKED, NULL);
-        assert(!text(screen, "BACK TO MENU"));
+        lv_obj_send_event(lv_obj_get_parent(text(screen, "返回首页")), LV_EVENT_CLICKED, NULL);
+        assert(!text(screen, "返回首页"));
         assert(objects(screen) == menu_count);
         lv_obj_send_event(enter, LV_EVENT_CLICKED, NULL);
-        assert(text(top, "PREVIEW / SIMULATED DATA"));
+        assert(text(top, "模拟预览"));
         if (round == 0) screenshot("game-maze.ppm");
-        lv_obj_send_event(lv_obj_get_parent(text(top, "BACK")), LV_EVENT_CLICKED, NULL);
-        assert(objects(top) == base && text(screen, "TILT MAZE"));
+        lv_obj_send_event(lv_obj_get_parent(text(top, "返回")), LV_EVENT_CLICKED, NULL);
+        assert(objects(top) == base && text(screen, "体感迷宫"));
         assert(objects(screen) == menu_count && timers() == clock_count);
         /* Also destroy while the maze or nested help page is still open. */
         lv_obj_send_event(enter, LV_EVENT_CLICKED, NULL);
@@ -156,7 +175,7 @@ int main(void)
         assert(objects(screen) == screen_base && objects(top) == base);
         assert(timers() == clock_count);
         assert(maze_menu_create_preview() == MAZE_UI_SUCCESS);
-        lv_obj_send_event(lv_obj_get_parent(text(screen, "HOW TO PLAY")), LV_EVENT_CLICKED, NULL);
+        lv_obj_send_event(lv_obj_get_parent(text(screen, "玩法说明")), LV_EVENT_CLICKED, NULL);
         maze_menu_destroy();
         assert(objects(screen) == screen_base && objects(top) == base);
     }
@@ -170,12 +189,12 @@ int main(void)
     for (unsigned round = 0; round < 20; ++round) {
         maze_ui_preview_open();
         assert(maze_ui_create(NULL, NULL) == MAZE_UI_ERR_EXISTS);
-        assert(text(top, "PREVIEW / SIMULATED DATA"));
-        if (!text(top, "READY  |  0s")) {
+        assert(text(top, "模拟预览"));
+        if (!text(top, "待开始｜0秒")) {
             lv_obj_t *p = lv_obj_get_child(top, -1);
             fprintf(stderr, "Actual status: %s\n", lv_label_get_text(lv_obj_get_child(p, 1)));
         }
-        assert(text(top, "READY  |  0s"));
+        assert(text(top, "待开始｜0秒"));
         unsigned count = objects(top);
         for (unsigned i = 0; i < 100; ++i) {
             maze_snapshot_t repeated = s;
@@ -186,7 +205,7 @@ int main(void)
         assert(objects(top) == count && timers() == clock_count);
         lv_obj_update_layout(top);
         lv_obj_t *page = lv_obj_get_child(top, -1);
-        lv_obj_t *title = text(top, "MAZE");
+        lv_obj_t *title = text(top, "迷宫");
         assert(lv_obj_get_x(title) == 40 && lv_obj_get_y(title) == 12);
         lv_obj_t *ball = lv_obj_get_child(page, 260);
         assert(lv_obj_get_x(ball) == 61 && lv_obj_get_y(ball) == 87);
@@ -195,7 +214,7 @@ int main(void)
         lv_obj_t *last = lv_obj_get_child(page, 257);
         assert(lv_obj_get_x(first) == 35 && lv_obj_get_y(first) == 61);
         assert(lv_obj_get_x(last) == 335 && lv_obj_get_y(last) == 361);
-        const char *names[] = {"START", "PAUSE", "RESTART", "BACK"};
+        const char *names[] = {"开始", "暂停", "重开", "返回"};
         for (unsigned i = 0; i < 4; ++i) {
             lv_obj_t *button = lv_obj_get_parent(text(top, names[i]));
             assert(lv_obj_get_width(button) == 78 && lv_obj_get_height(button) == 40);
@@ -205,9 +224,9 @@ int main(void)
         }
         if (round == 0) screenshot("maze-preview.ppm");
         lv_tick_inc(2000); lv_timer_handler();
-        assert(text(top, "READY  |  0s"));
+        assert(text(top, "待开始｜0秒"));
         maze_ui_render(NULL, level);
-        assert(text(top, "INVALID SNAPSHOT"));
+        assert(text(top, "游戏数据异常"));
         assert(lv_obj_has_flag(ball, LV_OBJ_FLAG_HIDDEN));
         maze_ui_render(&s, NULL);
         maze_snapshot_t bad = s; bad.ball_x = NAN;
@@ -227,13 +246,14 @@ int main(void)
         assert(lv_obj_has_flag(ball, LV_OBJ_FLAG_HIDDEN));
         maze_ui_render(&s, level);
         assert(!lv_obj_has_flag(ball, LV_OBJ_FLAG_HIDDEN));
-        lv_obj_send_event(lv_obj_get_parent(text(top, "BACK")), LV_EVENT_CLICKED, NULL);
+        lv_obj_send_event(lv_obj_get_parent(text(top, "返回")), LV_EVENT_CLICKED, NULL);
         maze_ui_destroy(); maze_ui_destroy();
         maze_ui_render(&s, level);
         assert(objects(top) == base && timers() == clock_count);
     }
     assert(maze_ui_create(NULL, NULL) == MAZE_UI_SUCCESS);
-    const char *states[] = {"READY", "CALIBRATING", "RUNNING", "PAUSED", "WON", "ERROR"};
+    const char *states[] = {"待开始", "准备中", "进行中", "已暂停", "已通关", "发生错误"};
+    const char *state_files[] = {"READY", "CALIBRATING", "RUNNING", "PAUSED", "WON", "ERROR"};
     unsigned six_count = objects(top);
     for (unsigned state = 0; state < 6; ++state) {
         maze_snapshot_t frame = s;
@@ -244,17 +264,22 @@ int main(void)
         frame.ball_y = state == MAZE_WON ? 13.5f : 1.5f;
         frame.error_code = state == MAZE_ERROR ? MAZE_ERROR_INPUT : MAZE_ERROR_NONE;
         maze_ui_render(&frame, level);
+        if(state==MAZE_CALIBRATING || state==MAZE_ERROR) {
+            lv_obj_t *overlay=lv_obj_get_child(lv_obj_get_child(top,-1),-1);
+            assert(!lv_obj_has_flag(overlay,LV_OBJ_FLAG_HIDDEN));
+            assert(text(overlay,"模拟预览"));
+        }
         char expected[80], filename[80];
-        snprintf(expected, sizeof(expected), "%s  |  %lus", states[state], (unsigned long)(frame.elapsed_ms / 1000));
+        snprintf(expected, sizeof(expected), "%s｜%lu秒", states[state], (unsigned long)(frame.elapsed_ms / 1000));
         assert(text(top, expected));
-        assert(text(top, state == MAZE_PAUSED ? "RESUME" : "PAUSE"));
-        if (state == MAZE_ERROR) assert(text(top, "INPUT ERROR: restart or back"));
+        assert(text(top, state == MAZE_PAUSED ? "继续" : "暂停"));
+        if (state == MAZE_ERROR) assert(text(top, "输入异常，请重新加载或返回"));
         lv_obj_update_layout(top);
         lv_obj_t *b = lv_obj_get_child(lv_obj_get_child(top, -1), 260);
         assert(lv_obj_get_x(b) == 35 + (int)(frame.ball_x * 20) - 4);
         assert(lv_obj_get_y(b) == 61 + (int)(frame.ball_y * 20) - 4);
         assert(!lv_obj_has_flag(b, LV_OBJ_FLAG_HIDDEN));
-        snprintf(filename, sizeof(filename), "state-%s.ppm", states[state]);
+        snprintf(filename, sizeof(filename), "state-%s.ppm", state_files[state]);
         screenshot(filename);
         /* Same revision, borrowed stack value mutated after render. No UI clock. */
         frame.elapsed_ms = 99000;
@@ -265,37 +290,38 @@ int main(void)
     maze_snapshot_t extreme = s;
     extreme.state = MAZE_RUNNING; extreme.elapsed_ms = UINT32_MAX;
     maze_ui_render(&extreme, level);
-    assert(text(top, "RUNNING  |  4294967s"));
-    const char *causes[] = {"No error detail; use BACK", "LEVEL ERROR: return to menu",
-                            "INPUT ERROR: restart or back", "TIMING ERROR: restart or back"};
+    assert(text(top, "进行中｜4294967秒"));
+    const char *causes[] = {"错误原因未知，请返回首页", "关卡异常，请返回首页",
+                            "输入异常，请重新加载或返回", "运行超时，请重新加载或返回"};
     for (unsigned cause = 0; cause < 4; ++cause) {
         extreme = s; extreme.state = MAZE_ERROR; extreme.error_code = (maze_error_t)cause;
         maze_ui_render(&extreme, cause == MAZE_ERROR_LEVEL ? NULL : level);
         assert(text(top, causes[cause]));
     }
     extreme = s; extreme.state = (maze_state_t)-1;
-    maze_ui_render(&extreme, level); assert(text(top, "INVALID SNAPSHOT"));
+    maze_ui_render(&extreme, level); assert(text(top, "游戏数据异常"));
     extreme = s; extreme.input_status = (maze_input_status_t)99;
-    maze_ui_render(&extreme, level); assert(text(top, "INVALID SNAPSHOT"));
+    maze_ui_render(&extreme, level); assert(text(top, "游戏数据异常"));
     extreme = s; extreme.error_code = (maze_error_t)99;
-    maze_ui_render(&extreme, level); assert(text(top, "INVALID SNAPSHOT"));
+    maze_ui_render(&extreme, level); assert(text(top, "游戏数据异常"));
     extreme = s; extreme.ball_radius = INFINITY;
-    maze_ui_render(&extreme, level); assert(text(top, "INVALID SNAPSHOT"));
+    maze_ui_render(&extreme, level); assert(text(top, "游戏数据异常"));
     uint8_t malformed[256]; memcpy(malformed, level->cells, sizeof(malformed));
     maze_level_t invalid_level = *level; invalid_level.cells = malformed;
     malformed[5] = 99;
-    maze_ui_render(&s, &invalid_level); assert(text(top, "INVALID SNAPSHOT"));
+    maze_ui_render(&s, &invalid_level); assert(text(top, "游戏数据异常"));
     maze_ui_render(&s, level);
     screenshot("state-recovered.ppm");
-    assert(text(top, "READY  |  0s"));
+    assert(text(top, "待开始｜0秒"));
     maze_ui_destroy();
     assert(objects(top) == base && timers() == clock_count);
     partial_refresh_test(d,top,&s,level);
     assert(objects(top) == base && timers() == clock_count);
     maze_ui_preview_open(); /* New instance with initial revision must render. */
-    assert(text(top, "READY  |  0s")); maze_ui_destroy();
+    assert(text(top, "待开始｜0秒")); maze_ui_destroy();
     puts("TC-201/203/206 six simulated states, error reasons, enums, UINT32 time, borrowed input, recovery PASS");
     assert(sink_calls == 0);
+    puts("TC-214 all product labels Chinese; actual glyphs present for visible and hidden labels PASS");
     puts("TC-201 host layout PASS; screenshot maze-preview.ppm");
     puts("TC-202/210 preview disabled controls PASS; production actions NOT TESTED");
     puts("TC-203 six synthetic states/time PASS; production runtime UI binding NOT TESTED");

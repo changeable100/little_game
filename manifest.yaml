@@ -16,6 +16,10 @@ requirements:
 design:
   architecture_doc_path: docs/02-方案设计说明.md
   key_decisions:
+  - decision: 中文开始准备界面采用同页遮罩，见ADR-0005
+    alternatives_considered: 独立准备页，增加跨页面导航与生命周期引用成本
+    rationale: 复用已验证renderer、动作与清理，准备状态由真实CALIBRATING驱动，失败手动RESTART；保留唯一时钟和原阈值
+    decided_by: 王若豪于2026-11-08明确确认方案A
   - decision: 以B的Lab/LVGL工程943e762为最终整机基线，见ADR-0004
     alternatives_considered: 以A课程工程为基线选择性移植B的LVGL/触摸
     rationale: 已有显示触摸入口，较快联调；接受依赖多、镜像大与告警需评估的代价
@@ -406,7 +410,14 @@ test_results:
   actual: PASS（限本段）；run12/error0/cal32，运行elapsed32363→40433且球有位移，6组暂停均40563ms/pos10748,3799；学生确认屏幕PAUSE，原照片显示RUNNING21s。无本段TIMING，缺完整启动/后续动作/通关/最坏间隔证据
   pass: true
   evidence_path: evidence/M3/dynamic-ui/run03/analysis.md
+- test_id: TC-214/215-chinese-preparation-software
+  description: 全中文产品界面、真实校准准备遮罩与失败手动重载
+  expected: glyph完整可见、真实校准成功才可玩，输入/时序失败可RESTART新run，准备中安全返回/清理，保持原回归及100ms判据
+  actual: 271字符×16/20/28px字库生成/check与实际glyph测试PASS；旧页面加载断言先FAIL后实现PASS，Windows中文截图文件名失败保留并修复；真实LVGL/生产连接与74核心回归、SDK最终编译PASS。main.bin1138520字节，新屏幕/触摸/失败重试未板测
+  pass: true
+  evidence_path: evidence/M3/chinese-loading-2026-11-08/connection_final_complete.txt
 known_issues:
+- 最新中文界面/准备/失败重载软件已实现并通过主机及SDK编译，仍待本批真实屏幕、触摸和准备重试日志。旧英文版run03与恢复/重开/返回的文字反馈不替代新功能物理验收；字体/遮罩新增后的板端时序需继续观察，100ms判据未改。
 - 最新run03已通过运行/倾斜移动/屏幕PAUSE冻结子项，run01/02失败保留为历史；RESUME/RESTART/BACK、回平输入与四向标签、真实WON/资源复用仍待证据。偏置-172,-55与末段tilt0,-413不证明平放漂移，缺该时刻水平姿态确认。新启动/板端独立指纹未提供，不扩大为完整M3或最坏耗时通过。
 - P2 run02平放后cal32但TIMING ERROR；已按负责人确认计划消除重复格子/文本刷新并加入冻结故障时序记录，74项主机回归/真实LVGL/SDK编译PASS。唯一阻塞来源及新镜像真实100ms是否满足仍待run03，保留原FAIL和判据。
 - run01的status确认未成功校准；末帧倾斜且g_z超静置限制，与稳定窗口清零/5s期限相符。精确终止原因待连续重测；先水平桌面RESTART、手离开等待RUNNING后再倾斜，不修改阈值或烧录新固件。
@@ -477,6 +488,8 @@ self_review: '以下为B在2026-10-17的历史自述。2026-10-31已补齐旧28�
 
   '
 human_checkpoints:
+- decision_point: 中文界面与开始准备页表现方式
+  student_confirmation: 2026-11-08王若豪明确确认方案A，游戏页上显示准备遮罩、真实校准完成后可玩；全中文及失败重新加载属于已确认范围。新功能板端效果待学生取证。
 - decision_point: P2局部刷新与时序诊断修复
   student_confirmation: 2026-11-08王若豪明确回复“确认，按计划修复”；允许UI局部刷新、runtime/main只读耗时诊断与相应测试，不调整100ms/校准条件，不迁移线程。新镜像实测由学生完成，提交正文另审阅。
 - decision_point: 整机基线与A第二阶段开工

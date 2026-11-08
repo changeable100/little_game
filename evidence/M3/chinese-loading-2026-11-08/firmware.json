@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-08",
+  "base_commit": "6b02586",
+  "feature_uncommitted_at_build": true,
+  "physical_verified": false,
+  "images": [
+    {
+      "path": "project\\build_sf32lb52-lchspi-ulp_hcpu\\main.bin",
+      "bytes": 1138520,
+      "sha256": "d9f6945be029e7bdbdcc9797531ee1c548d82982b6af56b5c206f87e2a1255a1"
+    },
+    {
+      "path": "project\\build_sf32lb52-lchspi-ulp_hcpu\\bootloader\\bootloader.bin",
+      "bytes": 58496,
+      "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21"
+    },
+    {
+      "path": "project\\build_sf32lb52-lchspi-ulp_hcpu\\ftab\\ftab.bin",
+      "bytes": 11288,
+      "sha256": "b011699bb77a09b420460ce12a500cc7068cc2e3fd6e49965080decfd8f76886"
+    }
+  ],
+  "sources": {
+    "src/maze_menu.c": "b3ecdba298dbbc1f00ba797a6d11bc986ccb2b1b3ddfe6ceb2ff9d71d08f574d",
+    "src/maze_ui.c": "680740a736bf79cc7e4217c4b79456aab71ed2bad0a727c9f7bb19c1e337b351",
+    "src/maze_ui_runtime.c": "ee7ebdcf7d453195359c1703a62f16440c983efb860fd9d66216a0221b97ed38",
+    "src/maze_font.h": "6b735e135954b2d997d5e57d2ab109ae794edad73a31e955b023df9a7d5035a1",
+    "src/maze_font_16.c": "0a90e6830480318fcdd97473a55b788bd8e742c2c013dc34e0ef7875ab23aa0d",
+    "src/maze_font_20.c": "e1ef92754cb3a9589c19434e5bb5365499df86afb5c4787bc872cdc3b4487881",
+    "src/maze_font_28.c": "8e113a3b80b799c7ee713997b68ad2b10636cbf875247d82129f5ac1880b1761",
+    "tools/generate_maze_font.py": "435aef75f8bee559cbf019e345e9529e3608c82e1bae4c3ff6ebccdc2524b5ba"
+  }
+}

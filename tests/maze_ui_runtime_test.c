@@ -57,6 +57,8 @@ static lv_obj_t *find(lv_obj_t *o,const char *s)
 static lv_obj_t *button(const char *s)
 {lv_obj_t *l=find(lv_layer_top(),s);if(!l)l=find(lv_screen_active(),s);assert(l);return lv_obj_get_parent(l);}
 static void click(const char *s){lv_obj_send_event(button(s),LV_EVENT_CLICKED,NULL);}
+static bool visible(lv_obj_t *o)
+{if(!o)return false;for(;o;o=lv_obj_get_parent(o))if(lv_obj_has_flag(o,LV_OBJ_FLAG_HIDDEN))return false;return true;}
 static unsigned count(lv_obj_t *o){unsigned n=1;for(unsigned i=0;i<lv_obj_get_child_count(o);++i)n+=count(lv_obj_get_child(o,i));return n;}
 static unsigned timers(void){unsigned n=0;for(lv_timer_t *t=lv_timer_get_next(NULL);t;t=lv_timer_get_next(t))++n;return n;}
 static void pump(unsigned n)
@@ -75,33 +77,49 @@ int main(void)
  lv_display_set_buffers(d,buffer,NULL,sizeof(buffer),LV_DISPLAY_RENDER_MODE_FULL);lv_display_set_flush_cb(d,flush);
  unsigned screen_base=count(lv_screen_active()),top_base=count(lv_layer_top());
  for(int status=0;status<=6;++status){if(status==MAZE_RUNTIME_READY)continue;status_override=status;
-  assert(maze_menu_create()==0);assert(lv_obj_has_state(button("ENTER MAZE"),LV_STATE_DISABLED));
-  assert(find(lv_screen_active(),maze_ui_runtime_startup_text()));click("HOW TO PLAY");click("BACK TO MENU");
+  assert(maze_menu_create()==0);assert(lv_obj_has_state(button("进入游戏"),LV_STATE_DISABLED));
+  assert(find(lv_screen_active(),maze_ui_runtime_startup_text()));click("玩法说明");click("返回首页");
   assert(maze_ui_runtime_open()==MAZE_UI_ERR_NOT_CONNECTED);maze_menu_destroy();}
  status_override=-1;assert(maze_runtime_init(true)==MAZE_OK);unsigned clock_base=timers();
  assert(maze_runtime_attach(foreign,NULL)==0);assert(maze_ui_runtime_open()!=0);pump(1);assert(foreign_draws>0);
  assert(maze_runtime_detach()==0);read_fail=1;assert(maze_ui_runtime_open()!=0);
  assert(maze_runtime_attach(foreign,NULL)==0);assert(maze_runtime_detach()==0);
  puts("TC-408 startup gates and TC-206 attach rejection/owned rollback PASS");
- assert(maze_menu_create()==0);shot("production-home.ppm");click("ENTER MAZE");
- assert(snapshot().state==MAZE_READY&&snapshot().run_id==0);assert(!find(lv_layer_top(),"PREVIEW / SIMULATED DATA"));
+ assert(maze_menu_create()==0);shot("production-home.ppm");
+ click("玩法说明");assert(find(lv_screen_active(),"开始前请将板子放平，\n保持静止，等待准备完成。"));
+ shot("production-help.ppm");click("返回首页");click("进入游戏");
+ assert(snapshot().state==MAZE_READY&&snapshot().run_id==0);assert(!find(lv_layer_top(),"模拟预览"));
  shot("production-ready.ppm");
  /* Duplicate menu event must report this UI error, not old runtime OK. */
- click("ENTER MAZE");assert(find(lv_screen_active(),"Cannot open game (UI -100)"));
+ click("进入游戏");assert(find(lv_screen_active(),"游戏界面打开失败（-100）"));
  /* Synthetic control-matrix probes only; runtime lifecycle above/below is real. */
  maze_snapshot_t matrix=snapshot();
  for(unsigned st=0;st<6;++st){matrix.state=(maze_state_t)st;matrix.error_code=st==5?MAZE_ERROR_INPUT:MAZE_ERROR_NONE;
   maze_ui_render(&matrix,maze_levels_default());
-  assert(!lv_obj_has_state(button("BACK"),LV_STATE_DISABLED));
-  assert(lv_obj_has_state(button("START"),LV_STATE_DISABLED)==(st!=0));
-  assert(lv_obj_has_state(button(st==3?"RESUME":"PAUSE"),LV_STATE_DISABLED)==(st!=2&&st!=3));
-  assert(lv_obj_has_state(button("RESTART"),LV_STATE_DISABLED)==(st<2));
+  assert(!lv_obj_has_state(button("返回"),LV_STATE_DISABLED));
+  assert(lv_obj_has_state(button("开始"),LV_STATE_DISABLED)==(st!=0));
+  assert(lv_obj_has_state(button(st==3?"继续":"暂停"),LV_STATE_DISABLED)==(st!=2&&st!=3));
+  assert(lv_obj_has_state(button("重开"),LV_STATE_DISABLED)==(st<2));
   if(st==4)shot("matrix-WON-synthetic.ppm");if(st==5)shot("matrix-ERROR-synthetic.ppm");}
  matrix.state=MAZE_ERROR;matrix.error_code=MAZE_ERROR_LEVEL;maze_ui_render(&matrix,maze_levels_default());
- assert(lv_obj_has_state(button("RESTART"),LV_STATE_DISABLED));
+ assert(lv_obj_has_state(button("重开"),LV_STATE_DISABLED));
+ assert(visible(find(lv_layer_top(),"关卡异常"))&&lv_obj_has_state(button("重新加载"),LV_STATE_DISABLED));
  matrix=snapshot();maze_ui_render(&matrix,maze_levels_default());
- assert(lv_obj_has_state(button("PAUSE"),LV_STATE_DISABLED));
- click("START");assert(snapshot().state==MAZE_CALIBRATING);shot("production-calibrating.ppm");
+ assert(lv_obj_has_state(button("暂停"),LV_STATE_DISABLED));
+ click("开始");assert(snapshot().state==MAZE_CALIBRATING);
+ assert(visible(find(lv_layer_top(),"准备开始")));
+ assert(visible(find(lv_layer_top(),"请将板子放平")));
+ unsigned loading_actions=actions;click("重新加载");click("开始");assert(actions==loading_actions);
+ shot("production-calibrating.ppm");
+ sample.a[0]=0.6f;pump(260);assert(snapshot().state==MAZE_ERROR&&snapshot().error_code==MAZE_ERROR_INPUT);
+ assert(visible(find(lv_layer_top(),"准备未完成")));
+ assert(!lv_obj_has_state(button("重新加载"),LV_STATE_DISABLED));
+ shot("production-input-retry.ppm");
+ uint32_t failed_run=snapshot().run_id;
+ click("重新加载");assert(snapshot().run_id==failed_run+1&&snapshot().state==MAZE_CALIBRATING&&snapshot().elapsed_ms==0);
+ pump(10);assert(snapshot().state==MAZE_CALIBRATING&&visible(find(lv_layer_top(),"准备开始")));
+ pump(24);assert(snapshot().state==MAZE_RUNNING&&!visible(find(lv_layer_top(),"准备开始")));
+ puts("TC-215 real calibration timeout, disabled duplicate/retry, new-run reload and true-ready gate PASS");
  pump(34);assert(snapshot().state==MAZE_RUNNING);
  sample.a[1]=0.2f;pump(70);matrix=snapshot();assert(matrix.ball_x>1.5f);
  lv_obj_update_layout(lv_layer_top());
@@ -109,46 +127,57 @@ int main(void)
  assert(lv_obj_get_x(moving_ball)==35+(int)(matrix.ball_x*20+0.5f)-4);
  shot("production-running.ppm");
  /* PAUSE settlement can fail and change state. Always reread that state. */
- clock_ms+=200;lv_tick_inc(200);click("PAUSE");
+ clock_ms+=200;lv_tick_inc(200);click("暂停");
  assert(snapshot().state==MAZE_ERROR&&snapshot().error_code==MAZE_ERROR_TIMING);
- assert(find(lv_layer_top(),"TIMING ERROR: Invalid action; see current state"));
- shot("production-timing-error.ppm");click("RESTART");pump(35);assert(snapshot().state==MAZE_RUNNING);
+ assert(find(lv_layer_top(),"运行超时：操作无效，请查看当前状态"));
+ assert(visible(find(lv_layer_top(),"运行超时")));
+ shot("production-timing-error.ppm");click("重新加载");pump(35);assert(snapshot().state==MAZE_RUNNING);
  assert(maze_ui_runtime_open()==MAZE_UI_ERR_EXISTS);
- unsigned r=reads;click("PAUSE");assert(reads>r&&snapshot().state==MAZE_PAUSED);
+ unsigned r=reads;click("暂停");assert(reads>r&&snapshot().state==MAZE_PAUSED);
  uint32_t elapsed=snapshot().elapsed_ms;pump(20);assert(snapshot().elapsed_ms==elapsed);
  shot("production-paused.ppm");
  assert(maze_ui_runtime_release()==0);pump(1);assert(maze_ui_runtime_open()==0);
- click("RESUME");assert(maze_ui_runtime_last_result()==MAZE_WRONG_STATE);
- assert(find(lv_layer_top(),"Not ready; see current state"));pump(2);click("RESUME");assert(snapshot().state==MAZE_RUNNING);
- uint32_t old=snapshot().run_id;click("RESTART");assert(snapshot().run_id==old+1&&snapshot().state==MAZE_CALIBRATING);
+ click("继续");assert(maze_ui_runtime_last_result()==MAZE_WRONG_STATE);
+ assert(find(lv_layer_top(),"尚未就绪，请稍后再试"));pump(2);click("继续");assert(snapshot().state==MAZE_RUNNING);
+ uint32_t old=snapshot().run_id;click("重开");assert(snapshot().run_id==old+1&&snapshot().state==MAZE_CALIBRATING);
  pump(35);assert(snapshot().state==MAZE_RUNNING);
- for(int fail=-1;fail>=-3;--fail){action_fail=fail;unsigned before=actions;r=reads;click("PAUSE");
+ for(int fail=-1;fail>=-3;--fail){action_fail=fail;unsigned before=actions;r=reads;click("暂停");
   assert(actions==before+1&&reads>r&&snapshot().state==MAZE_RUNNING);assert(maze_ui_runtime_last_result()==fail);}
  action_fail=0;
  maze_snapshot_t stale=snapshot();stale.run_id--;maze_ui_render(&stale,maze_levels_default());
- unsigned before=actions;r=reads;click("PAUSE");assert(actions==before+1&&seen_run==stale.run_id&&reads>r);
- assert(maze_ui_runtime_last_result()==MAZE_STALE);assert(find(lv_layer_top(),"Old intent discarded; not retried"));
- pump(1);assert(find(lv_layer_top(),"Old intent discarded; not retried"));
- action_fail=MAZE_STALE;click("BACK");assert(count(lv_layer_top())>top_base);action_fail=0;
- click("BACK");assert(count(lv_layer_top())==top_base&&snapshot().state==MAZE_READY);pump(2);
- for(unsigned i=0;i<20;++i){click("ENTER MAZE");assert(find(lv_screen_active(),maze_ui_runtime_startup_text()));click("START");pump(35);assert(snapshot().state==MAZE_RUNNING);
+ unsigned before=actions;r=reads;click("暂停");assert(actions==before+1&&seen_run==stale.run_id&&reads>r);
+ assert(maze_ui_runtime_last_result()==MAZE_STALE);assert(find(lv_layer_top(),"旧操作已取消，请重新操作"));
+ pump(1);assert(find(lv_layer_top(),"旧操作已取消，请重新操作"));
+ action_fail=MAZE_STALE;click("返回");assert(count(lv_layer_top())>top_base);action_fail=0;
+ click("返回");assert(count(lv_layer_top())==top_base&&snapshot().state==MAZE_READY);pump(2);
+ for(unsigned i=0;i<20;++i){click("进入游戏");assert(find(lv_screen_active(),maze_ui_runtime_startup_text()));click("开始");pump(35);assert(snapshot().state==MAZE_RUNNING);
   lv_obj_delete(lv_obj_get_child(lv_layer_top(),-1));assert(snapshot().state==MAZE_PAUSED);
-  assert(maze_ui_runtime_open()==0);assert(snapshot().state==MAZE_PAUSED);pump(2);click("BACK");pump(2);
+  assert(maze_ui_runtime_open()==0);assert(snapshot().state==MAZE_PAUSED);pump(2);click("返回");pump(2);
   assert(timers()==clock_base&&count(lv_layer_top())==top_base);}
  puts("TC-202/205/209 real actions, freshness, stale/no-retry, external deletion, 20 cycles PASS");
- click("ENTER MAZE");lv_event_dsc_t *desc=lv_obj_get_event_dsc(button("START"),0);
+ click("进入游戏");click("开始");assert(snapshot().state==MAZE_CALIBRATING);
+ before=actions;click("返回首页");assert(actions==before+1&&snapshot().state==MAZE_READY);
+ assert(count(lv_layer_top())==top_base);pump(2);
+ click("进入游戏");click("开始");assert(visible(find(lv_layer_top(),"准备开始")));
+ lv_obj_delete(lv_obj_get_child(lv_layer_top(),-1));pump(2);
+ assert(maze_ui_runtime_open()==0&&visible(find(lv_layer_top(),"准备开始")));
+ click("返回首页");pump(2);
+ assert(snapshot().state==MAZE_READY&&timers()==clock_base&&count(lv_layer_top())==top_base);
+ puts("TC-215 preparing BACK and external-delete/reopen cleanup PASS");
+ click("进入游戏");lv_event_dsc_t *desc=lv_obj_get_event_dsc(button("开始"),0);
  lv_event_cb_t old_cb=lv_event_dsc_get_cb(desc);void *old_ctx=lv_event_dsc_get_user_data(desc);
- maze_ui_runtime_release();assert(maze_ui_runtime_open()==0);lv_obj_t *new_button=button("START");
+ maze_ui_runtime_release();assert(maze_ui_runtime_open()==0);lv_obj_t *new_button=button("开始");
  lv_obj_remove_event_cb(new_button,old_cb);lv_obj_add_event_cb(new_button,old_cb,LV_EVENT_CLICKED,old_ctx);
  before=actions;lv_obj_send_event(new_button,LV_EVENT_CLICKED,NULL);assert(actions==before);maze_ui_runtime_release();
- assert(maze_ui_runtime_open()==0);click("START");pump(35);maze_menu_destroy();pump(2);
+ assert(maze_ui_runtime_open()==0);click("开始");pump(35);maze_menu_destroy();pump(2);
  assert(snapshot().state==MAZE_PAUSED&&count(lv_layer_top())==top_base&&count(lv_screen_active())==screen_base);
- assert(maze_menu_create()==0);click("ENTER MAZE");read_fail=1;click("RESTART");
- assert(lv_obj_has_state(button("BACK"),LV_STATE_DISABLED));maze_ui_runtime_release();pump(2);
- assert(maze_ui_runtime_open()==0);pump(35);next_fail=MAZE_EXHAUSTED;click("PAUSE");
- assert(find(lv_layer_top(),"Requests exhausted; restart device"));before=allocations;click("PAUSE");assert(allocations==before);
+ assert(maze_menu_create()==0);click("进入游戏");read_fail=1;click("重开");
+ assert(lv_obj_has_state(button("返回"),LV_STATE_DISABLED));
+ assert(lv_obj_has_state(button("返回首页"),LV_STATE_DISABLED));maze_ui_runtime_release();pump(2);
+ assert(maze_ui_runtime_open()==0);pump(35);next_fail=MAZE_EXHAUSTED;click("暂停");
+ assert(find(lv_layer_top(),"操作次数已达上限，请重启设备"));before=allocations;click("暂停");assert(allocations==before);
  next_fail=0;maze_ui_runtime_release();assert(maze_ui_runtime_open()==0);
- assert(lv_obj_has_state(button("BACK"),LV_STATE_DISABLED));maze_menu_destroy();pump(2);
+ assert(lv_obj_has_state(button("返回"),LV_STATE_DISABLED));maze_menu_destroy();pump(2);
  assert(timers()==clock_base&&count(lv_layer_top())==top_base&&count(lv_screen_active())==screen_base);
  puts("TC-206 old page event, action reread failure, request exhaustion and menu deletion PASS");
  puts("summary PASS; no physical screen/IMU/WON or heap acceptance claimed");

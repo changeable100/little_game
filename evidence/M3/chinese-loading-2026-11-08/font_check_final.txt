@@ -1,0 +1,2 @@
+WARN `--no-project` was provided, but no project was found
+Font check PASS: 271 glyphs x 3 sizes, complete source coverage

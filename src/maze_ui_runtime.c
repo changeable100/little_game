@@ -12,13 +12,13 @@ static maze_level_t level_copy;
 const char *maze_ui_runtime_startup_text(void)
 {
     switch (maze_runtime_init_status()) {
-    case MAZE_RUNTIME_READY: return "Ready to enter; press START inside";
-    case MAZE_RUNTIME_NOT_INITIALIZED: return "Game not initialized";
-    case MAZE_RUNTIME_SELFTEST_FAILED: return "Self-test failed; restart device";
-    case MAZE_RUNTIME_LEVEL_FAILED: return "Level initialization failed";
-    case MAZE_RUNTIME_QUEUE_FAILED: return "Runtime queue initialization failed";
-    case MAZE_RUNTIME_TIMER_FAILED: return "Runtime timer initialization failed";
-    default: return "Unknown startup state; restart device";
+    case MAZE_RUNTIME_READY: return "进入后点开始";
+    case MAZE_RUNTIME_NOT_INITIALIZED: return "游戏尚未初始化";
+    case MAZE_RUNTIME_SELFTEST_FAILED: return "自检失败，请重启设备";
+    case MAZE_RUNTIME_LEVEL_FAILED: return "关卡初始化失败";
+    case MAZE_RUNTIME_QUEUE_FAILED: return "操作队列初始化失败";
+    case MAZE_RUNTIME_TIMER_FAILED: return "刷新时钟初始化失败";
+    default: return "启动状态异常，请重启设备";
     }
 }
 

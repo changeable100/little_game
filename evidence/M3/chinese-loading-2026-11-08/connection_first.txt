@@ -1,0 +1,7 @@
+HOST CONNECTION TEST: production runtime.c + adapter + SDK LVGL; RT/sensors fake; marked faults injected
+TC-408 startup gates and TC-206 attach rejection/owned rollback PASS
+TC-215 real calibration timeout, disabled duplicate/retry, new-run reload and true-ready gate PASS
+TC-202/205/209 real actions, freshness, stale/no-retry, external deletion, 20 cycles PASS
+TC-206 old page event, action reread failure, request exhaustion and menu deletion PASS
+summary PASS; no physical screen/IMU/WON or heap acceptance claimed
+Host UI previews (simulated): D:\course_starter\build\maze-integration\build\p2-connection-integration
