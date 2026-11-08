@@ -1,0 +1,29 @@
+{
+  "date": "2026-11-08",
+  "source_base": "6a3a05d",
+  "uncommitted_fix_at_build": true,
+  "physical_verified": false,
+  "images": [
+    {
+      "path": "project\\build_sf32lb52-lchspi-ulp_hcpu\\main.bin",
+      "bytes": 1092232,
+      "sha256": "732163a5c6c939f60393f216d3e0d857b54eaa5e195fedad3843b3330ea9bdda"
+    },
+    {
+      "path": "project\\build_sf32lb52-lchspi-ulp_hcpu\\bootloader\\bootloader.bin",
+      "bytes": 58496,
+      "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21"
+    },
+    {
+      "path": "project\\build_sf32lb52-lchspi-ulp_hcpu\\ftab\\ftab.bin",
+      "bytes": 11288,
+      "sha256": "a0b979aab3c1fda1ee6f810ccd41f3b334e3a956fe57ea16f223faef6d43709b"
+    }
+  ],
+  "sources": {
+    "src/main.c": "68bf110e58e20a852eb3ae18312ede69b8802dfaaf8f9be923f69dfd8ba21b0e",
+    "src/maze_runtime.c": "c2a97f28772519279247d6f9b99f3d2585fb106c464f36fcb33cb5c09363a7e1",
+    "src/maze_runtime.h": "04a1c192f9e260516cada05a5c658d417de87ffda0f683046287b3328f445662",
+    "src/maze_ui.c": "5b57f6bd1853c3d4610d3b0c8211accdb1b6237b16f90df04f965657cdcaa7d7"
+  }
+}

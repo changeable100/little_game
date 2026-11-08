@@ -17,11 +17,43 @@ static bool initialized, sampling, stopping, suspended, diagnostics;
 static maze_runtime_init_status_t init_status = MAZE_RUNTIME_NOT_INITIALIZED;
 static uint32_t sampling_run, last_report, last_revision;
 static lab_motion_t latest;
+static uint32_t last_render_ms, last_handler_ms, last_wait_ms;
+static bool render_measured, loop_measured;
+static struct {
+    uint32_t run, gap, render, prep, handler, wait;
+    bool valid, rv, present;
+} timing_fault;
 static struct rt_messagequeue commands;
 static uint32_t command_pool[8 * (sizeof(uint32_t) + sizeof(void *)) / sizeof(uint32_t)];
 
 static uint32_t now_ms(void) { return (uint32_t)rt_tick_get_millisecond(); }
 static bool is_owner(void) { return initialized && rt_thread_self() == owner; }
+void maze_runtime_note_loop(uint32_t handler_ms, uint32_t wait_ms)
+{
+    if (!is_owner()) return;
+    last_handler_ms=handler_ms; last_wait_ms=wait_ms; loop_measured=true;
+}
+
+static void print_timing(void)
+{
+    /* Two records fit RT_CONSOLEBUF_SIZE even at UINT32_MAX. Frozen at fault. */
+    rt_kprintf("[maze:timing] run=%u gap=%u render=%u prep=%u\n",
+        timing_fault.run,timing_fault.gap,timing_fault.render,timing_fault.prep);
+    rt_kprintf("[maze:loop] run=%u handler=%u wait=%u valid=%u rv=%u\n",
+        timing_fault.run,timing_fault.handler,timing_fault.wait,
+        (unsigned)timing_fault.valid,(unsigned)timing_fault.rv);
+}
+
+static void record_timing(maze_state_t before, uint32_t gap, uint32_t prep)
+{
+    const maze_snapshot_t *s=&controller.game.snapshot;
+    if(before!=MAZE_RUNNING || s->state!=MAZE_ERROR || s->error_code!=MAZE_ERROR_TIMING)return;
+    timing_fault.run=s->run_id;timing_fault.gap=gap;timing_fault.prep=prep;
+    timing_fault.render=last_render_ms;timing_fault.handler=last_handler_ms;
+    timing_fault.wait=last_wait_ms;timing_fault.valid=loop_measured;
+    timing_fault.rv=render_measured;timing_fault.present=true;
+    print_timing();
+}
 static bool wants_samples(void)
 {
     maze_state_t s = controller.game.snapshot.state;
@@ -80,7 +112,10 @@ maze_result_t maze_runtime_action(void *context, const maze_action_t *action)
     maze_result_t result;
     if (!is_owner()) return MAZE_WRONG_STATE;
     if (context) return MAZE_INVALID;
-    result = maze_controller_action(&controller, action, now_ms());
+    uint32_t now=now_ms(), gap=now-controller.anchor_ms;
+    maze_state_t before=controller.game.snapshot.state;
+    result = maze_controller_action(&controller, action, now);
+    record_timing(before,gap,0);
     if (result == MAZE_OK && (action->action == MAZE_ACTION_START ||
                               action->action == MAZE_ACTION_RESTART))
         suspended = false;
@@ -163,7 +198,7 @@ static void report(uint32_t now)
 
 static void tick(lv_timer_t *unused)
 {
-    uint32_t command, now;
+    uint32_t command, now, entered=now_ms();
     maze_motion_t sample;
     maze_snapshot_t snapshot;
     unsigned drained;
@@ -179,9 +214,13 @@ static void tick(lv_timer_t *unused)
     sample.run_id = latest.session;
     sample.valid = latest.valid;
     /* Before the first publication there is no sample, not an invalid sample. */
-    if (!suspended)
+    if (!suspended) {
+        maze_state_t before=controller.game.snapshot.state;
+        uint32_t gap=now-controller.anchor_ms;
         (void)maze_controller_tick(&controller, now,
             sampling && !stopping && latest.session == sampling_run ? &sample : NULL);
+        record_timing(before,gap,now-entered);
+    }
     /* Bound command work even if the shell keeps producing messages. */
     for (drained = 0; drained < 8 &&
         rt_mq_recv(&commands, &command, sizeof(command), 0) == RT_EOK; ++drained)
@@ -196,14 +235,20 @@ static void tick(lv_timer_t *unused)
             if (result == MAZE_OK) result = maze_runtime_action(NULL, &action);
             rt_kprintf("[maze:command] action=%u result=%d run=%u\n", command, result, controller.game.snapshot.run_id);
         }
-        else last_report = now - 500;
+        else {
+            last_report = now - 500;
+            if(timing_fault.present)print_timing();
+        }
     }
     sync_sampler();
     if (renderer && maze_controller_snapshot(&controller, &snapshot) == MAZE_OK &&
         snapshot.revision != last_revision)
     {
         last_revision = snapshot.revision;
+        uint32_t started=now_ms();
         renderer(render_context, &snapshot, maze_levels_default());
+        last_render_ms=now_ms()-started;
+        render_measured=true;
     }
     if (diagnostics) report(now);
 }
@@ -253,6 +298,9 @@ maze_result_t maze_runtime_init(bool selftests_passed)
         return MAZE_INVALID;
     }
     owner = rt_thread_self();
+    last_render_ms=last_handler_ms=last_wait_ms=0;
+    render_measured=loop_measured=false;
+    memset(&timing_fault,0,sizeof(timing_fault));
     initialized = true;
     init_status = MAZE_RUNTIME_READY;
     return MAZE_OK;

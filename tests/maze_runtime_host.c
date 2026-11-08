@@ -13,6 +13,9 @@ static uint32_t clock_ms, worker_session;
 static bool busy, stop_requested;
 static unsigned starts, stops, wrong_stops, timers, draws;
 static unsigned truncated_logs, complete_input_logs;
+static unsigned timing_logs, render_cost;
+static char timing_line[128];
+static char loop_line[128];
 static bool fail_queue, fail_timer;
 static unsigned queue_inits, queue_detaches, timer_attempts;
 static rt_thread_t current_thread=(void *)1;
@@ -33,6 +36,10 @@ int rt_kprintf(const char *format, ...)
     va_end(args);
     if (result >= (int)sizeof(output)-1) ++truncated_logs;
     if (strstr(output,"tilt_milli=") && strstr(output,"pos_milli=")) ++complete_input_logs;
+    if (strstr(output,"[maze:timing]")) {
+        ++timing_logs; memcpy(timing_line,output,sizeof(output));
+    }
+    if (strstr(output,"[maze:loop]")) memcpy(loop_line,output,sizeof(output));
     fputs(output,stdout);
     return result;
 }
@@ -86,6 +93,7 @@ bool lab_motion_try_snapshot(lab_motion_t *out) { *out=motion; return true; }
 static void render(void *context, const maze_snapshot_t *s, const maze_level_t *level)
 {
     if (context==(void *)7 && level && s) ++draws;
+    clock_ms+=render_cost;
 }
 static void pump(unsigned ms, bool publish)
 {
@@ -205,6 +213,56 @@ int main(void)
     CHECK(timers==1 && starts==2 && stops==2);
     CHECK(truncated_logs==0 && complete_input_logs>0);
     printf("TC-406 board-console-no-truncation PASS\n");
-    printf("TC-406 shell-bounded-ui-queue PASS\nsummary PASS failures=0\n");
+    printf("TC-406 shell-bounded-ui-queue PASS\n");
+    busy=false;motion.valid=false;
+    CHECK(action(MAZE_ACTION_RESTART)==MAZE_OK);
+    for(i=0;i<32;++i)pump(20,true);
+    pump(101,true);
+    CHECK(timing_logs==1 && strstr(loop_line,"valid=0 rv=1"));
+    CHECK(strstr(timing_line,"gap=101"));
+    printf("TC-405 timing-unmeasured-loop-explicitly-marked PASS\n");
+    unsigned faults=timing_logs;
+    busy=false; motion.valid=false;
+    CHECK(action(MAZE_ACTION_RESTART)==MAZE_OK);
+    for(i=0;i<32;++i)pump(20,true);
+    CHECK(maze_runtime_snapshot(&s)==MAZE_OK && s.state==MAZE_RUNNING);
+    pump(100,true); /* Original inclusive dt boundary is retained. */
+    CHECK(maze_runtime_snapshot(&s)==MAZE_OK && s.state==MAZE_RUNNING && s.elapsed_ms==100);
+    render_cost=130; pump(20,true); render_cost=0;
+    maze_runtime_note_loop(135,2);
+    pump(2,true);
+    CHECK(maze_runtime_snapshot(&s)==MAZE_OK && s.state==MAZE_ERROR && s.error_code==MAZE_ERROR_TIMING);
+    CHECK(s.elapsed_ms==120 && timing_logs==faults+1);
+    CHECK(strstr(timing_line,"gap=132") && strstr(timing_line,"render=130"));
+    CHECK(strstr(loop_line,"handler=135 wait=2") && strstr(loop_line,"valid=1 rv=1"));
+    pump(500,false); CHECK(timing_logs==faults+1); /* No print per error tick. */
+    CHECK(truncated_logs==0);
+    printf("TC-404 timing-render-cost-and-unchanged-100ms-limit PASS\n");
+    busy=false; motion.valid=false;
+    CHECK(action(MAZE_ACTION_RESTART)==MAZE_OK);
+    for(i=0;i<32;++i)pump(20,true);
+    maze_runtime_note_loop(3,101);
+    current_thread=(void *)2; maze_runtime_note_loop(999,999); current_thread=(void *)1;
+    clock_ms+=101;
+    CHECK(action(MAZE_ACTION_PAUSE)==MAZE_INVALID);
+    CHECK(maze_runtime_snapshot(&s)==MAZE_OK && s.error_code==MAZE_ERROR_TIMING && s.elapsed_ms==0);
+    CHECK(strstr(timing_line,"gap=101") && strstr(loop_line,"handler=3 wait=101"));
+    CHECK(timing_logs==faults+2);
+    char saved[128],saved_loop[128]; memcpy(saved,timing_line,sizeof(saved));
+    memcpy(saved_loop,loop_line,sizeof(saved_loop));
+    maze_runtime_note_loop(UINT32_MAX,UINT32_MAX);
+    pump(1000,false);
+    CHECK(timing_logs==faults+2 && !strcmp(saved,timing_line) && !strcmp(saved_loop,loop_line));
+    { char *argv[]={"maze_diag","status"};test_export_maze_diag(2,argv);pump(20,false); }
+    CHECK(timing_logs==faults+3 && !strcmp(saved,timing_line) && !strcmp(saved_loop,loop_line));
+    CHECK(truncated_logs==0);
+    printf("TC-405 timing-pause-fault-frozen-status-and-owner-guard PASS\n");
+    busy=false; motion.valid=false;clock_ms=UINT32_MAX-400;
+    CHECK(action(MAZE_ACTION_RESTART)==MAZE_OK);
+    for(i=0;i<32;++i)pump(20,true);
+    CHECK(maze_runtime_snapshot(&s)==MAZE_OK && s.state==MAZE_RUNNING);
+    pump(20,true);CHECK(maze_runtime_snapshot(&s)==MAZE_OK && s.elapsed_ms==20);
+    CHECK(action(MAZE_ACTION_BACK)==MAZE_OK && truncated_logs==0);
+    printf("TC-404 timing-wraparound-regression PASS\nsummary PASS failures=0\n");
     return 0;
 }

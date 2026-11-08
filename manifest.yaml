@@ -389,8 +389,14 @@ test_results:
   actual: FAIL；run2/state5/error3/elapsed0/cal32/bias_mg=-20,-33。校准完成，但尚未累计运行时间即触发时序保护；实际阻塞来源待测，错误后age不代表故障发生时延迟
   pass: false
   evidence_path: evidence/M3/dynamic-ui/run02/user_status_original.txt
+- test_id: TC-209/404/405-P2-timing-fix-host
+  description: 局部刷新与冻结时序诊断软件验证
+  expected: 静止画面不失效，变化区域正确；保留100ms判据，故障冻结可重读，原功能回归无退化
+  actual: 旧UI静止失效断言先FAIL，修复后真实LVGL与原20轮/2000帧PASS；74项主机回归和生产连接PASS，SDK编译PASS。RT/传感器替身非板端耗时，新镜像待run03
+  pass: true
+  evidence_path: evidence/M3/p2-timing-2026-11-08/host_final_complete.txt
 known_issues:
-- P2 run02平放后完成cal32但TIMING ERROR，实际阻塞来源待耗时取证；保留100ms判据，软件修复与新镜像物理复核单独跟进。
+- P2 run02平放后cal32但TIMING ERROR；已按负责人确认计划消除重复格子/文本刷新并加入冻结故障时序记录，74项主机回归/真实LVGL/SDK编译PASS。唯一阻塞来源及新镜像真实100ms是否满足仍待run03，保留原FAIL和判据。
 - run01的status确认未成功校准；末帧倾斜且g_z超静置限制，与稳定窗口清零/5s期限相符。精确终止原因待连续重测；先水平桌面RESTART、手离开等待RUNNING后再倾斜，不修改阈值或烧录新固件。
 - 最新P2实物出现小球不动和INPUT ERROR，首次失败已保留；需要当前ERROR状态的cal/seq等诊断，再区分校准与运行输入失败，当前不能判定传感器掉线或更改阈值。暂不进行通关/资源验收。
 - P2生产UI已合入并通过本地软件检查，新固件待真实屏幕按钮/倾斜/通关与资源复用验证。此前PREVIEW/待接入等条目保留为历史，不再代表当前软件实现状态；当前提示小修正待提交，未推送。
@@ -459,6 +465,8 @@ self_review: '以下为B在2026-10-17的历史自述。2026-10-31已补齐旧28�
 
   '
 human_checkpoints:
+- decision_point: P2局部刷新与时序诊断修复
+  student_confirmation: 2026-11-08王若豪明确回复“确认，按计划修复”；允许UI局部刷新、runtime/main只读耗时诊断与相应测试，不调整100ms/校准条件，不迁移线程。新镜像实测由学生完成，提交正文另审阅。
 - decision_point: 整机基线与A第二阶段开工
   student_confirmation: 王若豪明确选择B的Lab/LVGL方案A，随后要求开始做我的第二阶段；agent实现A输入/时钟/意图适配，真实上板由学生完成
 - decision_point: 体感迷宫玩法

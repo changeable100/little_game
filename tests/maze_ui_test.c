@@ -58,6 +58,54 @@ static void screenshot(const char *name)
     fclose(f);
 }
 static unsigned sink_calls;
+static maze_result_t sink(void *ctx, const maze_action_t *a);
+static unsigned invalidations;
+static bool outside_ball;
+static void invalidated(lv_event_t *event)
+{
+    const lv_area_t *a = lv_event_get_param(event);
+    ++invalidations;
+    /* Test movement is from (1.5,1.5) to (1.6,1.5): old/new 8px ball. */
+    if (a->x1 < 60 || a->x2 > 71 || a->y1 < 86 || a->y2 > 95) outside_ball=true;
+}
+static void partial_refresh_test(lv_display_t *d, lv_obj_t *top,
+                                 const maze_snapshot_t *initial, const maze_level_t *level)
+{
+    maze_snapshot_t frame=*initial;
+    frame.state=MAZE_RUNNING; frame.input_status=MAZE_INPUT_VALID;
+    assert(maze_ui_create(sink, NULL)==MAZE_UI_SUCCESS);
+    lv_display_set_buffers(d,buffer,NULL,sizeof(buffer),LV_DISPLAY_RENDER_MODE_PARTIAL);
+    lv_display_add_event_cb(d,invalidated,LV_EVENT_INVALIDATE_AREA,NULL);
+    maze_ui_render(&frame,level); lv_obj_update_layout(top); lv_refr_now(d);
+    invalidations=0;
+    for(unsigned i=0;i<100;++i) {
+        ++frame.revision; frame.elapsed_ms=i*5;
+        maze_ui_render(&frame,level); lv_obj_update_layout(top);
+    }
+    assert(invalidations==0); /* Same visible state must not request a redraw. */
+    frame.ball_x=1.6f; outside_ball=false;
+    maze_ui_render(&frame,level); lv_obj_update_layout(top);
+    assert(invalidations>0 && !outside_ball);
+    lv_refr_now(d); invalidations=0;
+    frame.elapsed_ms=1000; /* Same revision still changes visible text. */
+    maze_ui_render(&frame,level);
+    assert(text(top,"RUNNING  |  1s") && invalidations>0);
+    uint8_t cells[256]; memcpy(cells,level->cells,sizeof(cells));
+    maze_level_t map=*level; map.cells=cells;
+    maze_ui_render(&frame,&map); lv_refr_now(d); invalidations=0;
+    cells[5]=cells[5]==MAZE_CELL_WALL?MAZE_CELL_PATH:MAZE_CELL_WALL;
+    maze_ui_render(&frame,&map);
+    assert(invalidations>0); /* Same address/revision, changed map bytes. */
+    lv_obj_t *tile=lv_obj_get_child(lv_obj_get_child(top,-1),7);
+    assert(lv_color_eq(lv_obj_get_style_bg_color(tile,0),lv_color_hex(
+        cells[5]==MAZE_CELL_WALL?0x263D55:0x101B2B)));
+    cells[5]=99; maze_ui_render(&frame,&map);
+    assert(text(top,"INVALID SNAPSHOT"));
+    maze_ui_render(&frame,level); assert(text(top,"RUNNING  |  1s"));
+    maze_ui_destroy();
+    lv_display_set_buffers(d,buffer,NULL,sizeof(buffer),LV_DISPLAY_RENDER_MODE_FULL);
+    puts("TC-209 stationary-no-invalidation, ball-only region, same-revision/map mutation and recovery PASS");
+}
 static maze_result_t sink(void *ctx, const maze_action_t *a)
 {
     (void)ctx; (void)a; ++sink_calls; return MAZE_OK;
@@ -241,6 +289,8 @@ int main(void)
     screenshot("state-recovered.ppm");
     assert(text(top, "READY  |  0s"));
     maze_ui_destroy();
+    assert(objects(top) == base && timers() == clock_count);
+    partial_refresh_test(d,top,&s,level);
     assert(objects(top) == base && timers() == clock_count);
     maze_ui_preview_open(); /* New instance with initial revision must render. */
     assert(text(top, "READY  |  0s")); maze_ui_destroy();

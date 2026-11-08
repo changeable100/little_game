@@ -73,10 +73,14 @@ int main(void)
     rt_kprintf("[maze:app] production UI + motion diagnostics\n");
     while (1) {
         /* 处理界面定时器、输入与重绘，返回建议的下次调用间隔。 */
+        uint32_t started=(uint32_t)rt_tick_get_millisecond();
         uint32_t delay = lv_timer_handler();
+        uint32_t handled=(uint32_t)rt_tick_get_millisecond();
         /* 有持续动画时也让出 CPU；空闲时不超过 20 ms，保持触摸响应。 */
         if (delay < 2) delay = 2;
         if (delay > 20) delay = 20;
         rt_thread_mdelay(delay);
+        maze_runtime_note_loop(handled-started,
+            (uint32_t)rt_tick_get_millisecond()-handled);
     }
 }

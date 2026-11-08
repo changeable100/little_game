@@ -16,6 +16,12 @@ static maze_runtime_init_status_t status;
 static char calls[16], output[4096];
 static unsigned count, menus, runtime_calls;
 static bool received_tests, menu_saw_status;
+static bool measure_loop;
+static uint32_t clock_ms, measured_handler, measured_wait;
+static unsigned observed_loops;
+uint32_t rt_tick_get_millisecond(void) { return clock_ms; }
+void maze_runtime_note_loop(uint32_t handler_ms,uint32_t wait_ms)
+{ measured_handler=handler_ms;measured_wait=wait_ms;++observed_loops; }
 static void call(char c) { calls[count++]=c; calls[count]=0; }
 int maze_selftest_run(maze_test_report_t cb) { (void)cb; return failed_test==1; }
 int maze_levels_selftest_run(maze_test_report_t cb) { (void)cb; return failed_test==2; }
@@ -37,8 +43,17 @@ int maze_menu_create(void)
     menu_saw_status=status!=MAZE_RUNTIME_NOT_INITIALIZED;
     return menu_result;
 }
-uint32_t lv_timer_handler(void) { call('H'); return 1000; }
-void rt_thread_mdelay(int ms) { if (ms==20) longjmp(loop,1); longjmp(loop,2); }
+uint32_t lv_timer_handler(void) {
+    if(measure_loop) {
+        if(observed_loops)longjmp(loop,1);
+        clock_ms+=135;return 2;
+    }
+    call('H'); return 1000;
+}
+void rt_thread_mdelay(int ms) {
+    if(measure_loop && ms==2) {clock_ms+=7;return;}
+    if (ms==20) longjmp(loop,1); longjmp(loop,2);
+}
 int rt_kprintf(const char *fmt,...)
 {
     int n; size_t used=strlen(output); va_list args;
@@ -77,6 +92,10 @@ int main(void)
     init_result=MAZE_OK; menu_result=MAZE_UI_ERR_DISPLAY;
     CHECK(boot()==-1 && strcmp(calls,"LDRMC")==0 && status==MAZE_RUNTIME_NOT_INITIALIZED);
     CHECK(strstr(output,"menu initialization failed") && !strstr(output,"menu ready"));
-    printf("TC-408 main-menu-failure-stops-loop PASS\nsummary PASS failures=0\n");
+    printf("TC-408 main-menu-failure-stops-loop PASS\n");
+    menu_result=MAZE_UI_SUCCESS;measure_loop=true;clock_ms=UINT32_MAX-50;
+    CHECK(boot()==0 && observed_loops==1);
+    CHECK(measured_handler==135 && measured_wait==7);
+    printf("TC-404 main-measures-handler-and-actual-wait-across-wrap PASS\nsummary PASS failures=0\n");
     return 0;
 }

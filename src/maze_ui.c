@@ -3,6 +3,8 @@
 #include "lvgl.h"
 #include <math.h>
 #include <stddef.h>
+#include <stdio.h>
+#include <string.h>
 
 #define BG 0x0C1220
 #define TEXT 0xEDF4FC
@@ -22,6 +24,38 @@ static maze_snapshot_t displayed;
 static bool have_snapshot, data_valid, exhausted;
 static maze_result_t feedback;
 static uintptr_t generation;
+/* Cache values, never borrowed level/cell pointers. 0 is the initial wall. */
+static uint8_t tile_colors[MAZE_MAX_ROWS * MAZE_MAX_COLS];
+static const char *base_hint;
+
+static void set_text(lv_obj_t *object, const char *text)
+{
+    if (strcmp(lv_label_get_text(object),text)) lv_label_set_text(object,text);
+}
+
+static void paint_map(const maze_level_t *level)
+{
+    static const uint32_t colors[]={0x263D55,0x101B2B,0x245B50,0x66512D};
+    for(unsigned i=0;i<256;++i) {
+        unsigned color=0;
+        if(level) {
+            color=level->cells[i]==MAZE_CELL_WALL?0:1;
+            if(i==level->start_row*16u+level->start_col)color=2;
+            if(i==level->goal_row*16u+level->goal_col)color=3;
+        }
+        if(tile_colors[i]!=color) {
+            lv_obj_set_style_bg_color(tiles[i],lv_color_hex(colors[color]),0);
+            tile_colors[i]=(uint8_t)color;
+        }
+    }
+}
+
+static void hide_markers(void)
+{
+    lv_obj_add_flag(ball,LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(start_mark,LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(goal_mark,LV_OBJ_FLAG_HIDDEN);
+}
 
 static void update_controls(void)
 {
@@ -57,9 +91,14 @@ static void show_feedback(void)
             if(displayed.error_code==MAZE_ERROR_TIMING)cause="TIMING ERROR";
             if(displayed.error_code==MAZE_ERROR_LEVEL)cause="LEVEL ERROR";
         }
-        if(cause)lv_label_set_text_fmt(hint_label,"%s: %s",cause,message);
-        else lv_label_set_text(hint_label,message);
+        if(cause) {
+            char text[112];
+            snprintf(text,sizeof(text),"%s: %s",cause,message);
+            set_text(hint_label,text);
+        }
+        else set_text(hint_label,message);
     }
+    else if(base_hint)set_text(hint_label,base_hint);
 }
 
 void maze_ui_feedback(maze_result_t result, bool snapshot_available)
@@ -144,6 +183,7 @@ int maze_ui_create(maze_action_sink_t sink, void *context)
 
     ++generation; action_sink=sink; sink_context=context;
     have_snapshot=data_valid=exhausted=false;feedback=MAZE_OK;
+    memset(tile_colors,0,sizeof(tile_colors));base_hint="Waiting for snapshot";
     page = box(lv_layer_top(), 0, 0, 390, 450, BG);
     lv_obj_add_flag(page, LV_OBJ_FLAG_CLICKABLE); /* absorb background taps */
     lv_obj_add_event_cb(page, deleted, LV_EVENT_DELETE, NULL);
@@ -220,18 +260,13 @@ void maze_ui_render(const maze_snapshot_t *snapshot, const maze_level_t *level)
     data_valid=false;
     have_snapshot=snapshot!=NULL;
     if(snapshot)displayed=*snapshot;
-    update_controls();
-    lv_obj_add_flag(ball, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_add_flag(start_mark, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_add_flag(goal_mark, LV_OBJ_FLAG_HIDDEN);
-    lv_label_set_text(pause_text, snapshot && snapshot->state == MAZE_PAUSED ? "RESUME" : "PAUSE");
+    set_text(pause_text, snapshot && snapshot->state == MAZE_PAUSED ? "RESUME" : "PAUSE");
     if (!snapshot || snapshot->state < MAZE_READY || snapshot->state > MAZE_ERROR ||
         snapshot->input_status < MAZE_INPUT_NOT_READY || snapshot->input_status > MAZE_INPUT_FAILED ||
         snapshot->error_code < MAZE_ERROR_NONE || snapshot->error_code > MAZE_ERROR_TIMING) {
-        lv_label_set_text(status_label, "INVALID SNAPSHOT");
-        lv_label_set_text(hint_label, "Unknown state or data; use BACK");
-        for (unsigned i = 0; i < 256; ++i)
-            lv_obj_set_style_bg_color(tiles[i], lv_color_hex(0x263D55), 0);
+        set_text(status_label, "INVALID SNAPSHOT");
+        base_hint="Unknown state or data; use BACK";
+        hide_markers();paint_map(NULL);update_controls();show_feedback();
         return;
     }
     static const char *states[] = {"READY", "CALIBRATING", "RUNNING", "PAUSED", "WON", "ERROR"};
@@ -240,25 +275,20 @@ void maze_ui_render(const maze_snapshot_t *snapshot, const maze_level_t *level)
         "Goal reached; final time", "Error; use BACK"};
     static const char *errors[] = {"No error detail; use BACK", "LEVEL ERROR: return to menu",
         "INPUT ERROR: restart or back", "TIMING ERROR: restart or back"};
-    lv_label_set_text_fmt(status_label, "%s  |  %lus", states[snapshot->state],
-                          (unsigned long)(snapshot->elapsed_ms / 1000u));
-    lv_label_set_text(hint_label, snapshot->error_code != MAZE_ERROR_NONE || snapshot->state == MAZE_ERROR
-        ? errors[snapshot->error_code] : hints[snapshot->state]);
+    char status[64];
+    snprintf(status,sizeof(status),"%s  |  %lus", states[snapshot->state],
+             (unsigned long)(snapshot->elapsed_ms / 1000u));
+    base_hint=snapshot->error_code != MAZE_ERROR_NONE || snapshot->state == MAZE_ERROR
+        ? errors[snapshot->error_code] : hints[snapshot->state];
     if (!valid(snapshot, level)) {
-        if (snapshot->state != MAZE_ERROR) lv_label_set_text(status_label, "INVALID SNAPSHOT");
-        lv_label_set_text(hint_label, snapshot->state == MAZE_ERROR && snapshot->error_code == MAZE_ERROR_LEVEL
-            ? errors[MAZE_ERROR_LEVEL] : "Invalid map or ball; use BACK");
-        for (unsigned i = 0; i < 256; ++i)
-            lv_obj_set_style_bg_color(tiles[i], lv_color_hex(0x263D55), 0);
+        set_text(status_label,snapshot->state==MAZE_ERROR?status:"INVALID SNAPSHOT");
+        base_hint=snapshot->state == MAZE_ERROR && snapshot->error_code == MAZE_ERROR_LEVEL
+            ? errors[MAZE_ERROR_LEVEL] : "Invalid map or ball; use BACK";
+        hide_markers();paint_map(NULL);update_controls();show_feedback();
         return;
     }
-    for (unsigned i = 0; i < 256; ++i)
-        lv_obj_set_style_bg_color(tiles[i], lv_color_hex(
-            level->cells[i] == MAZE_CELL_WALL ? 0x263D55 : 0x101B2B), 0);
-    unsigned start = level->start_row * 16 + level->start_col;
-    unsigned goal = level->goal_row * 16 + level->goal_col;
-    lv_obj_set_style_bg_color(tiles[start], lv_color_hex(0x245B50), 0);
-    lv_obj_set_style_bg_color(tiles[goal], lv_color_hex(0x66512D), 0);
+    set_text(status_label,status);
+    paint_map(level);
     lv_obj_set_pos(start_mark, MAP_X + level->start_col * CELL + 2,
                    MAP_Y + level->start_row * CELL + 2);
     lv_obj_set_pos(goal_mark, MAP_X + level->goal_col * CELL + 5,

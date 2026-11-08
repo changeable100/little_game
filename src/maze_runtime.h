@@ -21,6 +21,9 @@ typedef enum
  * READY means initialized, not calibrated; action/snapshot results still apply. */
 maze_runtime_init_status_t maze_runtime_init_status(void);
 maze_result_t maze_runtime_init(bool selftests_passed);
+/* Main/LVGL owner only: previous completed handler and actual wait durations.
+ * Diagnostic observation only; no clock adjustment or controller mutation. */
+void maze_runtime_note_loop(uint32_t handler_ms, uint32_t wait_ms);
 /* UI thread, only before first run and before attach. For menu-create failure,
  * not normal page navigation. Releases startup resources, returns to NOT_INITIALIZED. */
 maze_result_t maze_runtime_cancel_startup(void);
