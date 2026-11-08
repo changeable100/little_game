@@ -344,6 +344,7 @@ void maze_ui_render(const maze_snapshot_t *snapshot, const maze_level_t *level)
     set_text(pause_text, snapshot && snapshot->state == MAZE_PAUSED ? "继续" : "暂停");
     if (!snapshot || snapshot->state < MAZE_READY || snapshot->state > MAZE_ERROR ||
         snapshot->input_status < MAZE_INPUT_NOT_READY || snapshot->input_status > MAZE_INPUT_FAILED ||
+        snapshot->pause_reason < MAZE_PAUSE_NONE || snapshot->pause_reason > MAZE_PAUSE_DELAY ||
         snapshot->error_code < MAZE_ERROR_NONE || snapshot->error_code > MAZE_ERROR_TIMING) {
         set_text(status_label, "游戏数据异常");
         base_hint="状态或数据异常，请返回首页";
@@ -361,6 +362,8 @@ void maze_ui_render(const maze_snapshot_t *snapshot, const maze_level_t *level)
              (unsigned long)(snapshot->elapsed_ms / 1000u));
     base_hint=snapshot->error_code != MAZE_ERROR_NONE || snapshot->state == MAZE_ERROR
         ? errors[snapshot->error_code] : hints[snapshot->state];
+    if(snapshot->state==MAZE_PAUSED && snapshot->pause_reason==MAZE_PAUSE_DELAY)
+        base_hint="迟帧已暂停，可点击继续";
     if (!valid(snapshot, level)) {
         set_text(status_label,snapshot->state==MAZE_ERROR?status:"游戏数据异常");
         base_hint=snapshot->state == MAZE_ERROR && snapshot->error_code == MAZE_ERROR_LEVEL

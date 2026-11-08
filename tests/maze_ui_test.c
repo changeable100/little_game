@@ -318,6 +318,11 @@ int main(void)
     maze_ui_render(&extreme, level); assert(text(top, "游戏数据异常"));
     extreme = s; extreme.error_code = (maze_error_t)99;
     maze_ui_render(&extreme, level); assert(text(top, "游戏数据异常"));
+    extreme=s;extreme.pause_reason=(maze_pause_reason_t)99;
+    maze_ui_render(&extreme,level);assert(text(top,"游戏数据异常"));
+    extreme=s;extreme.state=MAZE_PAUSED;extreme.pause_reason=MAZE_PAUSE_DELAY;extreme.interrupted_ms=251;
+    maze_ui_render(&extreme,level);assert(text(top,"迟帧已暂停，可点击继续"));
+    screenshot("state-delay-paused.ppm");
     extreme = s; extreme.ball_radius = INFINITY;
     maze_ui_render(&extreme, level); assert(text(top, "游戏数据异常"));
     uint8_t malformed[256]; memcpy(malformed, level->cells, sizeof(malformed));

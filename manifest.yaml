@@ -12,10 +12,18 @@ dev_agent:
 requirements:
   prd_path: docs/01-需求规格说明.md
   hardware_constraints_ref: README.md；黄山派 SF32LB52 / 390x450 / SiFli SDK v2.5.1
-  source_contract: MAZE_CONTRACT_VERSION v1；从 origin/feat/req-301-maze-model@9595000 选择性接入，模型源码基于 77b15d3
+  source_contract: P0本地工作树为MAZE_CONTRACT_VERSION v2，新增pause_reason/interrupted_ms，几何仍二维；原v1模型从origin/feat/req-301-maze-model@9595000选择性接入，基于77b15d3；未提交版本不冒称已发布
 design:
   architecture_doc_path: docs/02-方案设计说明.md
   key_decisions:
+  - decision: 真3D采用独立物理任务方案A，先交付P0迟帧容错
+    alternatives_considered: 沿用UI任务拥有状态并有界补算/降低绘制频率
+    rationale: 物理与显示解耦符合碰撞手感优先，接受新消息/快照与线程清理成本；P0先在现有线程验证250ms有界补算与严重卡顿可恢复暂停
+    decided_by: 王若豪明确确认方案A及5ms/250ms分阶段计划
+  - decision: 下一阶段选择低多边形真3D，物理碰撞手感优先，见ADR-0006
+    alternatives_considered: 丰富现有2D玩法，或固定视角2.5D表现
+    rationale: 负责人坚持真实三维滚球，允许画面不精细，重点惯性/碰撞/摩擦/掉落并要求放宽延迟；后续已确认独立物理任务与5ms/250ms分阶段计划
+    decided_by: 王若豪于2026-11-08明确要求真3D与物理优先
   - decision: 中文开始准备界面采用同页遮罩，见ADR-0005
     alternatives_considered: 独立准备页，增加跨页面导航与生命周期引用成本
     rationale: 复用已验证renderer、动作与清理，准备状态由真实CALIBRATING驱动，失败手动RESTART；保留唯一时钟和原阈值
@@ -562,3 +570,16 @@ b_stage3_p2:
   pending: "Owner read and approved both commit bodies and feature-branch push; A software review/merge and new physical evidence remain"
   physical: "No new results; original physical_verification unchanged; M3 not complete"
   publication_authorization: "2026-11-08 user explicitly approved two commits and push to codex/maze-ui-stage3-runtime"
+
+p0_delay_tolerance:
+  date: "2026-11-08"
+  branch: "codex/maze-3d-physics"
+  development_base: "49dda19"
+  decision: "王若豪确认独立物理任务方案A及先P0后真3D原型的计划；P0仍由原UI线程拥有二维模型"
+  requirements: "REQ-503与REQ-404修订；TC-503；契约v2"
+  policy: "5ms固定步，250ms内有界补算；更长间隔保留本局并暂停，新样本后显式继续；中断时长另计"
+  software: "81项核心主机回归、真实LVGL合成视图/生产连接、273字形复现检查与SDK编译PASS；RT/传感器替身不代表板端"
+  evidence: "evidence/M4/p0-delay-2026-11-08/README.md"
+  fingerprint: "evidence/M4/p0-delay-2026-11-08/firmware.json"
+  physical: "新固件尚未上板取证，不登记physical_verification通过；真3D模型/任务/手感未实现或验收"
+  submission: "王若豪已读两份hw/feat正文并确认分两次保存；本轮未授权新推送，P0板端待证据"

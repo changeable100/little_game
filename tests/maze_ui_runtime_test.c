@@ -126,12 +126,19 @@ int main(void)
  lv_obj_t *moving_ball=lv_obj_get_child(lv_obj_get_child(lv_layer_top(),-1),260);
  assert(lv_obj_get_x(moving_ball)==35+(int)(matrix.ball_x*20+0.5f)-4);
  shot("production-running.ppm");
- /* PAUSE settlement can fail and change state. Always reread that state. */
- clock_ms+=200;lv_tick_inc(200);click("暂停");
- assert(snapshot().state==MAZE_ERROR&&snapshot().error_code==MAZE_ERROR_TIMING);
- assert(find(lv_layer_top(),"运行超时：操作无效，请查看当前状态"));
- assert(visible(find(lv_layer_top(),"运行超时")));
- shot("production-timing-error.ppm");click("重新加载");pump(35);assert(snapshot().state==MAZE_RUNNING);
+ /* New approved policy: fresh 200ms settlement is tolerated, 300ms recovers. */
+ clock_ms+=200;lv_tick_inc(200);sample.sampled_ms=clock_ms;++sample.sequence;click("暂停");
+ assert(snapshot().state==MAZE_PAUSED&&snapshot().pause_reason==MAZE_PAUSE_USER&&snapshot().error_code==MAZE_ERROR_NONE);
+ click("继续");assert(snapshot().state==MAZE_RUNNING);
+ uint32_t recovery_run=snapshot().run_id,recovery_elapsed=snapshot().elapsed_ms;
+ clock_ms+=300;lv_tick_inc(300);sample.sampled_ms=clock_ms;++sample.sequence;click("暂停");
+ assert(snapshot().state==MAZE_PAUSED&&snapshot().pause_reason==MAZE_PAUSE_DELAY&&snapshot().error_code==MAZE_ERROR_NONE);
+ assert(snapshot().run_id==recovery_run&&snapshot().elapsed_ms==recovery_elapsed&&snapshot().interrupted_ms==300);
+ assert(visible(find(lv_layer_top(),"迟帧已暂停，可点击继续")));
+ shot("production-delay-paused.ppm");click("继续");assert(snapshot().state==MAZE_PAUSED);
+ assert(maze_ui_runtime_last_result()==MAZE_WRONG_STATE);
+ pump(2);click("继续");assert(snapshot().state==MAZE_RUNNING&&snapshot().run_id==recovery_run);
+ puts("TC-503 fresh 200ms pause, 300ms recoverable pause, same-run resume PASS");
  assert(maze_ui_runtime_open()==MAZE_UI_ERR_EXISTS);
  unsigned r=reads;click("暂停");assert(reads>r&&snapshot().state==MAZE_PAUSED);
  uint32_t elapsed=snapshot().elapsed_ms;pump(20);assert(snapshot().elapsed_ms==elapsed);

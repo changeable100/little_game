@@ -42,6 +42,8 @@ static void reset_ball(maze_game_t *game)
     game->snapshot.ball_y = game->level->start_row + 0.5f;
     game->snapshot.elapsed_ms = 0;
     game->snapshot.error_code = MAZE_ERROR_NONE;
+    game->snapshot.pause_reason = MAZE_PAUSE_NONE;
+    game->snapshot.interrupted_ms = 0;
     game->snapshot.input_status = MAZE_INPUT_NOT_READY;
     game->velocity_x = 0;
     game->velocity_y = 0;
@@ -98,7 +100,8 @@ maze_result_t maze_game_action(maze_game_t *game, const maze_action_t *action)
         new_run = true; /* Invalidates late calibration and input callbacks. */
         break;
     case MAZE_ACTION_PAUSE:
-        if (game->snapshot.state != MAZE_RUNNING)
+        if (game->snapshot.state != MAZE_RUNNING &&
+            !(game->snapshot.state == MAZE_PAUSED && game->snapshot.pause_reason == MAZE_PAUSE_DELAY))
             return MAZE_WRONG_STATE;
         next = MAZE_PAUSED;
         break;
@@ -119,8 +122,15 @@ maze_result_t maze_game_action(maze_game_t *game, const maze_action_t *action)
     }
     if (next == MAZE_PAUSED)
     {
+        if (game->snapshot.state == MAZE_RUNNING)
+            game->snapshot.pause_reason = MAZE_PAUSE_USER;
         game->velocity_x = 0;
         game->velocity_y = 0;
+    }
+    else if (next == MAZE_RUNNING)
+    {
+        game->snapshot.pause_reason = MAZE_PAUSE_NONE;
+        game->snapshot.input_status = MAZE_INPUT_VALID;
     }
     game->last_request_id = action->request_id;
     game->snapshot.state = next;
@@ -149,6 +159,7 @@ static maze_result_t fail(maze_game_t *game, maze_error_t error)
     if (game->snapshot.revision == UINT32_MAX)
         return MAZE_EXHAUSTED;
     game->snapshot.state = MAZE_ERROR;
+    game->snapshot.pause_reason = MAZE_PAUSE_NONE;
     game->snapshot.error_code = error;
     if (error == MAZE_ERROR_INPUT)
         game->snapshot.input_status = MAZE_INPUT_FAILED;
@@ -166,6 +177,23 @@ maze_result_t maze_game_input_failed(maze_game_t *game, uint32_t run_id)
         game->snapshot.state != MAZE_RUNNING && game->snapshot.state != MAZE_PAUSED)
         return MAZE_WRONG_STATE;
     return fail(game, MAZE_ERROR_INPUT);
+}
+
+maze_result_t maze_game_pause_for_delay(maze_game_t *game, uint32_t run_id,
+                                       uint32_t interrupted_ms)
+{
+    if (!game || !game->level || !interrupted_ms) return MAZE_INVALID;
+    if (run_id != game->snapshot.run_id) return MAZE_STALE;
+    if (game->snapshot.state != MAZE_RUNNING) return MAZE_WRONG_STATE;
+    if (game->snapshot.revision == UINT32_MAX) return MAZE_EXHAUSTED;
+    maze_snapshot_t *s=&game->snapshot;
+    s->state=MAZE_PAUSED;s->pause_reason=MAZE_PAUSE_DELAY;
+    s->error_code=MAZE_ERROR_NONE;s->input_status=MAZE_INPUT_NOT_READY;
+    s->interrupted_ms=UINT32_MAX-s->interrupted_ms<interrupted_ms ? UINT32_MAX :
+        s->interrupted_ms+interrupted_ms;
+    game->velocity_x=game->velocity_y=0;
+    ++s->revision;
+    return MAZE_OK;
 }
 
 /* The candidate is at most 0.015 cell away on either axis. Only overlapped

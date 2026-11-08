@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "path": "D:/course_starter/build/maze-integration/tests/render.py",
+      "sha256": "f7e33404186f6fdbd4aedce5380767e3bcf6e76c6a1df7ccea0e33cd8652ba9a"
+    },
+    {
+      "path": "D:/course_starter/build/maze-integration/tests/run_maze_host.py",
+      "sha256": "346de7d35968de74c7e090b8b434c8f13f022d81bf58ced3b4409323df277dda"
+    },
+    {
+      "path": "D:/course_starter/build/maze-integration/tests/maze_runtime_host.c",
+      "sha256": "4bab02b15156d3263c7d95b7f392a0c450dde4cfbff59abfe1274c93be054101"
+    },
+    {
+      "path": "D:/course_starter/build/maze-integration/tests/maze_ui_test.c",
+      "sha256": "d5007e470ee9cfbd2e861f15235c77bdb21772a47774d7eb8b19f57efc6f59b4"
+    },
+    {
+      "path": "D:/course_starter/build/maze-integration/tests/maze_ui_runtime_test.c",
+      "sha256": "376aa66be59a30482dacbe76e40fdf85a26b304141ca92159554a1c98ea07d0c"
+    },
+    {
+      "path": "D:/course_starter/build/check_p2_timing_ui.py",
+      "sha256": "81c7a923dfe5abde1a17b89119d29b1df11b63b4d8f3e289059b9637c9ade1db"
+    },
+    {
+      "path": "D:/course_starter/build/check_p2_integration_ui.py",
+      "sha256": "400363193587d5c960382c1641b119005bc8ca259acf49832685173d3a511678"
+    },
+    {
+      "path": "D:/course_starter/build/build_maze_a2.py",
+      "sha256": "a4313d967c5123feeac0f4e5b9135714247f239533429f296fae845129970d4b"
+    },
+    {
+      "path": "D:/course_starter/build/check_maze_a2.py",
+      "sha256": "f68b79d3727a87d323b214293b72b567375dce8fe2d3234f4607874664490d32"
+    }
+  ]
+}

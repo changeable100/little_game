@@ -44,6 +44,8 @@ maze_result_t maze_controller_reconnect(maze_controller_t *c, uint32_t now_ms)
     c->have_sample = false;
     c->input.valid = false;
     c->calibration_count = 0;
+    c->recovery_needs_sample = c->game.snapshot.pause_reason == MAZE_PAUSE_DELAY;
+    c->delay_paused_ms = now_ms;
     c->sum[0] = c->sum[1] = 0;
     return MAZE_OK;
 }
@@ -133,6 +135,9 @@ static maze_result_t consume(maze_controller_t *c, uint32_t now, const maze_moti
     c->sample_sequence = s->sequence;
     c->sample_ms = s->sampled_ms;
     c->have_sample = true;
+    if (c->recovery_needs_sample && (uint32_t)(s->sampled_ms-c->delay_paused_ms)>0 &&
+        (uint32_t)(s->sampled_ms-c->delay_paused_ms)<0x80000000u)
+        c->recovery_needs_sample=false;
     return MAZE_OK;
 }
 
@@ -142,17 +147,22 @@ maze_result_t maze_controller_tick(maze_controller_t *c, uint32_t now,
     maze_result_t result;
     uint32_t dt;
     if (!c || !c->game.level) return MAZE_INVALID;
+    if (c->game.snapshot.revision == UINT32_MAX) return MAZE_EXHAUSTED;
     if (c->game.snapshot.state == MAZE_CALIBRATING &&
         (uint32_t)(now - c->started_ms) >= MAZE_CALIBRATION_TIMEOUT_MS)
         return maze_controller_input_failed(c, c->game.snapshot.run_id);
-    /* A delayed UI callback is a timing fault even if its sample is also old. */
+    /* Severe interruption pauses without inventing input or simulating a jump. */
     if (c->game.snapshot.state == MAZE_RUNNING &&
-        (uint32_t)(now - c->anchor_ms) > MAZE_MAX_DT_MS)
+        (uint32_t)(now - c->anchor_ms) > MAZE_MAX_CATCHUP_MS)
     {
-        const maze_input_t neutral = {0, 0, true};
         dt = now - c->anchor_ms;
+        uint32_t skipped=UINT32_MAX-dt<c->pending_ms ? UINT32_MAX : dt+c->pending_ms;
+        result=maze_game_pause_for_delay(&c->game,c->game.snapshot.run_id,skipped);
+        if (result!=MAZE_OK)return result;
         c->anchor_ms = now;
-        return maze_game_step(&c->game, &neutral, dt);
+        c->pending_ms=0;c->delay_paused_ms=now;c->recovery_needs_sample=true;
+        c->input.valid=false;
+        return MAZE_OK;
     }
     result = consume(c, now, s);
     if (result != MAZE_OK) return result;
@@ -168,11 +178,20 @@ maze_result_t maze_controller_tick(maze_controller_t *c, uint32_t now,
     if (c->game.snapshot.state != MAZE_RUNNING) return MAZE_OK;
     if (!c->have_sample || (uint32_t)(now - c->sample_ms) > MAZE_SAMPLE_MAX_AGE_MS)
         return maze_controller_input_failed(c, c->game.snapshot.run_id);
-    return maze_game_step(&c->game, &c->input, dt);
+    c->pending_ms+=dt;
+    while(c->pending_ms>=MAZE_FIXED_STEP_MS) {
+        uint32_t batch=c->pending_ms-c->pending_ms%MAZE_FIXED_STEP_MS;
+        if(batch>MAZE_MAX_DT_MS)batch=MAZE_MAX_DT_MS;
+        result=maze_game_step(&c->game,&c->input,batch);
+        if(result!=MAZE_OK)return result;
+        c->pending_ms-=batch;
+        if(c->game.snapshot.state!=MAZE_RUNNING){c->pending_ms=0;break;}
+    }
+    return MAZE_OK;
 }
 
-maze_result_t maze_controller_action(maze_controller_t *c,
-                                      const maze_action_t *a, uint32_t now)
+maze_result_t maze_controller_action_with_sample(maze_controller_t *c,
+    const maze_action_t *a, uint32_t now, const maze_motion_t *s)
 {
     maze_game_t probe;
     maze_result_t result;
@@ -182,12 +201,17 @@ maze_result_t maze_controller_action(maze_controller_t *c,
     probe = c->game;
     result = maze_game_action(&probe, a);
     if (result != MAZE_OK) return result;
+    if(a->action==MAZE_ACTION_RESUME && s) {
+        result=consume(c,now,s);
+        if(result!=MAZE_OK)return result;
+    }
     if (a->action == MAZE_ACTION_RESUME && (!c->have_sample ||
+        c->recovery_needs_sample ||
         (uint32_t)(now - c->sample_ms) > MAZE_SAMPLE_MAX_AGE_MS))
         return MAZE_WRONG_STATE;
     if (a->action == MAZE_ACTION_PAUSE)
     {
-        result = maze_controller_tick(c, now, NULL);
+        result = maze_controller_tick(c, now, s);
         if (result != MAZE_OK) return result;
     }
     old_run = c->game.snapshot.run_id;
@@ -201,7 +225,14 @@ maze_result_t maze_controller_action(maze_controller_t *c,
         c->sum[0] = c->sum[1] = c->bias[0] = c->bias[1] = 0;
         c->filtered[0] = c->filtered[1] = 0;
         c->have_sample = false;
+        c->pending_ms=0;c->recovery_needs_sample=false;
         memset(&c->input, 0, sizeof(c->input));
     }
     return MAZE_OK;
+}
+
+maze_result_t maze_controller_action(maze_controller_t *c,
+    const maze_action_t *a,uint32_t now)
+{
+    return maze_controller_action_with_sample(c,a,now,NULL);
 }

@@ -21,6 +21,9 @@ maze_result_t maze_game_action(maze_game_t *game, const maze_action_t *action);
 maze_result_t maze_game_calibrated(maze_game_t *game, uint32_t run_id);
 /* Owner-thread input-service failure, including during calibration/pause. */
 maze_result_t maze_game_input_failed(maze_game_t *game, uint32_t run_id);
+/* Owner-only recovery transition, no synthetic user request allocation. */
+maze_result_t maze_game_pause_for_delay(maze_game_t *game, uint32_t run_id,
+                                       uint32_t interrupted_ms);
 maze_result_t maze_game_step(maze_game_t *game, const maze_input_t *input,
                              uint32_t dt_ms);
 maze_result_t maze_game_snapshot(const maze_game_t *game,

@@ -1,0 +1,1 @@
+Source/binary fingerprints PASS; 81 core cases counted; three photos match original bytes; protected/build files unchanged; both commit drafts validated by original checker. No P0 board evidence or 3D acceptance claimed.

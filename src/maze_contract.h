@@ -4,13 +4,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-/* Project contract v1. No LVGL, RT-Thread or device-driver dependency. */
-#define MAZE_CONTRACT_VERSION 1u
+/* Contract v2 adds recoverable delay pause diagnostics; geometry is still 2D. */
+#define MAZE_CONTRACT_VERSION 2u
 #define MAZE_MAX_COLS 16u
 #define MAZE_MAX_ROWS 16u
 #define MAZE_BALL_RADIUS 0.20f
 #define MAZE_MAX_SPEED 3.0f
-#define MAZE_MAX_DT_MS 100u
+#define MAZE_MAX_DT_MS 100u /* Per primitive model batch, not UI callback gap. */
 
 enum maze_cell
 {
@@ -54,6 +54,13 @@ typedef enum
 
 typedef enum
 {
+    MAZE_PAUSE_NONE,
+    MAZE_PAUSE_USER,
+    MAZE_PAUSE_DELAY
+} maze_pause_reason_t;
+
+typedef enum
+{
     MAZE_ACTION_START,
     MAZE_ACTION_PAUSE,
     MAZE_ACTION_RESUME,
@@ -85,7 +92,9 @@ typedef struct
     float ball_x; /* Cells, origin top left; x right, y down. */
     float ball_y;
     float ball_radius;
-    uint32_t elapsed_ms; /* RUNNING time only, saturates at UINT32_MAX. */
+    uint32_t elapsed_ms; /* Completed RUNNING simulation time, saturating. */
+    maze_pause_reason_t pause_reason;
+    uint32_t interrupted_ms; /* Unsimulated severe-delay time, this run, saturating. */
 } maze_snapshot_t;
 
 typedef struct

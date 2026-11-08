@@ -206,13 +206,99 @@ static bool long_delay(void)
     maze_controller_t c;
     maze_motion_t s;
     CHECK(calibrated(&c, 0));
-    s=sample(&c,33,741);
-    CHECK(maze_controller_tick(&c,741,&s)==MAZE_INVALID);
-    CHECK(c.game.snapshot.error_code==MAZE_ERROR_TIMING && c.game.snapshot.elapsed_ms==0);
+    s=sample(&c,33,891);
+    CHECK(maze_controller_tick(&c,891,&s)==MAZE_OK);
+    CHECK(c.game.snapshot.state==MAZE_PAUSED && c.game.snapshot.error_code==MAZE_ERROR_NONE && c.game.snapshot.elapsed_ms==0);
+    CHECK(c.game.snapshot.pause_reason==MAZE_PAUSE_DELAY && c.game.snapshot.interrupted_ms==251);
     CHECK(calibrated(&c, 0));
-    s=sample(&c,32,640); /* Both expired input and a 101ms UI interval. */
+    s=sample(&c,32,640); /* Tolerated UI gap must not accept an expired input. */
     CHECK(maze_controller_tick(&c,741,&s)==MAZE_INVALID);
-    CHECK(c.game.snapshot.error_code==MAZE_ERROR_TIMING && c.game.snapshot.elapsed_ms==0);
+    CHECK(c.game.snapshot.error_code==MAZE_ERROR_INPUT && c.game.snapshot.elapsed_ms==0);
+    return true;
+}
+
+static bool short_delays(void)
+{
+    static const uint32_t gaps[]={100,104,108,200,250};
+    for(unsigned i=0;i<sizeof(gaps)/sizeof(gaps[0]);++i) {
+        maze_controller_t c;maze_motion_t s;
+        CHECK(calibrated(&c,0));s=sample(&c,33,640+gaps[i]);
+        CHECK(maze_controller_tick(&c,640+gaps[i],&s)==MAZE_OK);
+        CHECK(c.game.snapshot.state==MAZE_RUNNING && c.game.snapshot.error_code==MAZE_ERROR_NONE);
+        CHECK(c.game.snapshot.elapsed_ms==gaps[i]-gaps[i]%5);
+    }
+    return true;
+}
+
+static bool fractional_clock(void)
+{
+    maze_controller_t c;maze_motion_t s;
+    CHECK(calibrated(&c,0));s=sample(&c,33,642);
+    CHECK(maze_controller_tick(&c,642,&s)==MAZE_OK && c.game.snapshot.elapsed_ms==0 && c.pending_ms==2);
+    s=sample(&c,34,646);CHECK(maze_controller_tick(&c,646,&s)==MAZE_OK);
+    CHECK(c.game.snapshot.elapsed_ms==5 && c.pending_ms==1);
+    CHECK(action(&c,MAZE_ACTION_PAUSE,648)==MAZE_OK && c.pending_ms==3);
+    CHECK(c.game.snapshot.pause_reason==MAZE_PAUSE_USER && c.game.snapshot.elapsed_ms==5);
+    CHECK(maze_controller_reconnect(&c,900)==MAZE_OK && c.pending_ms==3);
+    s=sample(&c,35,1000);CHECK(maze_controller_tick(&c,1000,&s)==MAZE_OK);
+    CHECK(action(&c,MAZE_ACTION_RESUME,1000)==MAZE_OK);
+    s=sample(&c,36,1002);CHECK(maze_controller_tick(&c,1002,&s)==MAZE_OK);
+    CHECK(c.game.snapshot.elapsed_ms==10 && c.pending_ms==0);
+    return true;
+}
+
+static bool delay_recovery(void)
+{
+    maze_controller_t c;maze_motion_t s;uint32_t run;
+    CHECK(calibrated(&c,0));run=c.game.snapshot.run_id;
+    s=sample(&c,33,644);CHECK(maze_controller_tick(&c,644,&s)==MAZE_OK && c.pending_ms==4);
+    s=sample(&c,34,895);CHECK(maze_controller_tick(&c,895,&s)==MAZE_OK);
+    CHECK(c.game.snapshot.state==MAZE_PAUSED && c.game.snapshot.interrupted_ms==255 && c.pending_ms==0);
+    CHECK(c.game.snapshot.elapsed_ms==0 && c.game.snapshot.run_id==run);
+    CHECK(action(&c,MAZE_ACTION_RESUME,895)==MAZE_WRONG_STATE);
+    CHECK(maze_controller_tick(&c,895,&s)==MAZE_OK);
+    CHECK(action(&c,MAZE_ACTION_RESUME,895)==MAZE_WRONG_STATE);
+    s=sample(&c,35,915);CHECK(maze_controller_tick(&c,915,&s)==MAZE_OK);
+    CHECK(action(&c,MAZE_ACTION_RESUME,915)==MAZE_OK && c.game.snapshot.pause_reason==MAZE_PAUSE_NONE);
+    s=sample(&c,36,935);CHECK(maze_controller_tick(&c,935,&s)==MAZE_OK);
+    CHECK(c.game.snapshot.elapsed_ms==20 && c.game.snapshot.interrupted_ms==255);
+    CHECK(action(&c,MAZE_ACTION_RESTART,935)==MAZE_OK && c.game.snapshot.interrupted_ms==0);
+    return true;
+}
+
+static bool delay_saturation(void)
+{
+    maze_controller_t c;maze_motion_t s;
+    CHECK(calibrated(&c,0));c.game.snapshot.interrupted_ms=UINT32_MAX-1;
+    s=sample(&c,33,891);CHECK(maze_controller_tick(&c,891,&s)==MAZE_OK);
+    CHECK(c.game.snapshot.interrupted_ms==UINT32_MAX);
+    s=sample(&c,34,911);CHECK(maze_controller_tick(&c,911,&s)==MAZE_OK);
+    CHECK(action(&c,MAZE_ACTION_RESUME,911)==MAZE_OK);
+    s=sample(&c,35,1162);CHECK(maze_controller_tick(&c,1162,&s)==MAZE_OK);
+    CHECK(c.game.snapshot.interrupted_ms==UINT32_MAX && c.game.snapshot.elapsed_ms==0);
+    return true;
+}
+
+static bool delay_wrap(void)
+{
+    maze_controller_t c;maze_motion_t s;uint32_t start=UINT32_MAX-700;
+    CHECK(calibrated(&c,start));s=sample(&c,33,start+748u);
+    CHECK(maze_controller_tick(&c,s.sampled_ms,&s)==MAZE_OK && c.game.snapshot.elapsed_ms==105 && c.pending_ms==3);
+    s=sample(&c,34,start+999u);CHECK(maze_controller_tick(&c,s.sampled_ms,&s)==MAZE_OK);
+    CHECK(c.game.snapshot.pause_reason==MAZE_PAUSE_DELAY && c.game.snapshot.interrupted_ms==254);
+    return true;
+}
+
+static bool action_publication_guard(void)
+{
+    maze_controller_t c;maze_motion_t s;maze_action_t a;maze_snapshot_t before;
+    CHECK(calibrated(&c,0));before=c.game.snapshot;
+    CHECK(maze_controller_next_request(&c,&a.request_id)==MAZE_OK);
+    a.action=MAZE_ACTION_PAUSE;a.expected_run_id=0;s=sample(&c,33,840);s.a[0]=NAN;
+    CHECK(maze_controller_action_with_sample(&c,&a,840,&s)==MAZE_STALE);
+    CHECK(!memcmp(&before,&c.game.snapshot,sizeof(before)) && c.anchor_ms==640);
+    CHECK(maze_game_pause_for_delay(&c.game,0,251)==MAZE_STALE);
+    CHECK(maze_game_pause_for_delay(&c.game,c.game.snapshot.run_id,0)==MAZE_INVALID);
     return true;
 }
 
@@ -354,7 +440,13 @@ int maze_controller_selftest_run(maze_test_report_t report)
     RUN("TC-403 range",bad_sample(6));
     RUN("TC-403 missing-sample",missing_sample());
     RUN("TC-404 pause-resume-clock",pause_clock());
-    RUN("TC-404 long-dt-error",long_delay());
+    RUN("TC-503 short-delays-bounded-catchup",short_delays());
+    RUN("TC-503 long-delay-recoverable-pause",long_delay());
+    RUN("TC-503 fractional-time-survives-pause-reconnect",fractional_clock());
+    RUN("TC-503 fresh-sample-resume-and-run-reset",delay_recovery());
+    RUN("TC-503 interruption-counter-saturation",delay_saturation());
+    RUN("TC-503 delay-clock-wrap",delay_wrap());
+    RUN("TC-503 stale-intent-before-publication",action_publication_guard());
     RUN("TC-404 clock-wrap",clock_wrap());
     RUN("TC-406 api-and-calibration-failure",guards());
     RUN("TC-406 reconnect-preserves-game",reconnect());

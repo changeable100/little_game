@@ -20,7 +20,7 @@ static lab_motion_t latest;
 static uint32_t last_render_ms, last_handler_ms, last_wait_ms;
 static bool render_measured, loop_measured;
 static struct {
-    uint32_t run, gap, render, prep, handler, wait;
+    uint32_t run, gap, render, prep, handler, wait, interrupted, state;
     bool valid, rv, present;
 } timing_fault;
 static struct rt_messagequeue commands;
@@ -36,22 +36,26 @@ void maze_runtime_note_loop(uint32_t handler_ms, uint32_t wait_ms)
 
 static void print_timing(void)
 {
-    /* Two records fit RT_CONSOLEBUF_SIZE even at UINT32_MAX. Frozen at fault. */
+    /* Short records fit RT_CONSOLEBUF_SIZE even at UINT32_MAX; frozen at pause. */
     rt_kprintf("[maze:timing] run=%u gap=%u render=%u prep=%u\n",
         timing_fault.run,timing_fault.gap,timing_fault.render,timing_fault.prep);
     rt_kprintf("[maze:loop] run=%u handler=%u wait=%u valid=%u rv=%u\n",
         timing_fault.run,timing_fault.handler,timing_fault.wait,
         (unsigned)timing_fault.valid,(unsigned)timing_fault.rv);
+    rt_kprintf("[maze:pause] run=%u state=%u interrupted=%u\n",
+        timing_fault.run,timing_fault.state,timing_fault.interrupted);
 }
 
 static void record_timing(maze_state_t before, uint32_t gap, uint32_t prep)
 {
     const maze_snapshot_t *s=&controller.game.snapshot;
-    if(before!=MAZE_RUNNING || s->state!=MAZE_ERROR || s->error_code!=MAZE_ERROR_TIMING)return;
+    if(before!=MAZE_RUNNING || !((s->state==MAZE_PAUSED && s->pause_reason==MAZE_PAUSE_DELAY) ||
+        (s->state==MAZE_ERROR && s->error_code==MAZE_ERROR_TIMING)))return;
     timing_fault.run=s->run_id;timing_fault.gap=gap;timing_fault.prep=prep;
     timing_fault.render=last_render_ms;timing_fault.handler=last_handler_ms;
     timing_fault.wait=last_wait_ms;timing_fault.valid=loop_measured;
     timing_fault.rv=render_measured;timing_fault.present=true;
+    timing_fault.state=(uint32_t)s->state;timing_fault.interrupted=s->interrupted_ms;
     print_timing();
 }
 static bool wants_samples(void)
@@ -112,9 +116,19 @@ maze_result_t maze_runtime_action(void *context, const maze_action_t *action)
     maze_result_t result;
     if (!is_owner()) return MAZE_WRONG_STATE;
     if (context) return MAZE_INVALID;
+    maze_motion_t sample;
+    const maze_motion_t *publication=NULL;
+    if(action && (action->action==MAZE_ACTION_PAUSE || action->action==MAZE_ACTION_RESUME)) {
+        (void)lab_motion_try_snapshot(&latest);
+        memset(&sample,0,sizeof(sample));
+        memcpy(sample.a,latest.a,sizeof(sample.a));memcpy(sample.g,latest.g,sizeof(sample.g));
+        sample.sequence=latest.sequence;sample.sampled_ms=latest.sampled_ms;
+        sample.run_id=latest.session;sample.valid=latest.valid;
+        if(sampling && !stopping && latest.session==sampling_run)publication=&sample;
+    }
     uint32_t now=now_ms(), gap=now-controller.anchor_ms;
     maze_state_t before=controller.game.snapshot.state;
-    result = maze_controller_action(&controller, action, now);
+    result = maze_controller_action_with_sample(&controller, action, now,publication);
     record_timing(before,gap,0);
     if (result == MAZE_OK && (action->action == MAZE_ACTION_START ||
                               action->action == MAZE_ACTION_RESTART))
@@ -194,6 +208,8 @@ static void report(uint32_t now)
         milli(controller.bias[0]), milli(controller.bias[1]),
         milli(controller.input.tilt_x), milli(controller.input.tilt_y),
         milli(s->ball_x), milli(s->ball_y));
+    rt_kprintf("[maze:clock] run=%u pause=%u interrupted=%u pending=%u\n",
+        s->run_id,(unsigned)s->pause_reason,s->interrupted_ms,controller.pending_ms);
 }
 
 static void tick(lv_timer_t *unused)

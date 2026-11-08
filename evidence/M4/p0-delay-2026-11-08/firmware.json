@@ -1,0 +1,175 @@
+{
+  "captured_at_local": "2026-11-08T19:29:22.243694+08:00",
+  "branch": "codex/maze-3d-physics",
+  "development_base": "49dda19e66dbe325fd9a5d87b5709998c4ad1082",
+  "status": "Uncommitted P0 source; built successfully; board evidence pending; still 2D/UI owner",
+  "binaries": [
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/main.bin",
+      "bytes": 1142680,
+      "sha256": "3479ac01e1211d045338f05b39e74d0adc1eee35f668c9b7fc41fe4c5eca7663"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/bootloader/bootloader.bin",
+      "bytes": 58496,
+      "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/ftab/ftab.bin",
+      "bytes": 11288,
+      "sha256": "0afc6e8bd5a64eea4d194d65e31aa85c35c291e1665610ee8214341f8fb6c58b"
+    }
+  ],
+  "sources": [
+    {
+      "path": "src/maze_contract.h",
+      "bytes": 2667,
+      "sha256": "ec69aedae53ac95863c9ec40e70650a1149c5d2dd1e4bdae43d0a39a9917aefe"
+    },
+    {
+      "path": "src/maze_controller.c",
+      "bytes": 8831,
+      "sha256": "296135b24d83fe6408c1048b6885d01d046db4427ca717af2586fa687a16a9ef"
+    },
+    {
+      "path": "src/maze_controller.h",
+      "bytes": 2118,
+      "sha256": "2be42b15302800b29b8a87e8d91749b521b18c15df31218d83f28f9f8dac872f"
+    },
+    {
+      "path": "src/maze_controller_selftest.c",
+      "bytes": 18244,
+      "sha256": "4849f1e1d975bf3036fb99a86d87aed16ff6b74959f2deb9417d8b48a02c5d2a"
+    },
+    {
+      "path": "src/maze_controller_selftest.h",
+      "bytes": 165,
+      "sha256": "83d93d2f2defca68f25bb8faec7140fb26a3d95cb5643d0cb630c90c37935058"
+    },
+    {
+      "path": "src/maze_font.h",
+      "bytes": 155,
+      "sha256": "6b735e135954b2d997d5e57d2ab109ae794edad73a31e955b023df9a7d5035a1"
+    },
+    {
+      "path": "src/maze_font_16.c",
+      "bytes": 171212,
+      "sha256": "3961371bb7392156f8c6e5755bee83071eaa396fcfff7b171f01d64907c81e85"
+    },
+    {
+      "path": "src/maze_font_20.c",
+      "bytes": 248962,
+      "sha256": "5f9ae87bc96385ccaef9bdaa24b5a89d28532cee6a230477a562b8a6c992f2d4"
+    },
+    {
+      "path": "src/maze_font_28.c",
+      "bytes": 455070,
+      "sha256": "002a1121c6d8647392329046b157943b3b9ffdc97474cbbc1bf3f69597c00aa0"
+    },
+    {
+      "path": "src/maze_game.c",
+      "bytes": 10682,
+      "sha256": "f01fc4a03aaeb7c9a849ec990470a84b91bfe95a386b654f398b925dab134fd0"
+    },
+    {
+      "path": "src/maze_game.h",
+      "bytes": 1406,
+      "sha256": "a521bced8bf8f50e1baa2a55f97e8eb51b789fc2eaf5b289856d105063f98b3c"
+    },
+    {
+      "path": "src/maze_levels.c",
+      "bytes": 4319,
+      "sha256": "b9e54fd330d84953680c2abf24aea67e5a9e8cfa54dcec71870737d9995c3a79"
+    },
+    {
+      "path": "src/maze_levels.h",
+      "bytes": 192,
+      "sha256": "5120d09137b9e89fa42c1c4984bc7e3538b18799689954d3e9ffe4de95831d9c"
+    },
+    {
+      "path": "src/maze_levels_selftest.c",
+      "bytes": 2953,
+      "sha256": "3503f7282fa8275ee65a115023e06f7bd84c83d88e626d01c63075552171a4cc"
+    },
+    {
+      "path": "src/maze_levels_selftest.h",
+      "bytes": 240,
+      "sha256": "d0d30469d680e7aee291330af56ef492988c899a18d7e105fe9a6b4c4327b105"
+    },
+    {
+      "path": "src/maze_menu.c",
+      "bytes": 7479,
+      "sha256": "b3ecdba298dbbc1f00ba797a6d11bc986ccb2b1b3ddfe6ceb2ff9d71d08f574d"
+    },
+    {
+      "path": "src/maze_menu.h",
+      "bytes": 547,
+      "sha256": "2d7b15e76d42a6119ed9422eea92ca59a3dd3134aa1729ba5b3c36d34a16f240"
+    },
+    {
+      "path": "src/maze_motion_service.c",
+      "bytes": 2792,
+      "sha256": "d070952b4e7073786a8410e7b365ddd88936909776978995d28372aa62988ee2"
+    },
+    {
+      "path": "src/maze_runtime.c",
+      "bytes": 12696,
+      "sha256": "baff9656f969fcd11306d4d417ab3209056ff118cc1dcd520545ab924a3eb5ca"
+    },
+    {
+      "path": "src/maze_runtime.h",
+      "bytes": 1829,
+      "sha256": "04a1c192f9e260516cada05a5c658d417de87ffda0f683046287b3328f445662"
+    },
+    {
+      "path": "src/maze_selftest.c",
+      "bytes": 12641,
+      "sha256": "d9be67b749c9bcd82155cf9ecaa83c0c1ae781411351a52fb8c3042f3c45fd86"
+    },
+    {
+      "path": "src/maze_selftest.h",
+      "bytes": 288,
+      "sha256": "a7a2d848ff2b94e186f201218e447b2ab2c59ae160d430aa87f3c5340ac884c3"
+    },
+    {
+      "path": "src/maze_ui.c",
+      "bytes": 19147,
+      "sha256": "a4d09e64f32173ec7b01f515907f37ad31f129783981a49ff9e22b083a07bf49"
+    },
+    {
+      "path": "src/maze_ui.h",
+      "bytes": 1679,
+      "sha256": "96d51632e01a7e5b8cb58e0fc976594a957a61a365823455b39fd50abdf14be0"
+    },
+    {
+      "path": "src/maze_ui_runtime.c",
+      "bytes": 3964,
+      "sha256": "ee7ebdcf7d453195359c1703a62f16440c983efb860fd9d66216a0221b97ed38"
+    },
+    {
+      "path": "src/maze_ui_runtime.h",
+      "bytes": 421,
+      "sha256": "07c73f2d4321e2c07b3b83ce967086466212b6042354d7b8f8acefafe11defd4"
+    }
+  ],
+  "host_evidence": "evidence/M2/maze_adapter/host_2026-11-08_192104.txt",
+  "host_pass_cases": 81,
+  "board_selftest_expected": {
+    "model": 24,
+    "levels": 4,
+    "controller": 31
+  },
+  "host_images": [
+    {
+      "path": "evidence/M4/p0-delay-2026-11-08/host-delay-paused.png",
+      "bytes": 13638,
+      "sha256": "e995812dc1e403a5e282175d34981d54e79e237ba50588cfb4f4894069d38ccc"
+    },
+    {
+      "path": "evidence/M4/p0-delay-2026-11-08/host-synthetic-delay-paused.png",
+      "bytes": 11844,
+      "sha256": "d342402c705ad3097d901fb46b1f1ad6057907034311404273e853000b5d6727"
+    }
+  ],
+  "limits": "LVGL real SDK, RT and sensors fake. No FPS, physical latency or 3D validation claimed."
+}
