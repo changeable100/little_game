@@ -186,6 +186,11 @@ physical_verification:
   executed_at: 2026-11-08收到会话内联文字，精确运行时刻未知
   evidence_path: evidence/M3/chinese-loading-2026-11-08/board-run01/analysis.md
   agent_conclusion: 用户反馈一放平就加载错误；run9/10/11/12四次WHO0x6a/result0后TIMING gap104/108/107/105ms，renderer均1ms、handler102/106/105/103ms、wait2ms。运行保护触发，生产可玩性FAIL；缺完整启动/独立指纹/图片，不捏造cal计数。新全屏遮罩退出存在整屏重绘，局部修复后须另次实测。
+- item: 中文切换修复后的实物首页与RUNNING照片
+  required_action: 重烧修复版后确认可进入运行画面，回传照片与真实反馈
+  executed_at: 2026-11-08收到三张原图，精确拍摄/操作时刻未知
+  evidence_path: evidence/M3/chinese-loading-2026-11-08/board-run02/analysis.md
+  agent_conclusion: 学生报告成功，中文首页与两张RUNNING4秒/11秒画面可见、球位不同，进入运行与中文显示子项PASS。缺新日志/独立指纹，不认定同一run连续运行或定量时序/校准/其他流程/WON通过；旧FAIL保留。仅凭照片不推造3D性能。
 test_results:
 - test_id: A2-sdk-build
   description: A第二阶段最终SDK固件编译

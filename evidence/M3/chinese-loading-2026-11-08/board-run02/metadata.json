@@ -1,0 +1,26 @@
+{
+  "received_date": "2026-11-08",
+  "capture_time": "not supplied",
+  "source_context": "reply to 49dda19 reflash instructions; independent board fingerprint not supplied",
+  "files": {
+    "running_11s_original.jpg": {
+      "bytes": 5593942,
+      "sha256": "93d188e755766391a83bd45508b2dd992cfc3f364f526de075ce228b65391a12"
+    },
+    "home_original.jpg": {
+      "bytes": 5599430,
+      "sha256": "943499e9fff8d2d3bc7d26557b4765fd12def0231aa0df681c308718907a8306"
+    },
+    "running_4s_original.jpg": {
+      "bytes": 7404376,
+      "sha256": "b7449daf2fcebeb4d6a746e10933addeedcc5c95e122c8e6db72d53b1b897a5d"
+    }
+  },
+  "user_report": "ok，成功了",
+  "observation": "Chinese home visible; two game photos display RUNNING at 4s and 11s, with ball at different locations",
+  "limits": [
+    "No new serial log or timing record",
+    "Photos are not independently synchronized or confirmed same run",
+    "No full startup, calibration counter, retry, WON or worst-case frame-time proof"
+  ]
+}
