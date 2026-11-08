@@ -16,6 +16,10 @@ requirements:
 design:
   architecture_doc_path: docs/02-方案设计说明.md
   key_decisions:
+  - decision: B三维视图采用正对赛道固定透视相机，见ADR-0007
+    alternatives_considered: camera=(8,-8,7)斜角观察，需要混合世界x/y输入映射
+    rationale: camera=(3,-8,6)看(3,0,0.2)，地面屏幕右=世界+x、屏幕上=世界+y，A据此映射IMU；B不反转或交换轴
+    decided_by: 用户明确回复“确认推荐相机，按此完成首批开发”
   - decision: 真3D采用独立物理任务方案A，先交付P0迟帧容错
     alternatives_considered: 沿用UI任务拥有状态并有界补算/降低绘制频率
     rationale: 物理与显示解耦符合碰撞手感优先，接受新消息/快照与线程清理成本；P0先在现有线程验证250ms有界补算与严重卡顿可恢复暂停
@@ -589,6 +593,23 @@ p0_delay_tolerance:
   physical: "board-run01新日志和实物画面支持59项启动自检、正常运行/可玩子项PASS；严重迟帧恢复未自然触发，真3D模型/任务/手感另行验证"
   user_feedback: "用户报告可以正常玩、没有感觉到延迟，随后已补齐启动/status/新画面；见board-run01/analysis.md。正常运行子项PASS，不推定定量时延或严重迟帧恢复通过"
   submission: "前轮已按正文保存5c0121e/f276000；当前P0 board-run01新证据正文已读并确认hw本地保存，正常运行结论见physical_verification，本轮不推送"
+
+b_roll3_view:
+  date: "2026-11-08"
+  baseline: "09ca370368a8907bf4b8d0f02ea8d122c35b212a"
+  branch: "codex/roll3-b-view"
+  authorization: "用户确认推荐相机，按roll3-b-view-plan完成首批纯视图/中文模拟流程/测试"
+  camera: "(3,-8,6)看(3,0,0.2)m，FOV55，near0.15/far30；地面屏幕右+x、上+y；ADR-0007"
+  contract: "ROLL3 v1完整快照与只读world；不调用r3_step/旧runtime，无新推进timer/I2C"
+  render: "160x180 RGB565+uint16深度，一次115200字节；共享OBB、透视/遮挡/裁剪、四元数条纹球"
+  ui: "中文七态，生产操作全部禁用且明确主机预览；返回只销毁本地页面，二维入口保留"
+  software: "七态/字形/异常/申请失败/20轮生命周期PASS；原109项核心与真实LVGL二维生产连接PASS；SDK编译PASS"
+  memory: "视图大缓冲/对象/timer回基线；主机通用draw-buffer额外分配0次，不推定板端总堆/帧率；新字体对象50095字节只读"
+  evidence: "evidence/M4/b-view-2026-11-08/README.md"
+  fingerprint: "evidence/M4/b-view-2026-11-08/firmware.json"
+  physical: "未新增物理结果；A独立任务/快照/动作与三维入口整合后集中板测，不重烧旧二维页面"
+  pending: "A整合生产适配、启动数学自检、IMU相机映射；板端资源/帧时/倾斜/复活/手感"
+  submission: "用户已读两份正文并明确确认分两次本地提交，不推送；实际保存编号以Git历史为准"
 
 p1_3d_physics:
   date: "2026-11-08"
