@@ -125,8 +125,11 @@ static void enter_maze(lv_event_t *event)
     if(maze_runtime_init_status()!=MAZE_RUNTIME_READY) {
         lv_label_set_text(entry_feedback,maze_ui_runtime_startup_text());return;
     }
-    if(maze_ui_runtime_open()!=MAZE_UI_SUCCESS)
-        lv_label_set_text_fmt(entry_feedback,"Cannot open game (%d)",(int)maze_ui_runtime_last_result());
+    int result=maze_ui_runtime_open();
+    if(result!=MAZE_UI_SUCCESS)
+        lv_label_set_text_fmt(entry_feedback,"Cannot open game (UI %d)",result);
+    else
+        lv_label_set_text(entry_feedback,maze_ui_runtime_startup_text());
 }
 
 static void home_deleted(lv_event_t *event)

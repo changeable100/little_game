@@ -86,6 +86,8 @@ int main(void)
  assert(maze_menu_create()==0);shot("production-home.ppm");click("ENTER MAZE");
  assert(snapshot().state==MAZE_READY&&snapshot().run_id==0);assert(!find(lv_layer_top(),"PREVIEW / SIMULATED DATA"));
  shot("production-ready.ppm");
+ /* Duplicate menu event must report this UI error, not old runtime OK. */
+ click("ENTER MAZE");assert(find(lv_screen_active(),"Cannot open game (UI -100)"));
  /* Synthetic control-matrix probes only; runtime lifecycle above/below is real. */
  maze_snapshot_t matrix=snapshot();
  for(unsigned st=0;st<6;++st){matrix.state=(maze_state_t)st;matrix.error_code=st==5?MAZE_ERROR_INPUT:MAZE_ERROR_NONE;
@@ -129,7 +131,7 @@ int main(void)
  pump(1);assert(find(lv_layer_top(),"Old intent discarded; not retried"));
  action_fail=MAZE_STALE;click("BACK");assert(count(lv_layer_top())>top_base);action_fail=0;
  click("BACK");assert(count(lv_layer_top())==top_base&&snapshot().state==MAZE_READY);pump(2);
- for(unsigned i=0;i<20;++i){click("ENTER MAZE");click("START");pump(35);assert(snapshot().state==MAZE_RUNNING);
+ for(unsigned i=0;i<20;++i){click("ENTER MAZE");assert(find(lv_screen_active(),maze_ui_runtime_startup_text()));click("START");pump(35);assert(snapshot().state==MAZE_RUNNING);
   lv_obj_delete(lv_obj_get_child(lv_layer_top(),-1));assert(snapshot().state==MAZE_PAUSED);
   assert(maze_ui_runtime_open()==0);assert(snapshot().state==MAZE_PAUSED);pump(2);click("BACK");pump(2);
   assert(timers()==clock_base&&count(lv_layer_top())==top_base);}

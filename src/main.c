@@ -70,7 +70,7 @@ int main(void)
         return -1;
     }
     rt_kprintf("[maze:boot] menu ready\n");
-    rt_kprintf("[maze:app] AB merge 2026-11-06; standalone preview + motion diagnostics\n");
+    rt_kprintf("[maze:app] production UI + motion diagnostics\n");
     while (1) {
         /* 处理界面定时器、输入与重绘，返回建议的下次调用间隔。 */
         uint32_t delay = lv_timer_handler();

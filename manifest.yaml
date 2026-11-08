@@ -350,7 +350,14 @@ test_results:
   actual: PASS；53项板上逻辑自检、runtime1/result0及menu ready顺序可见，原照片显示完整首页；失败注入仍为主机覆盖，触摸/动态UI未验收
   pass: true
   evidence_path: evidence/M3/a-startup-2026-11-07/board-run01/analysis.md
+- test_id: TC-206-P2-integration-prompt
+  description: P2合入后入口错误提示、生产连接及A核心回归
+  expected: 当前UI打开错误码准确、下次成功清旧提示；现有连接和69项回归无退化，SDK构建成功
+  actual: 新增重复ENTER用例先FAIL，修复后生产连接及成功重入提示通过；69项A回归和SDK编译PASS，当前无新板端证据
+  pass: true
+  evidence_path: evidence/M3/p2-integration-2026-11-08/connection_final.txt
 known_issues:
+- P2生产UI已合入并通过本地软件检查，新固件待真实屏幕按钮/倾斜/通关与资源复用验证。此前PREVIEW/待接入等条目保留为历史，不再代表当前软件实现状态；当前提示小修正待提交，未推送。
 - 最新A启动保障board-run01正常启动和首页复核通过，关闭“新正常启动待证据”这一当前等待；失败分配/回收路径保留主机覆盖边界。ft6146两个E级ID日志经SDK源码核对为读成功后的LOG_E输出，不据此推定触摸故障；实际按钮/生产UI待后续验证。
 - REQ-408软件已提供只读启动状态及启动失败清理，69项主机和SDK编译通过；新板端启动待日志/首页证据，B生产入口禁用/提示仍须按状态接口接入。不得把READY启动状态当校准完成。
 - 最新run08第五步四项状态/计时/采样停止子验证通过，不再等待该组日志；独立固件哈希、精确操作时刻及退出后其他外设资源复用未提供，B动态UI与整机通关仍待接入验证。旧待验证条目保留为历史。
