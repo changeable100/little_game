@@ -1,3 +1,4 @@
 # Preserve the supplied attachment byte-for-byte, including original CRLF.
 evidence/M3/dynamic-ui/run01/startup_and_failure_original.txt -text
 evidence/M3/dynamic-ui/run03/original.txt -text
+evidence/M3/chinese-loading-2026-11-08/board-run01/user_log_original.txt -text

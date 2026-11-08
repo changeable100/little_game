@@ -1,0 +1,53 @@
+{
+  "received_date": "2026-11-08",
+  "source": "user inline message, not a complete serial attachment",
+  "firmware_context": "reply after e0a6247; independent board fingerprint not supplied",
+  "capture_time": "unknown",
+  "sha256": "a0a33c15d9c6fe4447f736d6a90213e10d2955559ba87d369a57384706d6f91b",
+  "records": [
+    {
+      "run": 9,
+      "gap": 104,
+      "render": 1,
+      "prep": 0,
+      "loop_run": 9,
+      "handler": 102,
+      "wait": 2,
+      "valid": 1,
+      "rv": 1
+    },
+    {
+      "run": 10,
+      "gap": 108,
+      "render": 1,
+      "prep": 0,
+      "loop_run": 10,
+      "handler": 106,
+      "wait": 2,
+      "valid": 1,
+      "rv": 1
+    },
+    {
+      "run": 11,
+      "gap": 107,
+      "render": 1,
+      "prep": 0,
+      "loop_run": 11,
+      "handler": 105,
+      "wait": 2,
+      "valid": 1,
+      "rv": 1
+    },
+    {
+      "run": 12,
+      "gap": 105,
+      "render": 1,
+      "prep": 0,
+      "loop_run": 12,
+      "handler": 103,
+      "wait": 2,
+      "valid": 1,
+      "rv": 1
+    }
+  ]
+}

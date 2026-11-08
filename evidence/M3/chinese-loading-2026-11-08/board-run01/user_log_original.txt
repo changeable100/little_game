@@ -1,0 +1,20 @@
+[maze:imu] run=9 WHO_AM_I=0x6a result=0
+[maze:timing] run=9 gap=104 render=1 prep=0
+[maze:loop] run=9 handler=102 wait=2 valid=1 rv=1
+[maze:imu] run=9 stopped result=0 settings_saved=1
+[lab:6-axis IMU] state=4 Maze sampling stopped | Settings restored; physical response awaits confirmation.
+[maze:imu] run=10 WHO_AM_I=0x6a result=0
+[maze:timing] run=10 gap=108 render=1 prep=0
+[maze:loop] run=10 handler=106 wait=2 valid=1 rv=1
+[maze:imu] run=10 stopped result=0 settings_saved=1
+[lab:6-axis IMU] state=4 Maze sampling stopped | Settings restored; physical response awaits confirmation.
+[maze:imu] run=11 WHO_AM_I=0x6a result=0
+[maze:timing] run=11 gap=107 render=1 prep=0
+[maze:loop] run=11 handler=105 wait=2 valid=1 rv=1
+[maze:imu] run=11 stopped result=0 settings_saved=1
+[lab:6-axis IMU] state=4 Maze sampling stopped | Settings restored; physical response awaits confirmation.
+[maze:imu] run=12 WHO_AM_I=0x6a result=0
+[maze:timing] run=12 gap=105 render=1 prep=0
+[maze:loop] run=12 handler=103 wait=2 valid=1 rv=1
+[maze:imu] run=12 stopped result=0 settings_saved=1
+[lab:6-axis IMU] state=4 Maze sampling stopped | Settings restored; physical response awaits confirmation.
