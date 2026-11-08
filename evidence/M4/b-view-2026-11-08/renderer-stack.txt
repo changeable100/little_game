@@ -1,0 +1,6 @@
+src/roll3_renderer.c:60:17:clip	88	static
+src/roll3_renderer.c:87:17:sphere_point	56	static
+src/roll3_renderer.c:70:13:triangle	448	static
+src/roll3_renderer.c:21:6:roll3_renderer_project	56	static
+src/roll3_renderer.c:92:5:roll3_renderer_render	272	static
+src/roll3_renderer.c:119:5:roll3_renderer_selftest	112	static

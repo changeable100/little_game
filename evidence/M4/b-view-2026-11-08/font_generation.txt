@@ -1,0 +1,7 @@
+WARN `--no-project` was provided, but no project was found
+Downloading fonttools (2.4MiB)
+Downloading pillow (6.9MiB)
+ Downloaded fonttools
+ Downloaded pillow
+Installed 2 packages in 690ms
+Font generation PASS: 201 glyphs x 2 sizes, complete source coverage

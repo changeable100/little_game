@@ -1,0 +1,5 @@
+Initial all-new-text whitespace audit flagged upstream assets/roll3-font/OFL.txt line21.
+License retained verbatim including upstream whitespace; equality with SDK source PASS.
+All other new source/docs/generated logs whitespace PASS. Tracked git diff --check PASS.
+Final firmware/source/evidence fingerprint verification PASS.
+main.bin SHA256 bdecd1f103055d2fff828f5c8a49bb06a94c67bd3b4304153981d3a621695fb5

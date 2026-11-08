@@ -1,0 +1,92 @@
+{
+  "recorded_at": "2026-11-08T23:38:46.311865+08:00",
+  "baseline": "09ca370368a8907bf4b8d0f02ea8d122c35b212a",
+  "branch": "codex/roll3-b-view",
+  "contract": "ROLL3_CONTRACT_VERSION=1",
+  "camera": {
+    "position": [
+      3,
+      -8,
+      6
+    ],
+    "target": [
+      3,
+      0,
+      0.2
+    ],
+    "vertical_fov_deg": 55,
+    "near_m": 0.15,
+    "far_m": 30
+  },
+  "viewport": [
+    160,
+    180
+  ],
+  "owned_color_depth_bytes": 115200,
+  "physical": "Not performed; standalone synthetic view, no production 3D entry",
+  "images": {
+    "project/build_sf32lb52-lchspi-ulp_hcpu/main.bin": {
+      "bytes": 1157512,
+      "sha256": "bdecd1f103055d2fff828f5c8a49bb06a94c67bd3b4304153981d3a621695fb5"
+    },
+    "project/build_sf32lb52-lchspi-ulp_hcpu/bootloader/bootloader.bin": {
+      "bytes": 58496,
+      "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21"
+    },
+    "project/build_sf32lb52-lchspi-ulp_hcpu/ftab/ftab.bin": {
+      "bytes": 11288,
+      "sha256": "2bbe01a0c47644d63e7bf9fc2f16c56a5ddd2f6572ed0435a2e110f74d2e7aaf"
+    }
+  },
+  "sources": {
+    "src/roll3_contract.h": "a46c42dc9484c2f18da625e973ddc262ee255b954d12aa410f57a90e104f08c6",
+    "src/roll3_font.h": "9e8089fa37262974afc2a966ae333ba1e55b589736b73da974aac8fb8632eec4",
+    "src/roll3_font_16.c": "71ac14da5546de74f386f9d04a8a1913c5d954e54538411f02e52b863a97ad53",
+    "src/roll3_font_20.c": "489ff45af4d6c3d44f050b1a76775ced6f6a85cec7eb56eb0b8f83f92c58cc94",
+    "src/roll3_physics.c": "cb69c8ac40f3ffed5887054559333f285d85e2fb25e8cd4b243d84e4f06bea17",
+    "src/roll3_physics.h": "6b89ffeb2bfcf5b281732bb9f08b205dfcf48e5f2405d9623bb384ad3a06a50c",
+    "src/roll3_renderer.c": "b9c4b56cf37f15836916b749353e17f69eb54a9bbe865e8eb6f1409e5d912930",
+    "src/roll3_renderer.h": "d4afebfc8098bf240863be966e6e41b7bdd5a539c158d03820ac5bf24e0887cd",
+    "src/roll3_scene.c": "ce999c8f0d36e50a11cd787c2fd69d9f5149c67d095252c0eeafe9cdd277045d",
+    "src/roll3_scene.h": "1a26aee62f6a61f4ed2b558a356711453ef97fc5829a7259fba778e8aa56164e",
+    "src/roll3_selftest.c": "e699103e65b460cbb4a97114cd6c8c977b4860569a74ed7ba38d6ac656125508",
+    "src/roll3_selftest.h": "4dbb3c1746fb1aa847fa84817546d1982d92940942bfa82eff9445ac8d22d315",
+    "src/roll3_view.c": "656529581f3111c8f19bc6078991228a72a4cef0db57f50d04391187e2d27844",
+    "src/roll3_view.h": "fdf962f8f276d0c0aa4e2625daac0b54944e3018e55474607b8bcd5c821ca4ba",
+    "tests/render.py": "b11d07799682366509334ce7d0f25c36c9e4045d16c821c5585a422c56599d71",
+    "tests/roll3_view_test.c": "4ebd7bc74c326236ebdcbb05ac53fe5a657aa684d52d95cdf0ae9249dbbd3112",
+    "tools/generate_maze_font.py": "220356cda1489ba67dc747cc76b8da64168d2b022e8e180b1932435f89ab3cd0"
+  },
+  "evidence": {
+    "evidence/M4/b-view-2026-11-08/2d-connection.txt": "9312a4a328f1d42fe1e0c63853bb56073e1490049890dfe6c1aba2b08aad6630",
+    "evidence/M4/b-view-2026-11-08/contact-sheet.png": "b4aa7ea30df5799073a7cd5b01667c5b8dd8b4a3fc873fd66e2a853d5d173bbf",
+    "evidence/M4/b-view-2026-11-08/core-host.txt": "b517ecc1229d7307a813eed54eb148c61b4f1d436c732bb8bc22ed70da133453",
+    "evidence/M4/b-view-2026-11-08/course-checks-before-commit2.txt": "7252eb3e0e8c7a438685cbb0b93133fe6e0b377a987ea2cdd0e9916008f601b0",
+    "evidence/M4/b-view-2026-11-08/course-checks.txt": "ff7987dd7430e5b450b79af1bd8f5b1c04e4a0243a3d82e4906d5f6c512f6fa7",
+    "evidence/M4/b-view-2026-11-08/devlog-before-commit2.txt": "ab3d2dc4af96a2e99e364d50226f4183e8b5b07f16c178a231593e14a4eb2a95",
+    "evidence/M4/b-view-2026-11-08/devlog-refresh.txt": "ab3d2dc4af96a2e99e364d50226f4183e8b5b07f16c178a231593e14a4eb2a95",
+    "evidence/M4/b-view-2026-11-08/final-audit.txt": "1fd642ad664d29e22cbb93660ce9dd9ea302c8a5794fa0d54c03dfe324030d26",
+    "evidence/M4/b-view-2026-11-08/font-check.txt": "30fba17046f2fcbfd47d44a1c2a026bfbcdb371fb472be68971768fcf9046055",
+    "evidence/M4/b-view-2026-11-08/font_generation.txt": "ff1ccfa7b3470bf5c2546a22203f4fa67ac24c11c1ef5134e9a69424476068b4",
+    "evidence/M4/b-view-2026-11-08/host-view-final.txt": "12dbec25c4481245744d13271b3501ccd3b0d719cd6d74dc28063d7a406380ab",
+    "evidence/M4/b-view-2026-11-08/host-view-initial.txt": "8a6b3e1d207f8edfe56177d50cf9b02d2d201cec68be8a5ae72cb4a6372183c0",
+    "evidence/M4/b-view-2026-11-08/host-view-retest1.txt": "12dbec25c4481245744d13271b3501ccd3b0d719cd6d74dc28063d7a406380ab",
+    "evidence/M4/b-view-2026-11-08/host-view-retest2.txt": "12dbec25c4481245744d13271b3501ccd3b0d719cd6d74dc28063d7a406380ab",
+    "evidence/M4/b-view-2026-11-08/README.md": "d2c40893ba58da2f3852d7178c92cb973e612fc3d46fa2c07d2d44b4723184dc",
+    "evidence/M4/b-view-2026-11-08/renderer-compile-retest.txt": "a9f58776a09b5dac438049683f24bf85764e0ff8e7455952456165c68c158627",
+    "evidence/M4/b-view-2026-11-08/renderer-compile.txt": "641cfea51454cdb9825bc1455d485fe1be5cf160aa60b3860f89919b0fdfc5cd",
+    "evidence/M4/b-view-2026-11-08/renderer-stack.txt": "bb2924a3257e97da3cee321d3cefeb3a234f9c4016d4849b3af76d483431513d",
+    "evidence/M4/b-view-2026-11-08/roll3-CALIBRATING.png": "9cee0f0caaa701a3b919087a96462dbf3a159847f5b32b70efe0f6ce03f80e02",
+    "evidence/M4/b-view-2026-11-08/roll3-ERROR.png": "e613159a10d96fb80e21e2498f8110ab60cf96ad33bbc11dc9eeddd12ca8ed87",
+    "evidence/M4/b-view-2026-11-08/roll3-FALLEN.png": "6c1a75cec89f44e61133926efeb9953ffa78285f0116ff5a7720eec895baaaf0",
+    "evidence/M4/b-view-2026-11-08/roll3-PAUSED.png": "31db2f72c9508aba1209f3bb3e6d88de2032630f3025488fffaaaccc5e9aa89c",
+    "evidence/M4/b-view-2026-11-08/roll3-READY.png": "2731d3a7b17ff0b47e333018e4d970c7046de8f9c7e445fdcb337562d1d403a3",
+    "evidence/M4/b-view-2026-11-08/roll3-RUNNING.png": "658bde9e1bad1de3239ca8a63daa111ed18fea9d33f33d0690cf0a1a7b59284f",
+    "evidence/M4/b-view-2026-11-08/roll3-WON.png": "ca45d4f872692cf4f2b4b362ffb3873b10349d77bf76ca44a486fd5ccf1fa319",
+    "evidence/M4/b-view-2026-11-08/sdk-build-final.txt": "1f9403839bbc60e9ddced206f320f6276b0e101a27d002063f8c6d7a2b345705",
+    "evidence/M4/b-view-2026-11-08/sdk-build-retest.txt": "f30eaaf128e8cbfb871003859a22f1f0b51534c1aff7f3266d99f317eb07e8b7",
+    "evidence/M4/b-view-2026-11-08/sdk-build.txt": "b71cbf82e4404040259a0bca4e49a28fb53eac4a7202421d657e7ede83d4a558",
+    "evidence/M4/b-view-2026-11-08/source-boundary.txt": "b7b7f9f811fc0440c736494e161f017b37a81d432180b769a6de13b5ea206a9f",
+    "evidence/M4/b-view-2026-11-08/trace.txt": "0c424f38701bce27671db6919fffe77f73a87d7ba07ef84ecccb5fc3d0bfae4c"
+  }
+}

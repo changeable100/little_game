@@ -1,0 +1,5 @@
+Baseline 09ca370368a8907bf4b8d0f02ea8d122c35b212a
+Branch codex/roll3-b-view
+PASS: 108 pre-existing source/config/checker paths unchanged
+PASS: physical_verification data identical to baseline
+PASS: new view/renderer have no model progression, old runtime, I2C or timer creation calls

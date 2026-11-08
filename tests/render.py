@@ -15,13 +15,14 @@ parser.add_argument('--sdk', required=True, type=Path)
 parser.add_argument('--out', type=Path, default=Path('/tmp/peripheral-lab-preview'))
 parser.add_argument('--maze-only', action='store_true', help='B2-1 simulated maze preview checks only')
 parser.add_argument('--ui-only', action='store_true', help='Run Lab UI integration checks without unrelated service tests')
+parser.add_argument('--roll3-view', action='store_true', help='B 3D renderer and Chinese synthetic view tests')
 parser.add_argument('--runtime-ui', action='store_true', help='Real runtime and real LVGL connection tests')
 args = parser.parse_args()
 root = Path(__file__).resolve().parent
 lvgl = args.sdk.resolve() / 'external/lvgl_v9'
 out = args.out.resolve()
 out.mkdir(parents=True, exist_ok=True)
-if not args.maze_only and not args.runtime_ui:
+if not args.maze_only and not args.runtime_ui and not args.roll3_view:
     subprocess.run([sys.executable, str(root.parent / 'tools/generate_game_audio.py'), '--check'], check=True)
 cc = os.environ.get('CC', 'cc')
 platform_flags = shlex.split(os.environ.get('CFLAGS', ''))
@@ -35,10 +36,13 @@ if args.runtime_ui:
     app_sources += ('maze_runtime.c', 'maze_controller.c')
 else:
     sources.append(root / 'maze_runtime_unavailable.c')
-if not args.maze_only and not args.runtime_ui:
+if not args.maze_only and not args.runtime_ui and not args.roll3_view:
     app_sources += ('lab_game_ui.c', 'lab_ride.c', 'lab_ui.c', 'lab_ble_ui.c', 'lab_pan_ui.c', 'lab_registry.c', 'modules/test_display.c', 'modules/test_touch.c', 'modules/touch_decode.c')
+if args.roll3_view:
+    app_sources=('roll3_renderer.c','roll3_view.c','roll3_physics.c','roll3_scene.c','roll3_font_16.c','roll3_font_20.c')
+    sources=[p for p in sources if p.name!='maze_runtime_unavailable.c']
 sources += [root.parent / 'src' / name for name in app_sources]
-sources.append(root / ('maze_ui_runtime_test.c' if args.runtime_ui else 'maze_ui_test.c' if args.maze_only else 'ui_test.c'))
+sources.append(root / ('roll3_view_test.c' if args.roll3_view else 'maze_ui_runtime_test.c' if args.runtime_ui else 'maze_ui_test.c' if args.maze_only else 'ui_test.c'))
 headers = list((lvgl / 'src').rglob('*.h')) + list((root / 'include').glob('*.h'))
 headers += list((root.parent / 'src').glob('*.h'))
 header_mtime = max(p.stat().st_mtime for p in headers)
@@ -63,9 +67,11 @@ exe = out / 'ui-test'
 link_inputs = out / 'ui-link.rsp'
 link_inputs.write_text('\n'.join('"' + Path(obj).as_posix() + '"' for obj in objects) + '\n', encoding='utf-8')
 wraps = ['-Wl,--wrap=' + n for n in ('maze_runtime_snapshot','maze_runtime_next_request','maze_runtime_action','maze_runtime_init_status')] if args.runtime_ui else []
+if args.roll3_view:
+    wraps=['-Wl,--wrap=lv_malloc','-Wl,--wrap=lv_free']
 subprocess.run([cc, *platform_flags, '@' + str(link_inputs), *wraps, '-lm', '-o', str(exe)], check=True)
 subprocess.run([str(exe)], cwd=out, check=True, timeout=30)
-if args.maze_only or args.ui_only or args.runtime_ui:
+if args.maze_only or args.ui_only or args.runtime_ui or args.roll3_view:
     print(f'Host UI previews (simulated): {out}')
     sys.exit(0)
 core = out / 'core-test'
