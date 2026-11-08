@@ -1,0 +1,15 @@
+Assertion failed: largest_request < 390u*450u/2 && largest_flush < 390u*450u/2, file D:\course_starter\build\maze-integration\tests\maze_ui_test.c, line 107
+Traceback (most recent call last):
+  File "D:\course_starter\build\check_p2_timing_ui.py", line 14, in <module>
+    runpy.run_path(driver,run_name='__main__')
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:/course_starter/build/maze-integration/tests/render.py", line 67, in <module>
+    subprocess.run([str(exe)], cwd=out, check=True, timeout=30)
+  File "D:\course_starter\build\check_p2_timing_ui.py", line 8, in run
+    return original(command,*args,**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\10436\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['D:\\course_starter\\build\\maze-integration\\build\\p2-timing-ui\\ui-test']' returned non-zero exit status 3221226505.

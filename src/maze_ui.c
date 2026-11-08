@@ -83,7 +83,7 @@ static void update_prepare(void)
         message="输入异常，请重新加载或返回首页";
     } else if(state==MAZE_ERROR && displayed.error_code==MAZE_ERROR_TIMING) {
         title="运行超时";instruction="请重新加载";
-        message="游戏推进中断，可重新加载或返回首页";
+        message="游戏推进中断，请重新加载";
     } else if(state==MAZE_ERROR && displayed.error_code==MAZE_ERROR_LEVEL) {
         title="关卡异常";message="关卡数据不可用，请返回首页";
     }
@@ -278,26 +278,31 @@ int maze_ui_create(maze_action_sink_t sink, void *context)
     lv_obj_set_width(hint_label, 320);
     lv_label_set_long_mode(hint_label, LV_LABEL_LONG_CLIP);
     /* Prebuilt modal: no extra clock, allocation or page ownership per frame. */
-    prepare_panel=box(page,0,0,390,450,BG);
+    /* A full-screen hide forces 175500 pixels to be redrawn just after
+     * calibration enters RUNNING. Keep the modal reveal below half a frame. */
+    prepare_panel=box(page,45,80,300,280,BG);
+    lv_obj_set_style_radius(prepare_panel,12,0);
+    lv_obj_set_style_border_width(prepare_panel,1,0);
+    lv_obj_set_style_border_color(prepare_panel,lv_color_hex(0x245B50),0);
     lv_obj_add_flag(prepare_panel,LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_t *emblem=box(prepare_panel,129,36,132,40,0x17283A);
+    lv_obj_t *emblem=box(prepare_panel,84,12,132,20,0x17283A);
     lv_obj_set_style_radius(emblem,10,0);
     lv_obj_t *emblem_text=label(emblem,sink?"平放校准":"模拟预览",0,0,&maze_font_16,0x86F5CA);
     lv_obj_center(emblem_text);
-    prepare_title=label(prepare_panel,"准备开始",44,98,&maze_font_28,TEXT);
-    prepare_instruction=label(prepare_panel,"请将板子放平",44,157,&maze_font_20,TEXT);
-    prepare_message=label(prepare_panel,"保持静止，正在准备游戏",44,202,&maze_font_16,MUTED);
-    prepare_feedback=label(prepare_panel,"",44,246,&maze_font_16,0xFFD67D);
+    prepare_title=label(prepare_panel,"准备开始",18,38,&maze_font_28,TEXT);
+    prepare_instruction=label(prepare_panel,"请将板子放平",18,71,&maze_font_20,TEXT);
+    prepare_message=label(prepare_panel,"保持静止，正在准备游戏",18,100,&maze_font_16,MUTED);
+    prepare_feedback=label(prepare_panel,"",18,139,&maze_font_16,0xFFD67D);
     lv_obj_t *centered[]={prepare_title,prepare_instruction,prepare_message,prepare_feedback};
     for(unsigned i=0;i<4;++i){
-        lv_obj_set_width(centered[i],302);
+        lv_obj_set_width(centered[i],264);
         lv_obj_set_style_text_align(centered[i],LV_TEXT_ALIGN_CENTER,0);
     }
     lv_obj_set_height(prepare_feedback,40);
     lv_label_set_long_mode(prepare_feedback,LV_LABEL_LONG_CLIP);
     static const char *prepare_names[]={"重新加载","返回首页"};
     for(unsigned i=0;i<2;++i){
-        lv_obj_t *b=box(prepare_panel,44,300+(int)i*60,302,48,i==0?0x245B50:0x263D55);
+        lv_obj_t *b=box(prepare_panel,18,183+(int)i*47,264,40,i==0?0x245B50:0x263D55);
         lv_obj_set_style_radius(b,12,0);lv_obj_add_flag(b,LV_OBJ_FLAG_CLICKABLE);
         lv_obj_set_style_opa(b,LV_OPA_40,LV_STATE_DISABLED);
         lv_obj_t *t=label(b,prepare_names[i],0,0,&maze_font_16,TEXT);lv_obj_center(t);

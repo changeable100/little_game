@@ -427,8 +427,14 @@ test_results:
   actual: FAIL；四次gap104～108ms/handler102～106ms/render1ms/wait2ms，用户反馈无法进入可玩；原全屏面板隐藏会请求整屏重绘，具体耗时组成未独立测出，不放宽100ms
   pass: false
   evidence_path: evidence/M3/chinese-loading-2026-11-08/board-run01/user_log_original.txt
+- test_id: TC-215/209-preparation-transition-redraw-fix
+  description: 准备退出的PARTIAL重绘预算与局部卡片回归
+  expected: 准备退出每个失效/flush矩形小于半帧，flush总像素小于整帧，原状态/恢复/字形/生命周期及100ms保护不变
+  actual: 原全屏准备先FAIL；按本机PARTIAL/100行宏匹配像素容量复核，卡片版最大请求84000、单flush39000、总flush106197像素，中文/生产连接及74项核心回归和SDK编译PASS，新main.bin1138592字节。面积预算非板端时间证明，待board-run02
+  pass: true
+  evidence_path: evidence/M3/chinese-loading-transition-fix-2026-11-08/ui_board_buffer.txt
 known_issues:
-- 中文board-run01四次TIMING、当前无法玩，保留FAIL；全屏准备退出的整屏失效是明显风险，软件局部修复和新板端证据另行跟进，100ms不变。
+- 最新中文board-run01出现四次真实TIMING，旧主机和英文run03不能覆盖。将准备层缩为局部卡片并补PARTIAL切换重绘预算测试，仍需新镜像实测才能判断时序恢复；不改校准/100ms或重锚时间。
 - 最新中文界面/准备/失败重载软件已实现并通过主机及SDK编译，仍待本批真实屏幕、触摸和准备重试日志。旧英文版run03与恢复/重开/返回的文字反馈不替代新功能物理验收；字体/遮罩新增后的板端时序需继续观察，100ms判据未改。
 - 最新run03已通过运行/倾斜移动/屏幕PAUSE冻结子项，run01/02失败保留为历史；RESUME/RESTART/BACK、回平输入与四向标签、真实WON/资源复用仍待证据。偏置-172,-55与末段tilt0,-413不证明平放漂移，缺该时刻水平姿态确认。新启动/板端独立指纹未提供，不扩大为完整M3或最坏耗时通过。
 - P2 run02平放后cal32但TIMING ERROR；已按负责人确认计划消除重复格子/文本刷新并加入冻结故障时序记录，74项主机回归/真实LVGL/SDK编译PASS。唯一阻塞来源及新镜像真实100ms是否满足仍待run03，保留原FAIL和判据。

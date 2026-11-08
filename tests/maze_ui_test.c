@@ -14,8 +14,12 @@
 #include <string.h>
 
 static uint8_t pixels[390 * 450 * 4], buffer[390 * 450 * 4];
+static uint32_t largest_request,largest_flush,total_flush;
 static void flush(lv_display_t *d, const lv_area_t *a, uint8_t *p)
 {
+    uint32_t area=(uint32_t)(a->x2-a->x1+1)*(uint32_t)(a->y2-a->y1+1);
+    if(area>largest_flush)largest_flush=area;
+    total_flush+=area;
     for (int y = a->y1; y <= a->y2; ++y) {
         memcpy(pixels + (y * 390 + a->x1) * 4, p, (a->x2-a->x1+1)*4);
         p += (a->x2-a->x1+1)*4;
@@ -83,6 +87,8 @@ static bool outside_ball;
 static void invalidated(lv_event_t *event)
 {
     const lv_area_t *a = lv_event_get_param(event);
+    uint32_t area=(uint32_t)(a->x2-a->x1+1)*(uint32_t)(a->y2-a->y1+1);
+    if(area>largest_request)largest_request=area;
     ++invalidations;
     /* Test movement is from (1.5,1.5) to (1.6,1.5): old/new 8px ball. */
     if (a->x1 < 60 || a->x2 > 71 || a->y1 < 86 || a->y2 > 95) outside_ball=true;
@@ -93,9 +99,17 @@ static void partial_refresh_test(lv_display_t *d, lv_obj_t *top,
     maze_snapshot_t frame=*initial;
     frame.state=MAZE_RUNNING; frame.input_status=MAZE_INPUT_VALID;
     assert(maze_ui_create(sink, NULL)==MAZE_UI_SUCCESS);
-    lv_display_set_buffers(d,buffer,NULL,sizeof(buffer),LV_DISPLAY_RENDER_MODE_PARTIAL);
+    /* Match this board build's LV_FB_LINE_NUM=100 pixel capacity (host RGBA). */
+    lv_display_set_buffers(d,buffer,NULL,390u*100u*4u,LV_DISPLAY_RENDER_MODE_PARTIAL);
     lv_display_add_event_cb(d,invalidated,LV_EVENT_INVALIDATE_AREA,NULL);
+    frame.state=MAZE_CALIBRATING;
     maze_ui_render(&frame,level); lv_obj_update_layout(top); lv_refr_now(d);
+    largest_request=largest_flush=total_flush=0;frame.state=MAZE_RUNNING;
+    maze_ui_render(&frame,level); lv_obj_update_layout(top); lv_refr_now(d);
+    assert(largest_request < 390u*450u/2 && largest_flush < 390u*450u/2);
+    assert(total_flush < 390u*450u);
+    printf("TC-215 preparation transition request=%u flush=%u total=%u pixels, bounded redraw PASS\n",
+           (unsigned)largest_request,(unsigned)largest_flush,(unsigned)total_flush);
     invalidations=0;
     for(unsigned i=0;i<100;++i) {
         ++frame.revision; frame.elapsed_ms=i*5;
