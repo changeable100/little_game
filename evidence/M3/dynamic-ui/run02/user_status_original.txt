@@ -1,0 +1,1 @@
+[maze:diag] run=2 rev=6 state=5 error=3 elapsed=0 cal=32 [maze:imu] run=2 seq=119 age=160408 a_mg=-21,-34,-960 [maze:gyro] seq=119 g_mdps=3202,-4453,-735 [maze:input] seq=119 bias_mg=-20,-33 tilt_milli=0,0 pos_milli=1500,1500

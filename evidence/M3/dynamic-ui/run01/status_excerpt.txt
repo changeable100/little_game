@@ -1,0 +1,16 @@
+来源：2026-11-08用户会话直接粘贴。以下只摘录首两组和末组诊断，非完整原始串口文件；完整12组用户消息保留在会话。
+
+[maze:diag] run=1 rev=3 state=5 error=2 elapsed=0 cal=0
+[maze:imu] run=1 seq=240 age=224982 a_mg=-88,476,-814
+[maze:gyro] seq=240 g_mdps=2380,-3053,-5346
+[maze:input] seq=240 bias_mg=0,0 tilt_milli=0,0 pos_milli=1500,1500
+[maze:diag] run=1 rev=3 state=5 error=2 elapsed=0 cal=0
+[maze:imu] run=1 seq=240 age=225482 a_mg=-88,476,-814
+[maze:gyro] seq=240 g_mdps=2380,-3053,-5346
+[maze:input] seq=240 bias_mg=0,0 tilt_milli=0,0 pos_milli=1500,1500
+
+末组摘录：
+[maze:diag] run=1 rev=3 state=5 error=2 elapsed=0 cal=0
+[maze:imu] run=1 seq=240 age=230482 a_mg=-88,476,-814
+[maze:gyro] seq=240 g_mdps=2380,-3053,-5346
+[maze:input] seq=240 bias_mg=0,0 tilt_milli=0,0 pos_milli=1500,1500

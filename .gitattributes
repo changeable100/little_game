@@ -1,0 +1,2 @@
+# Preserve the supplied attachment byte-for-byte, including original CRLF.
+evidence/M3/dynamic-ui/run01/startup_and_failure_original.txt -text

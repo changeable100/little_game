@@ -1,0 +1,14 @@
+{
+  "received_date": "2026-11-08",
+  "sha256": "79f6192f26993c1cc523ee0195674b4c8bdf064441992482fbda562107259aae",
+  "bytes": 5586,
+  "firmware_context": "reply to 6a3a05d flashing instructions; no independent board hash",
+  "selftests": {
+    "maze:selftest": 24,
+    "maze:level:selftest": 4,
+    "maze:adapter:selftest": 25
+  },
+  "diagnostic_records": 0,
+  "user_confirmed_screen_error": "INPUT ERROR",
+  "result": "physical input/control failure; root cause pending diagnostics"
+}

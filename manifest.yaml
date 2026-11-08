@@ -157,6 +157,21 @@ physical_verification:
   executed_at: 2026-11-07收到附件，精确拍摄/运行时刻未提供
   evidence_path: evidence/M3/a-startup-2026-11-07/board-run01/analysis.md
   agent_conclusion: 24+4+25项板上自检及summary全部PASS；runtime1/result0先于menu ready；首页内容与两个入口完整可见。按602eaf7烧录回复上下文关联，缺独立板端哈希；正常启动/首页子项PASS，未扩大为分配失败路径、实际触摸或生产游戏通过。
+- item: P2整机首次输入失败反馈
+  required_action: 保存小球不动和屏幕INPUT ERROR现场，追加status诊断
+  executed_at: 2026-11-08收到日志与用户文字确认，精确采集时刻未知
+  evidence_path: evidence/M3/dynamic-ui/run01/analysis.md
+  agent_conclusion: 53项板上自检和启动PASS，WHO0x6a/result0后停止恢复result0；用户确认INPUT ERROR且小球不动。缺cal/seq/样本字段，根因未知；本次生产输入验收FAIL，不放宽校准或时序判据。
+- item: P2首次失败的status补充
+  required_action: 保持INPUT ERROR现场读取状态、校准计数及最后样本
+  executed_at: 2026-11-08收到用户直接粘贴，精确操作时刻未知
+  evidence_path: evidence/M3/dynamic-ui/run01/status_excerpt.txt
+  agent_conclusion: state5/error2/cal0/elapsed0、seq240，校准未完成；末帧不符合静置条件。12组消息仅明确摘录首两组及末组，错误后age非实时延迟；保留FAIL。
+- item: P2平放后TIMING ERROR重测
+  required_action: 按平放重测要求操作，保持错误现场读取四行status
+  executed_at: 2026-11-08收到用户文字反馈与一组诊断，精确操作时刻未知
+  evidence_path: evidence/M3/dynamic-ui/run02/user_status_original.txt
+  agent_conclusion: run2/state5/error3/cal32/elapsed0、bias_mg=-20,-33，完成校准后触发时序保护；未取得实际故障间隔与唯一阻塞来源。生产可玩性FAIL，不把校准完成扩大为整机通过。
 test_results:
 - test_id: A2-sdk-build
   description: A第二阶段最终SDK固件编译
@@ -356,7 +371,28 @@ test_results:
   actual: 新增重复ENTER用例先FAIL，修复后生产连接及成功重入提示通过；69项A回归和SDK编译PASS，当前无新板端证据
   pass: true
   evidence_path: evidence/M3/p2-integration-2026-11-08/connection_final.txt
+- test_id: TC-202/203/405-P2-board-input-failure
+  description: P2真实屏幕小球与输入链路首次验收
+  expected: 开始后完成稳定校准并可由倾斜驱动屏幕球位
+  actual: FAIL（用户实物报告）；小球不动、屏幕INPUT ERROR，日志无诊断字段，原因待status补充；启动PASS不代表产品可玩
+  pass: false
+  evidence_path: evidence/M3/dynamic-ui/run01/analysis.md
+- test_id: TC-402-P2-board-run01-status
+  description: 首次P2失败的校准阶段诊断补充
+  expected: 平放静止32样本后进入RUNNING
+  actual: FAIL；state5/error2/elapsed0/cal0/bias0、seq240；末帧ay476mg、az-814mg不满足平放条件。未成功校准，停止后age增大非实时采样延迟；待平放RESTART重测
+  pass: false
+  evidence_path: evidence/M3/dynamic-ui/run01/status_excerpt.txt
+- test_id: TC-405-P2-board-run02-timing
+  description: 平放完成校准后生产推进时序失败
+  expected: 完成32稳定样本后RUNNING，正常推进间隔不超过100ms
+  actual: FAIL；run2/state5/error3/elapsed0/cal32/bias_mg=-20,-33。校准完成，但尚未累计运行时间即触发时序保护；实际阻塞来源待测，错误后age不代表故障发生时延迟
+  pass: false
+  evidence_path: evidence/M3/dynamic-ui/run02/user_status_original.txt
 known_issues:
+- P2 run02平放后完成cal32但TIMING ERROR，实际阻塞来源待耗时取证；保留100ms判据，软件修复与新镜像物理复核单独跟进。
+- run01的status确认未成功校准；末帧倾斜且g_z超静置限制，与稳定窗口清零/5s期限相符。精确终止原因待连续重测；先水平桌面RESTART、手离开等待RUNNING后再倾斜，不修改阈值或烧录新固件。
+- 最新P2实物出现小球不动和INPUT ERROR，首次失败已保留；需要当前ERROR状态的cal/seq等诊断，再区分校准与运行输入失败，当前不能判定传感器掉线或更改阈值。暂不进行通关/资源验收。
 - P2生产UI已合入并通过本地软件检查，新固件待真实屏幕按钮/倾斜/通关与资源复用验证。此前PREVIEW/待接入等条目保留为历史，不再代表当前软件实现状态；当前提示小修正待提交，未推送。
 - 最新A启动保障board-run01正常启动和首页复核通过，关闭“新正常启动待证据”这一当前等待；失败分配/回收路径保留主机覆盖边界。ft6146两个E级ID日志经SDK源码核对为读成功后的LOG_E输出，不据此推定触摸故障；实际按钮/生产UI待后续验证。
 - REQ-408软件已提供只读启动状态及启动失败清理，69项主机和SDK编译通过；新板端启动待日志/首页证据，B生产入口禁用/提示仍须按状态接口接入。不得把READY启动状态当校准完成。
