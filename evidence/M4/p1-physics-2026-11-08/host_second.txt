@@ -1,0 +1,27 @@
+TC-501 scene-xyz-contract PASS
+TC-501 malformed-world PASS
+TC-501 stale-and-api-guards PASS
+TC-501 calibration-pause-restart-back PASS
+TC-502 stationary-2000-steps PASS
+TC-502 xyz-freeflight-orientation PASS
+TC-502 freefall-gravity PASS
+TC-502 elastic-face-tangent PASS
+TC-502 thin-wall-8mps PASS
+TC-502 rounded-edge PASS
+TC-502 rounded-corner PASS
+TC-502 rotated-box-normal PASS
+TC-502 ramp-natural-roll PASS
+TC-502 no-slip-preserves-energy PASS
+TC-502 friction-spinup PASS
+TC-502 rolling-resistance-dissipates PASS
+TC-502 repeated-elastic-energy PASS
+TC-502 multi-contact-corner PASS
+TC-501 checkpoint-fall-respawn PASS
+TC-501 goal-freeze PASS
+TC-502 invalid-input PASS
+TC-501 counters-and-exhaustion PASS
+TC-502 quaternion-normalization PASS
+TC-502 rounded-box-near-miss PASS
+TC-502 bounded-deep-contact PASS
+TC-502 linear-angular-speed-budget PASS
+roll3 summary PASS failures=0

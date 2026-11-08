@@ -26,6 +26,7 @@ static void call(char c) { calls[count++]=c; calls[count]=0; }
 int maze_selftest_run(maze_test_report_t cb) { (void)cb; return failed_test==1; }
 int maze_levels_selftest_run(maze_test_report_t cb) { (void)cb; return failed_test==2; }
 int maze_controller_selftest_run(maze_test_report_t cb) { (void)cb; return failed_test==3; }
+int r3_selftest_run(maze_test_report_t cb) { (void)cb; return failed_test==4; }
 int lab_init(void) { call('L'); return lab_result; }
 int littlevgl2rtt_init(const char *name) { (void)name; call('D'); return display_result; }
 maze_result_t maze_runtime_init(bool passed)
@@ -85,6 +86,10 @@ int main(void)
     }
     failed_test=0;
     printf("TC-408 main-three-selftest-failure-gates PASS\n");
+    failed_test=4;
+    CHECK(boot()==0&&received_tests&&status==MAZE_RUNTIME_READY&&strstr(output,"[roll3] experimental physics self-test failed"));
+    failed_test=0;
+    printf("TC-501 experimental-3d-selftest-isolated-from-2d PASS\n");
     init_result=MAZE_INVALID;
     CHECK(boot()==0 && menu_saw_status && status==MAZE_RUNTIME_TIMER_FAILED);
     CHECK(strcmp(calls,"LDRMH")==0 && strstr(output,"runtime=5 result=-1"));

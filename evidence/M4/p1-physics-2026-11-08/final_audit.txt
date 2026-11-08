@@ -1,0 +1,1 @@
+PASS: P1 source/binary/log fingerprints match; 109 core cases; new 27 board selftests pending; old 2D model/runtime/UI and project/course protected files unchanged; physical archive hashes match; no staged changes or new commits.

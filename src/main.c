@@ -9,6 +9,7 @@
 #include "maze_controller_selftest.h"
 #include "maze_runtime.h"
 #include "maze_menu.h"
+#include "roll3_selftest.h"
 
 static void maze_adapter_test_report(const char *name, bool passed)
 {
@@ -23,6 +24,11 @@ static void maze_test_report(const char *name, bool passed)
 static void maze_level_test_report(const char *name, bool passed)
 {
     rt_kprintf("[maze:level:selftest] %s %s\n", name, passed ? "PASS" : "FAIL");
+}
+
+static void roll3_test_report(const char *name, bool passed)
+{
+    rt_kprintf("[roll3:selftest] %s %s\n", name, passed ? "PASS" : "FAIL");
 }
 
 /* 先建立测试和显示环境，再进入 LVGL 定时器处理循环。 */
@@ -47,6 +53,13 @@ int main(void)
     maze_tests_ok = maze_tests_ok && maze_failures == 0;
     rt_kprintf("[maze:adapter:selftest] summary %s failures=%d\n",
                maze_failures ? "FAIL" : "PASS", maze_failures);
+
+    /* Experimental 3D kernel is isolated; it does not replace the validated 2D UI. */
+    int roll3_failures = r3_selftest_run(roll3_test_report);
+    rt_kprintf("[roll3:selftest] summary %s failures=%d\n",
+               roll3_failures ? "FAIL" : "PASS", roll3_failures);
+    if (roll3_failures)
+        rt_kprintf("[roll3] experimental physics self-test failed; 3D unavailable\n");
 
     /* lab_init 创建后台工作任务；littlevgl2rtt_init 将 LVGL 接到 SDK 的 lcd 驱动。 */
     if (lab_init() != RT_EOK || littlevgl2rtt_init("lcd") != RT_EOK) {

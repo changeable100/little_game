@@ -30,6 +30,8 @@ suites = [
         'src/maze_game.c', 'src/maze_levels.c', 'src/maze_controller.c',
         'src/maze_runtime.c', 'tests/maze_runtime_host.c']),
     ('maze_main_host', ['-Itests/runtime_stubs', '-Isrc'], ['tests/maze_main_host.c']),
+    ('roll3_host', ['-Isrc'], ['src/roll3_physics.c','src/roll3_scene.c',
+                             'src/roll3_selftest.c','tests/roll3_host.c']),
 ]
 
 with log.open('x', encoding='utf-8') as stream:

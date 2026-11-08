@@ -1,0 +1,91 @@
+{
+  "captured_at_local": "2026-11-08T20:51:48.853058+08:00",
+  "development_base": "f276000f98ef9f83524f6f59496d8f10c0a56750",
+  "status": "P1 uncommitted source, real 3D physics core only; production display/independent task pending; no new board run required for old UI",
+  "binaries": [
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/main.bin",
+      "bytes": 1156648,
+      "sha256": "bdb6911b33ece7eb6d840d9c9f937aed1417d164fe7b2f1c7d591e98aee43cec"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/bootloader/bootloader.bin",
+      "bytes": 58496,
+      "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/ftab/ftab.bin",
+      "bytes": 11288,
+      "sha256": "99e12f4d88f25fd82038c35be43618bd6c43ac63d9b4863297f65119df7f15a3"
+    }
+  ],
+  "sources": [
+    {
+      "path": "src/roll3_contract.h",
+      "bytes": 1879,
+      "sha256": "e23f9f2c15c86e439e548d307fa0b67dad2121fc575b5b558d27e65038ea3017"
+    },
+    {
+      "path": "src/roll3_physics.c",
+      "bytes": 13100,
+      "sha256": "0c17db31827a53c367d6593641bbfa5fd76e89102ea0e01877a3b270a389fa13"
+    },
+    {
+      "path": "src/roll3_physics.h",
+      "bytes": 832,
+      "sha256": "9a33f2ed10e99ec478db61310ee66efd6c16744967576422412ab959ba88140c"
+    },
+    {
+      "path": "src/roll3_scene.c",
+      "bytes": 944,
+      "sha256": "4e64c4218669cec8d8b681dbc19c7f27da1b526f8fd5d053d67952a03d385948"
+    },
+    {
+      "path": "src/roll3_scene.h",
+      "bytes": 118,
+      "sha256": "dde8361c33f98b86aa4ec08eec5643c23061f22fb677bd1c2089d9573be43b17"
+    },
+    {
+      "path": "src/roll3_selftest.c",
+      "bytes": 14414,
+      "sha256": "5a7d5d4317f73fdb67f9a5dbd878cb521e63e80a090edd5ecbec4772474d3631"
+    },
+    {
+      "path": "src/roll3_selftest.h",
+      "bytes": 204,
+      "sha256": "3c831a65de96ce412420648b539cb90116e66b6062f407522b7011080f5e5bd0"
+    },
+    {
+      "path": "src/main.c",
+      "bytes": 4346,
+      "sha256": "cb214b2cde97c8d92d32bf128f395c45a7a698ec71d6d2ca90e92466366f018a"
+    },
+    {
+      "path": "tests/maze_main_host.c",
+      "bytes": 4817,
+      "sha256": "2b8dcceb60144b4eb0495f5ad2c400404b0d7a7eccbbe6398fde960011d37465"
+    },
+    {
+      "path": "tests/roll3_host.c",
+      "bytes": 307,
+      "sha256": "6b470695f1711e4ec63f2cf75439a1f54c4ed881214c1b78d9896d2ddf1af207"
+    },
+    {
+      "path": "tests/run_maze_host.py",
+      "bytes": 2612,
+      "sha256": "c7b42a3aeb441e390f7d1fc160a4b528761ef4de2f8746772dc4e00d89779d8e"
+    }
+  ],
+  "host_cases": 109,
+  "new_3d_selftests": 27,
+  "host_log": {
+    "path": "evidence/M2/maze_adapter/host_2026-11-08_204328.txt",
+    "bytes": 9849,
+    "sha256": "77923a3f1405ebb75f9cd17b2aaf3f39e8ac6cbc5bd43c88a7567558af700674"
+  },
+  "build_log": {
+    "path": "evidence/M4/p1-physics-2026-11-08/build.txt",
+    "bytes": 10657,
+    "sha256": "42baf51ff07e8dd128269dd0e1dc0d49ae220cf245aeb1aca5289784cceb67e7"
+  }
+}
