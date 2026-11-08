@@ -1,0 +1,60 @@
+{
+  "received_date": "2026-11-08",
+  "capture_time": "not provided",
+  "source_context": "reply after local fix 7363f03 flashing guide; no independent board fingerprint or startup log",
+  "files": {
+    "original.txt": {
+      "bytes": 5621,
+      "sha256": "dad9e427571f214b2a338d2a048c6150165eba94143c96f50c018aee52ffdc2e"
+    },
+    "running_original.jpg": {
+      "bytes": 7283048,
+      "sha256": "120501584b54fee4ddfba4bc3cf287b036b01e54b05310f38a99e44717f8494c"
+    },
+    "operation_confirmation.txt": {
+      "kind": "user textual confirmation; exact capture time unknown"
+    }
+  },
+  "summary": {
+    "run": 12,
+    "records": 23,
+    "running_records": 17,
+    "paused_records": 6,
+    "logged_running_elapsed_ms": [
+      32363,
+      40433
+    ],
+    "logged_running_span_ms": 8070,
+    "paused_elapsed_ms": 40563,
+    "paused_pos_milli": [
+      10748,
+      3799
+    ],
+    "paused_sequence_range": [
+      2153,
+      2278
+    ],
+    "sample_age_ms": [
+      1,
+      5
+    ],
+    "running_x_milli": [
+      10318,
+      14799
+    ],
+    "running_y_milli": [
+      1200,
+      3799
+    ],
+    "timing_records": 0,
+    "loop_records": 0
+  },
+  "operation_confirmation": "2026-11-08 user explicitly confirmed physical tilt control and on-screen PAUSE; exact directional labels not provided",
+  "photo_observation": "RUNNING | 21s; pink ball displaced from S in top corridor; PAUSE/RESTART/BACK visible",
+  "limits": [
+    "No calibration transition/startup in supplied excerpt",
+    "No independent physical direction labels or photo/log time synchronization",
+    "No resume/restart/back/WON/20-cycle/resource acceptance",
+    "No measured worst-case callback gap; absence of error is limited to supplied excerpt"
+  ]
+}

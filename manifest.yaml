@@ -172,6 +172,11 @@ physical_verification:
   executed_at: 2026-11-08收到用户文字反馈与一组诊断，精确操作时刻未知
   evidence_path: evidence/M3/dynamic-ui/run02/user_status_original.txt
   agent_conclusion: run2/state5/error3/cal32/elapsed0、bias_mg=-20,-33，完成校准后触发时序保护；未取得实际故障间隔与唯一阻塞来源。生产可玩性FAIL，不把校准完成扩大为整机通过。
+- item: P2时序修复后RUNNING移动与屏幕PAUSE复测
+  required_action: 新镜像校准后倾斜控制，点击屏幕PAUSE，回传日志与原照片
+  executed_at: 2026-11-08收到附件与操作确认，精确采集时刻未知
+  evidence_path: evidence/M3/dynamic-ui/run03/analysis.md
+  agent_conclusion: 23组run12/error0/cal32，17组RUNNING球位变化，6组PAUSED均elapsed40563/pos10748,3799；age1～5ms。照片RUNNING21s且球离开S，学生确认倾斜与屏幕PAUSE。上述子项PASS，缺新启动/独立指纹和恢复/重开/返回/WON/资源证据，不推定完整M3或最坏推进间隔通过。
 test_results:
 - test_id: A2-sdk-build
   description: A第二阶段最终SDK固件编译
@@ -395,7 +400,14 @@ test_results:
   actual: 旧UI静止失效断言先FAIL，修复后真实LVGL与原20轮/2000帧PASS；74项主机回归和生产连接PASS，SDK编译PASS。RT/传感器替身非板端耗时，新镜像待run03
   pass: true
   evidence_path: evidence/M3/p2-timing-2026-11-08/host_final_complete.txt
+- test_id: TC-203/404/405-P2-board-run03-subset
+  description: 修复后真实倾斜移动与屏幕暂停冻结子项
+  expected: 校准完成后可运行及移动；屏幕PAUSE后球位和累计用时冻结
+  actual: PASS（限本段）；run12/error0/cal32，运行elapsed32363→40433且球有位移，6组暂停均40563ms/pos10748,3799；学生确认屏幕PAUSE，原照片显示RUNNING21s。无本段TIMING，缺完整启动/后续动作/通关/最坏间隔证据
+  pass: true
+  evidence_path: evidence/M3/dynamic-ui/run03/analysis.md
 known_issues:
+- 最新run03已通过运行/倾斜移动/屏幕PAUSE冻结子项，run01/02失败保留为历史；RESUME/RESTART/BACK、回平输入与四向标签、真实WON/资源复用仍待证据。偏置-172,-55与末段tilt0,-413不证明平放漂移，缺该时刻水平姿态确认。新启动/板端独立指纹未提供，不扩大为完整M3或最坏耗时通过。
 - P2 run02平放后cal32但TIMING ERROR；已按负责人确认计划消除重复格子/文本刷新并加入冻结故障时序记录，74项主机回归/真实LVGL/SDK编译PASS。唯一阻塞来源及新镜像真实100ms是否满足仍待run03，保留原FAIL和判据。
 - run01的status确认未成功校准；末帧倾斜且g_z超静置限制，与稳定窗口清零/5s期限相符。精确终止原因待连续重测；先水平桌面RESTART、手离开等待RUNNING后再倾斜，不修改阈值或烧录新固件。
 - 最新P2实物出现小球不动和INPUT ERROR，首次失败已保留；需要当前ERROR状态的cal/seq等诊断，再区分校准与运行输入失败，当前不能判定传感器掉线或更改阈值。暂不进行通关/资源验收。
