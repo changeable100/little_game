@@ -1,0 +1,100 @@
+Traceback (most recent call last):
+  File "D:\peripheral_lab\tests\render.py", line 58, in <module>
+    objects = list(pool.map(compile_one, enumerate(sources)))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\23396\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\concurrent\futures\_base.py", line 619, in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\23396\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\concurrent\futures\_base.py", line 317, in _result_or_cancel
+    return fut.result(timeout)
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\23396\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\23396\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "C:\Users\23396\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\peripheral_lab\tests\render.py", line 54, in compile_one
+    raise RuntimeError(result.stderr)
+RuntimeError: D:\peripheral_lab\tests\maze_ui_runtime_test.c:24:1: error: unknown type name 'rt_thread_t'
+ rt_thread_t rt_thread_self(void){return (void *)1;}
+ ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c: In function 'rt_thread_self':
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:24:34: warning: return makes integer from pointer without a cast
+ rt_thread_t rt_thread_self(void){return (void *)1;}
+                                  ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c: At top level:
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:27:1: error: unknown type name 'rt_err_t'
+ rt_err_t rt_mq_init(struct rt_messagequeue *q,const char *n,void *p,size_t z,size_t c,unsigned f)
+ ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:27:28: warning: 'struct rt_messagequeue' declared inside parameter list
+ rt_err_t rt_mq_init(struct rt_messagequeue *q,const char *n,void *p,size_t z,size_t c,unsigned f)
+                            ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:27:28: warning: its scope is only this definition or declaration, which is probably not what you want
+D:\peripheral_lab\tests\maze_ui_runtime_test.c: In function 'rt_mq_init':
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:28:60: error: dereferencing pointer to incomplete type
+ {(void)n;(void)p;(void)z;(void)c;(void)f;memset(q,0,sizeof(*q));return RT_EOK;}
+                                                            ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:28:72: error: 'RT_EOK' undeclared (first use in this function)
+ {(void)n;(void)p;(void)z;(void)c;(void)f;memset(q,0,sizeof(*q));return RT_EOK;}
+                                                                        ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:28:72: note: each undeclared identifier is reported only once for each function it appears in
+D:\peripheral_lab\tests\maze_ui_runtime_test.c: At top level:
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:29:1: error: unknown type name 'rt_err_t'
+ rt_err_t rt_mq_detach(struct rt_messagequeue *q){(void)q;return RT_EOK;}
+ ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:29:30: warning: 'struct rt_messagequeue' declared inside parameter list
+ rt_err_t rt_mq_detach(struct rt_messagequeue *q){(void)q;return RT_EOK;}
+                              ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c: In function 'rt_mq_detach':
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:29:65: error: 'RT_EOK' undeclared (first use in this function)
+ rt_err_t rt_mq_detach(struct rt_messagequeue *q){(void)q;return RT_EOK;}
+                                                                 ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c: At top level:
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:30:1: error: unknown type name 'rt_err_t'
+ rt_err_t rt_mq_send(struct rt_messagequeue *q,void *p,size_t n)
+ ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:30:28: warning: 'struct rt_messagequeue' declared inside parameter list
+ rt_err_t rt_mq_send(struct rt_messagequeue *q,void *p,size_t n)
+                            ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c: In function 'rt_mq_send':
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:31:6: error: dereferencing pointer to incomplete type
+ {if(q->count==8||n!=4)return -1;memcpy(&q->values[(q->head+q->count++)%8],p,4);return 0;}
+      ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:31:42: error: dereferencing pointer to incomplete type
+ {if(q->count==8||n!=4)return -1;memcpy(&q->values[(q->head+q->count++)%8],p,4);return 0;}
+                                          ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:31:53: error: dereferencing pointer to incomplete type
+ {if(q->count==8||n!=4)return -1;memcpy(&q->values[(q->head+q->count++)%8],p,4);return 0;}
+                                                     ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:31:61: error: dereferencing pointer to incomplete type
+ {if(q->count==8||n!=4)return -1;memcpy(&q->values[(q->head+q->count++)%8],p,4);return 0;}
+                                                             ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c: At top level:
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:32:1: error: unknown type name 'rt_err_t'
+ rt_err_t rt_mq_recv(struct rt_messagequeue *q,void *p,size_t n,int w)
+ ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:32:28: warning: 'struct rt_messagequeue' declared inside parameter list
+ rt_err_t rt_mq_recv(struct rt_messagequeue *q,void *p,size_t n,int w)
+                            ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c: In function 'rt_mq_recv':
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:33:15: error: dereferencing pointer to incomplete type
+ {(void)w;if(!q->count||n!=4)return -1;memcpy(p,&q->values[q->head],4);q->head=(q->head+1)%8;--q->count;return 0;}
+               ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:33:50: error: dereferencing pointer to incomplete type
+ {(void)w;if(!q->count||n!=4)return -1;memcpy(p,&q->values[q->head],4);q->head=(q->head+1)%8;--q->count;return 0;}
+                                                  ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:33:60: error: dereferencing pointer to incomplete type
+ {(void)w;if(!q->count||n!=4)return -1;memcpy(p,&q->values[q->head],4);q->head=(q->head+1)%8;--q->count;return 0;}
+                                                            ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:33:72: error: dereferencing pointer to incomplete type
+ {(void)w;if(!q->count||n!=4)return -1;memcpy(p,&q->values[q->head],4);q->head=(q->head+1)%8;--q->count;return 0;}
+                                                                        ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:33:81: error: dereferencing pointer to incomplete type
+ {(void)w;if(!q->count||n!=4)return -1;memcpy(p,&q->values[q->head],4);q->head=(q->head+1)%8;--q->count;return 0;}
+                                                                                 ^
+D:\peripheral_lab\tests\maze_ui_runtime_test.c:33:96: error: dereferencing pointer to incomplete type
+ {(void)w;if(!q->count||n!=4)return -1;memcpy(p,&q->values[q->head],4);q->head=(q->head+1)%8;--q->count;return 0;}
+                                                                                                ^

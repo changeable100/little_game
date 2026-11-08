@@ -1,0 +1,3 @@
+Baseline d4520a74a531dccd5afef7eafa486bc0aa40d38f
+A main/runtime/controller/motion/Lab worker/contract/model/level/selftests and SDK build/config unchanged PASS
+No new physical acceptance recorded.

@@ -75,8 +75,8 @@ int main(void)
     lv_obj_t *screen = lv_screen_active();
     unsigned screen_base = objects(screen);
     for (unsigned round = 0; round < 20; ++round) {
-        assert(maze_menu_create() == MAZE_UI_SUCCESS);
-        assert(maze_menu_create() == MAZE_UI_ERR_EXISTS);
+        assert(maze_menu_create_preview() == MAZE_UI_SUCCESS);
+        assert(maze_menu_create_preview() == MAZE_UI_ERR_EXISTS);
         assert(text(screen, "TILT MAZE"));
         assert(!text(screen, "Peripheral Lab"));
         assert(!text(screen, "RGB light"));
@@ -107,13 +107,14 @@ int main(void)
         maze_menu_destroy(); maze_menu_destroy();
         assert(objects(screen) == screen_base && objects(top) == base);
         assert(timers() == clock_count);
-        assert(maze_menu_create() == MAZE_UI_SUCCESS);
+        assert(maze_menu_create_preview() == MAZE_UI_SUCCESS);
         lv_obj_send_event(lv_obj_get_parent(text(screen, "HOW TO PLAY")), LV_EVENT_CLICKED, NULL);
         maze_menu_destroy();
         assert(objects(screen) == screen_base && objects(top) == base);
     }
     puts("Standalone home/help/maze navigation: 20 cycles PASS; no Lab page, no extra timers");
-    assert(maze_ui_create(sink, NULL) == MAZE_UI_ERR_NOT_CONNECTED);
+    assert(maze_ui_create(sink, NULL) == MAZE_UI_SUCCESS);
+    maze_ui_destroy();
     assert(objects(top) == base && sink_calls == 0);
     const maze_level_t *level = maze_levels_default();
     maze_snapshot_t s = {.revision=1, .level_id=level->id, .state=MAZE_READY,

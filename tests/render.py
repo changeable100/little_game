@@ -15,23 +15,29 @@ parser.add_argument('--sdk', required=True, type=Path)
 parser.add_argument('--out', type=Path, default=Path('/tmp/peripheral-lab-preview'))
 parser.add_argument('--maze-only', action='store_true', help='B2-1 simulated maze preview checks only')
 parser.add_argument('--ui-only', action='store_true', help='Run Lab UI integration checks without unrelated service tests')
+parser.add_argument('--runtime-ui', action='store_true', help='Real runtime and real LVGL connection tests')
 args = parser.parse_args()
 root = Path(__file__).resolve().parent
 lvgl = args.sdk.resolve() / 'external/lvgl_v9'
 out = args.out.resolve()
 out.mkdir(parents=True, exist_ok=True)
-if not args.maze_only:
+if not args.maze_only and not args.runtime_ui:
     subprocess.run([sys.executable, str(root.parent / 'tools/generate_game_audio.py'), '--check'], check=True)
 cc = os.environ.get('CC', 'cc')
 platform_flags = shlex.split(os.environ.get('CFLAGS', ''))
 flags = platform_flags + ['-std=c11', '-O1', '-DLV_KCONFIG_IGNORE', '-DLV_CONF_INCLUDE_SIMPLE',
          '-I' + str(root / 'include'), '-I' + str(root.parent / 'src'), '-I' + str(lvgl)]
 sources = sorted((lvgl / 'src').rglob('*.c'))
-app_sources = ('maze_menu.c', 'maze_ui.c', 'maze_levels.c', 'maze_game.c')
-if not args.maze_only:
+app_sources = ('maze_menu.c', 'maze_ui.c', 'maze_ui_runtime.c', 'maze_levels.c', 'maze_game.c')
+if args.runtime_ui:
+    flags.insert(0, '-I' + str(root / 'ui_runtime_stubs'))
+    app_sources += ('maze_runtime.c', 'maze_controller.c')
+else:
+    sources.append(root / 'maze_runtime_unavailable.c')
+if not args.maze_only and not args.runtime_ui:
     app_sources += ('lab_game_ui.c', 'lab_ride.c', 'lab_ui.c', 'lab_ble_ui.c', 'lab_pan_ui.c', 'lab_registry.c', 'modules/test_display.c', 'modules/test_touch.c', 'modules/touch_decode.c')
 sources += [root.parent / 'src' / name for name in app_sources]
-sources.append(root / ('maze_ui_test.c' if args.maze_only else 'ui_test.c'))
+sources.append(root / ('maze_ui_runtime_test.c' if args.runtime_ui else 'maze_ui_test.c' if args.maze_only else 'ui_test.c'))
 headers = list((lvgl / 'src').rglob('*.h')) + list((root / 'include').glob('*.h'))
 headers += list((root.parent / 'src').glob('*.h'))
 header_mtime = max(p.stat().st_mtime for p in headers)
@@ -55,9 +61,10 @@ exe = out / 'ui-test'
 # GCC response files accept quoted forward-slash paths, including spaces.
 link_inputs = out / 'ui-link.rsp'
 link_inputs.write_text('\n'.join('"' + Path(obj).as_posix() + '"' for obj in objects) + '\n', encoding='utf-8')
-subprocess.run([cc, *platform_flags, '@' + str(link_inputs), '-lm', '-o', str(exe)], check=True)
+wraps = ['-Wl,--wrap=' + n for n in ('maze_runtime_snapshot','maze_runtime_next_request','maze_runtime_action','maze_runtime_init_status')] if args.runtime_ui else []
+subprocess.run([cc, *platform_flags, '@' + str(link_inputs), *wraps, '-lm', '-o', str(exe)], check=True)
 subprocess.run([str(exe)], cwd=out, check=True, timeout=30)
-if args.maze_only or args.ui_only:
+if args.maze_only or args.ui_only or args.runtime_ui:
     print(f'Host UI previews (simulated): {out}')
     sys.exit(0)
 core = out / 'core-test'

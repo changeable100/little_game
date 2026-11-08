@@ -3,8 +3,7 @@
 
 #include "maze_contract.h"
 
-/* P0/P1: runtime request allocation exists; production UI binding is P2 work.
- * UI errors are separate from maze_result_t; never pass them to the model. */
+/* UI errors remain separate from maze_result_t. */
 enum maze_ui_result {
     MAZE_UI_SUCCESS = 0,
     MAZE_UI_ERR_EXISTS = -100,
@@ -12,12 +11,8 @@ enum maze_ui_result {
     MAZE_UI_ERR_DISPLAY = -102
 };
 
-/* All calls belong to the LVGL/model owning thread.
- * P1 implements ONLY simulated rendering: sink must be NULL. Non-NULL
- * returns NOT_CONNECTED without creating objects or retaining context.
- * P2 will bind the existing runtime request allocator and snapshot callbacks;
- * sink/context must then outlive the UI, with detach before object deletion.
- * No game instance, clock, input sampling or timer is owned by this module. */
+/* UI thread only. NULL sink is explicit simulation; production sink owns
+ * request allocation, action/reread and BACK closure. No model clock here. */
 int maze_ui_create(maze_action_sink_t sink, void *context);
 
 /* P1 renders six states of a valid 16x16 level, with distinct error reasons.
@@ -30,6 +25,10 @@ void maze_ui_render(const maze_snapshot_t *snapshot,
 /* Idempotent. A must stop/detach its refresh reference before calling this
  * in a future production integration. Only this module's objects are freed. */
 void maze_ui_destroy(void);
+/* Must be installed before attaching production render. Called on DELETE
+ * before objects are released; handler must not recursively destroy UI. */
+void maze_ui_set_delete_handler(void (*handler)(void *), void *context);
+void maze_ui_feedback(maze_result_t result, bool snapshot_available);
 
 /* Preview entry, supplies explicit fixed simulated data; no model actions.
  * BACK closes the preview, revealing the standalone game menu underneath.

@@ -1,0 +1,8 @@
+WARN `--no-project` was provided, but no project was found
+WARN Broken interpreter cache entry at C:\Users\23396\AppData\Local\uv\cache\interpreter-v4\08cc7f641f8f98d9\dda77f889d52f770.msgpack, removing: invalid type: boolean `false`, expected a sequence
+  × No solution found when resolving `--with` dependencies:
+  ╰─▶ Because ziglang was not found in the cache and you require
+      ziglang==0.13.0, we can conclude that your requirements are
+      unsatisfiable.
+
+hint: Packages were unavailable because the network was disabled. When the network is disabled, registry packages may only be read from the cache.
