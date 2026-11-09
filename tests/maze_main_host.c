@@ -27,6 +27,14 @@ int maze_selftest_run(maze_test_report_t cb) { (void)cb; return failed_test==1; 
 int maze_levels_selftest_run(maze_test_report_t cb) { (void)cb; return failed_test==2; }
 int maze_controller_selftest_run(maze_test_report_t cb) { (void)cb; return failed_test==3; }
 int r3_selftest_run(maze_test_report_t cb) { (void)cb; return failed_test==4; }
+int roll3_renderer_selftest(maze_test_report_t cb) { (void)cb; return 0; }
+int roll3_session_selftest(maze_test_report_t cb) { (void)cb; return 0; }
+bool roll3_runtime_init(bool passed) { return passed; }
+bool roll3_runtime_busy(void) { return false; }
+int roll3_page_open(void) { return 0; }
+void roll3_page_close(void) {}
+void maze_menu_set_roll3(int (*open)(void), void (*close)(void), bool (*busy)(void))
+{ (void)open; (void)close; (void)busy; }
 int lab_init(void) { call('L'); return lab_result; }
 int littlevgl2rtt_init(const char *name) { (void)name; call('D'); return display_result; }
 maze_result_t maze_runtime_init(bool passed)

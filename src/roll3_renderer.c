@@ -119,13 +119,14 @@ int roll3_renderer_render(uint16_t *color,uint16_t *depth,const r3_snapshot_t *s
 int roll3_renderer_selftest(void (*report)(const char *,bool))
 {
     float x,y,z,x2,y2,z2;int failures=0;
-    bool ok=roll3_renderer_project((r3_vec_t){3,0,.2f},&x,&y,&z)&&fabsf(x-80)<.01f&&fabsf(y-90)<.01f;
+    bool center=roll3_renderer_project((r3_vec_t){3,0,.2f},&x,&y,&z);
+    bool ok=center&&fabsf(x-80)<.01f&&fabsf(y-90)<.01f;
     if(report)report("TC-501 camera-center",ok);
     failures+=!ok;
-    ok=roll3_renderer_project((r3_vec_t){4,0,.2f},&x2,&y2,&z2)&&x2>x;
+    ok=center&&roll3_renderer_project((r3_vec_t){4,0,.2f},&x2,&y2,&z2)&&x2>x;
     if(report)report("TC-501 screen-right",ok);
     failures+=!ok;
-    ok=roll3_renderer_project((r3_vec_t){3,1,.2f},&x2,&y2,&z2)&&y2<y;
+    ok=center&&roll3_renderer_project((r3_vec_t){3,1,.2f},&x2,&y2,&z2)&&y2<y;
     if(report)report("TC-501 screen-forward",ok);
     failures+=!ok;
     ok=!roll3_renderer_project((r3_vec_t){3,-8,6},&x2,&y2,&z2);

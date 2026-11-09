@@ -1,0 +1,23 @@
+{
+  "board": "sf32lb52-lchspi-ulp",
+  "base": "105268121adb682e3360b131aa41640b7b90f9fe",
+  "date": "2026-11-09",
+  "images": [
+    {
+      "sha256": "239496df1e9f87740c81c4a85d516254b57112b2e2ffa8493b3c2886af227284",
+      "bytes": 1218088,
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/main.bin"
+    },
+    {
+      "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21",
+      "bytes": 58496,
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/bootloader/bootloader.bin"
+    },
+    {
+      "sha256": "07b0811734d4a61736c39b53289b0cfd728100709386ef20e5db0aca81e6908f",
+      "bytes": 11288,
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/ftab/ftab.bin"
+    }
+  ],
+  "sdk": "2.5.1"
+}

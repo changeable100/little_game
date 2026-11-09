@@ -5,8 +5,14 @@
 #include "src/misc/cache/instance/lv_image_cache.h"
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 
-static lv_obj_t *page,*image_obj,*status,*detail,*primary,*secondary;
+static lv_obj_t *page,*image_obj,*status,*detail,*primary,*secondary,*footer;
+static lv_obj_t *actions[2];
+static void (*send_action)(r3_action_kind_t);
+static void (*on_closed)(void);
+static bool valid_frame, action_pending;
+static r3_state_t view_state;
 static uint16_t *buffers;
 static lv_image_dsc_t image;
 static const char *error_text="";
@@ -28,16 +34,53 @@ static void deleted(lv_event_t *event)
     if(buffers)lv_free(buffers);
     buffers=NULL;page=image_obj=status=detail=primary=secondary=NULL;
     image.data=NULL;
+    void (*closed)(void) = on_closed;
+    footer = actions[0] = actions[1] = NULL;
+    on_closed = NULL;
+    send_action = NULL;
+    if (closed) closed();
 }
 void roll3_view_destroy(void){if(page)lv_obj_delete(page);}
 static void back(lv_event_t *e){(void)e;roll3_view_destroy();}
-int roll3_view_create(void)
+static void controls(void)
+{
+    bool enabled = send_action && valid_frame && !action_pending;
+    bool primary_enabled = view_state == R3_READY || view_state == R3_RUNNING ||
+                           view_state == R3_PAUSED || view_state == R3_FALLEN;
+    if (enabled && primary_enabled) lv_obj_remove_state(actions[0], LV_STATE_DISABLED);
+    else lv_obj_add_state(actions[0], LV_STATE_DISABLED);
+    if (enabled && view_state != R3_READY) lv_obj_remove_state(actions[1], LV_STATE_DISABLED);
+    else lv_obj_add_state(actions[1], LV_STATE_DISABLED);
+}
+
+static void button_action(lv_event_t *event)
+{
+    lv_obj_t *button = lv_event_get_target(event);
+    if (!send_action || !valid_frame || action_pending ||
+        lv_obj_has_state(button, LV_STATE_DISABLED)) return;
+    r3_action_kind_t action = R3_RESTART;
+    if (button == actions[0]) {
+        switch (view_state) {
+        case R3_READY: action = R3_START; break;
+        case R3_RUNNING: action = R3_PAUSE; break;
+        case R3_PAUSED: action = R3_RESUME; break;
+        case R3_FALLEN: action = R3_RESPAWN; break;
+        default: return;
+        }
+    }
+    send_action(action);
+}
+
+static int create(void (*action)(r3_action_kind_t), void (*closed)(void))
 {
     if(page){error_text="三维预览已经打开";return -100;}
     if(!lv_display_get_default()||lv_display_get_horizontal_resolution(NULL)!=390||
        lv_display_get_vertical_resolution(NULL)!=450){error_text="屏幕尺寸不支持";return -102;}
     buffers=lv_malloc(R3_VIEW_PIXELS*sizeof(uint16_t)*2);
     if(!buffers){error_text="三维画面内存不足，请返回";return -103;}
+    send_action = action;
+    on_closed = closed;
+    valid_frame = action_pending = false;
     page=lv_obj_create(lv_layer_top());lv_obj_remove_style_all(page);
     lv_obj_set_size(page,390,450);lv_obj_set_style_bg_color(page,lv_color_hex(0x0c1220),0);
     lv_obj_set_style_bg_opa(page,LV_OPA_COVER,0);lv_obj_remove_flag(page,LV_OBJ_FLAG_SCROLLABLE);
@@ -47,10 +90,10 @@ int roll3_view_create(void)
     /* Empty frame is safe even before the first valid snapshot. */
     roll3_renderer_render(buffers,buffers+R3_VIEW_PIXELS,NULL,NULL);
     image_obj=lv_image_create(page);lv_image_set_src(image_obj,&image);
-    lv_image_set_pivot(image_obj,0,0);lv_image_set_scale(image_obj,512);lv_obj_set_pos(image_obj,35,40);
-    status=label(page,"三维预览",40,10,310,&roll3_font_20);
+    lv_image_set_pivot(image_obj,0,0);lv_image_set_scale(image_obj,416);lv_obj_set_pos(image_obj,65,40);
+    status=label(page,action ? "准备开始" : "三维预览",40,10,310,&roll3_font_20);
     detail=label(page,"等待完整快照",40,335,310,&roll3_font_16);
-    label(page,"主机预览：操作尚未接入",40,378,310,&roll3_font_16);
+    footer=label(page,action ? "" : "主机预览：操作尚未接入",40,378,310,&roll3_font_16);
     for(unsigned i=0;i<3;++i){lv_obj_t *b=lv_button_create(page);lv_obj_remove_style_all(b);
         lv_obj_set_pos(b,28+i*113,405);lv_obj_set_size(b,108,35);
         lv_obj_set_style_bg_color(b,lv_color_hex(0x263d55),0);lv_obj_set_style_bg_opa(b,LV_OPA_COVER,0);
@@ -59,16 +102,41 @@ int roll3_view_create(void)
         lv_obj_set_style_text_align(t,LV_TEXT_ALIGN_CENTER,0);lv_obj_center(t);
         if(i==0)primary=t;
         if(i==1)secondary=t;
-        if(i==2)lv_obj_add_event_cb(b,back,LV_EVENT_CLICKED,NULL);else lv_obj_add_state(b,LV_STATE_DISABLED);
+        if(i==2)lv_obj_add_event_cb(b,back,LV_EVENT_CLICKED,NULL);
+        else {
+            actions[i] = b;
+            lv_obj_add_state(b,LV_STATE_DISABLED);
+            lv_obj_add_event_cb(b,button_action,LV_EVENT_CLICKED,NULL);
+        }
     }
     error_text="";return 0;
 }
+int roll3_view_create(void) { return create(NULL, NULL); }
+
+int roll3_view_create_live(void (*action)(r3_action_kind_t), void (*closed)(void))
+{
+    if (!action || !closed) return -101;
+    return create(action, closed);
+}
+
+void roll3_view_action_status(bool pending, r3_result_t result)
+{
+    if (!page || !send_action) return;
+    const char *message = pending ? "等待完整快照" : result != R3_OK ? "操作无效" : "";
+    if (strcmp(lv_label_get_text(footer), message) != 0)
+        lv_label_set_text_static(footer, message);
+    action_pending = pending;
+    controls();
+}
+
 void roll3_view_render(const r3_snapshot_t *s,const r3_world_t *world)
 {
     if(!page)return;
     int result=roll3_renderer_render(buffers,buffers+R3_VIEW_PIXELS,s,world);
     lv_image_cache_drop(&image);lv_obj_invalidate(image_obj);
-    if(result){lv_label_set_text_static(status,"三维数据无效");lv_label_set_text_static(detail,"请检查快照版本、姿态与关卡");return;}
+    valid_frame = result == 0;
+    if(result){lv_label_set_text_static(status,"三维数据无效");lv_label_set_text_static(detail,"请检查快照版本、姿态与关卡");controls();return;}
+    view_state = s->state;
     static const char *states[]={"准备开始","请放平校准","游玩中","已暂停","小球掉落","通关","输入异常"};
     static const char *messages[]={"点击开始后，保持板子平放","等待真实校准完成","倾斜板子，沿坡道前进",
         "暂停期间不累计时间","返回当前检查点，保留本局时间","用时已冻结，可重开或返回","输入无效，请重开或返回"};
@@ -78,4 +146,5 @@ void roll3_view_render(const r3_snapshot_t *s,const r3_world_t *world)
     lv_label_set_text_static(detail,detail_text);
     lv_label_set_text_static(primary,s->state==R3_PAUSED?"继续":s->state==R3_RUNNING?"暂停":s->state==R3_FALLEN?"回检查点":"开始");
     lv_label_set_text_static(secondary,"重开");
+    controls();
 }

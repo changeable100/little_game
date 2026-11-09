@@ -1,0 +1,10 @@
+3D host view and production page adapter with fake runtime
+TC-501 camera-center PASS
+TC-501 screen-right PASS
+TC-501 screen-forward PASS
+TC-501 near-guard PASS
+TC-501 perspective size, quaternion stripes, OBB slope axes, occlusion, clipping/canaries PASS
+TC-501 seven Chinese states/glyphs, controls, allocation failure, 20 cycles PASS; persistent buffers=115200 bytes
+TC-504 live layout, buttons, duplicate guard, return, external delete PASS
+LVGL draw-buffer malloc attempts=0 largest=0 bytes (in addition to caller buffers)
+Host UI previews (simulated): D:\course_starter\build\maze-integration\build\roll3-live-view

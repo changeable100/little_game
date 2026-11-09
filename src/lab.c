@@ -42,7 +42,7 @@ bool lab_motion_try_snapshot(lab_motion_t *sample)
     return true;
 }
 
-bool lab_maze_motion_start(uint32_t session)
+static bool motion_start(uint32_t session)
 {
     if (!session || rt_mutex_take(&state_lock, 0) != RT_EOK) return false;
     if (busy) { rt_mutex_release(&state_lock); return false; }
@@ -57,6 +57,17 @@ bool lab_maze_motion_start(uint32_t session)
     rt_mutex_release(&state_lock);
     rt_sem_release(&request_ready);
     return true;
+}
+
+bool lab_maze_motion_start(uint32_t session)
+{
+    return !(session & LAB_ROLL3_SESSION_BIT) && motion_start(session);
+}
+
+bool lab_roll3_motion_start(uint32_t run)
+{
+    return run && !(run & LAB_ROLL3_SESSION_BIT) &&
+           motion_start(run | LAB_ROLL3_SESSION_BIT);
 }
 
 bool lab_maze_motion_state(uint32_t session, bool *is_busy, bool *owned)

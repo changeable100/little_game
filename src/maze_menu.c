@@ -14,6 +14,16 @@
 
 static lv_obj_t *home, *help, *entry_feedback;
 static bool preview_mode;
+static int (*roll3_open)(void);
+static void (*roll3_close)(void);
+static bool (*roll3_busy)(void);
+
+void maze_menu_set_roll3(int (*open)(void), void (*close)(void), bool (*busy)(void))
+{
+    roll3_open = open;
+    roll3_close = close;
+    roll3_busy = busy;
+}
 
 static lv_obj_t *panel(lv_obj_t *parent, int x, int y, int w, int h,
                        uint32_t color, int radius)
@@ -41,18 +51,24 @@ static lv_obj_t *text(lv_obj_t *parent, const char *s, int x, int y,
     return o;
 }
 
-static lv_obj_t *button(lv_obj_t *parent, const char *s, int y, uint32_t color,
-                    lv_event_cb_t cb)
+static lv_obj_t *button_at(lv_obj_t *parent, const char *s, int x, int y, int width,
+                           uint32_t color, lv_event_cb_t cb)
 {
-    lv_obj_t *o = panel(parent, 44, y, 302, 48, color, 12);
+    lv_obj_t *o = panel(parent, x, y, width, 48, color, 12);
     lv_obj_add_flag(o, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_style_bg_opa(o, LV_OPA_70, LV_STATE_PRESSED);
-    lv_obj_t *label = text(o, s, 0, 0, 286, &maze_font_16,
+    lv_obj_t *label = text(o, s, 0, 0, width - 16, &maze_font_16,
                            color == MINT ? BG : TEXT);
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_center(label);
     lv_obj_add_event_cb(o, cb, LV_EVENT_CLICKED, NULL);
     return o;
+}
+
+static lv_obj_t *button(lv_obj_t *parent, const char *s, int y, uint32_t color,
+                        lv_event_cb_t cb)
+{
+    return button_at(parent, s, 44, y, 302, color, cb);
 }
 
 /* Draw the actual shared level; no copied map and no extra pixel buffer. */
@@ -123,6 +139,10 @@ static void enter_maze(lv_event_t *event)
     (void)event;
     if (help || !home) return;
     if(preview_mode){maze_ui_preview_open();return;}
+    if (roll3_busy && roll3_busy()) {
+        lv_label_set_text(entry_feedback, "未就绪");
+        return;
+    }
     if(maze_runtime_init_status()!=MAZE_RUNTIME_READY) {
         lv_label_set_text(entry_feedback,maze_ui_runtime_startup_text());return;
     }
@@ -133,12 +153,22 @@ static void enter_maze(lv_event_t *event)
         lv_label_set_text(entry_feedback,maze_ui_runtime_startup_text());
 }
 
+static void enter_roll3(lv_event_t *event)
+{
+    (void)event;
+    if (!home || help || preview_mode || !roll3_open) return;
+    int result = roll3_open();
+    if (result != 0)
+        lv_label_set_text_fmt(entry_feedback, "游戏界面打开失败（%d）", result);
+}
+
 static void home_deleted(lv_event_t *event)
 {
     (void)event;
     /* Even external parent deletion must not leave the preview orphaned. */
     (void)maze_ui_runtime_release();
     maze_ui_destroy();
+    if (!preview_mode && roll3_close) roll3_close();
     home = NULL; entry_feedback=NULL;
 }
 
@@ -174,7 +204,12 @@ static int create_menu(bool preview)
     lv_obj_set_style_opa(entry,LV_OPA_40,LV_STATE_DISABLED);
     if(!preview && maze_runtime_init_status()!=MAZE_RUNTIME_READY)
         lv_obj_add_state(entry,LV_STATE_DISABLED);
-    button(home, "玩法说明", 388, PANEL, open_help);
+    if (!preview && roll3_open) {
+        button_at(home, "玩法说明", 44, 388, 145, PANEL, open_help);
+        button_at(home, "3D挑战", 201, 388, 145, PANEL, enter_roll3);
+    } else {
+        button(home, "玩法说明", 388, PANEL, open_help);
+    }
     return MAZE_UI_SUCCESS;
 }
 

@@ -127,6 +127,20 @@ r3_result_t r3_calibrated(r3_game_t *g,uint32_t run) {
     g->s.state=R3_RUNNING;++g->s.revision;return R3_OK;
 }
 
+r3_result_t r3_input_failed(r3_game_t *g, uint32_t run)
+{
+    if (!g || !g->world) return R3_INVALID;
+    if (run != g->s.run) return R3_STALE;
+    if (g->s.state != R3_CALIBRATING && g->s.state != R3_RUNNING &&
+        g->s.state != R3_PAUSED && g->s.state != R3_FALLEN) return R3_WRONG_STATE;
+    if (g->s.revision == UINT32_MAX) return R3_EXHAUSTED;
+    g->s.state = R3_ERROR;
+    g->s.error = R3_INPUT_ERROR;
+    g->s.velocity = g->s.omega = (r3_vec_t){0, 0, 0};
+    ++g->s.revision;
+    return R3_OK;
+}
+
 typedef struct { bool found; float t; r3_vec_t normal; unsigned box; } hit_t;
 /* Inflated AABB is only a broad phase; narrow phase is the rounded box. */
 static bool broad(r3_vec_t p,r3_vec_t d,r3_vec_t half) {
@@ -241,8 +255,8 @@ r3_result_t r3_step(r3_game_t *g,const r3_input_t *input,uint32_t dt_ms) {
     if(g->s.state!=R3_RUNNING)return R3_WRONG_STATE;
     if(g->s.revision==UINT32_MAX)return R3_EXHAUSTED;
     if(!input->valid||!finite_vec(input->acceleration)||dot(input->acceleration,input->acceleration)>400) {
-        g->s.state=R3_ERROR;g->s.error=R3_INPUT_ERROR;
-        g->s.velocity=g->s.omega=(r3_vec_t){0,0,0};++g->s.revision;return R3_INVALID;
+        (void)r3_input_failed(g, g->s.run);
+        return R3_INVALID;
     }
     g->s.contacts=0;g->s.grounded=false;g->s.limited=false;g->s.speed_limited=false;
     g->s.contact_normal=(r3_vec_t){0,0,0};

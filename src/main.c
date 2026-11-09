@@ -10,6 +10,9 @@
 #include "maze_runtime.h"
 #include "maze_menu.h"
 #include "roll3_selftest.h"
+#include "roll3_renderer.h"
+#include "roll3_runtime.h"
+#include "roll3_page.h"
 
 static void maze_adapter_test_report(const char *name, bool passed)
 {
@@ -56,6 +59,8 @@ int main(void)
 
     /* Experimental 3D kernel is isolated; it does not replace the validated 2D UI. */
     int roll3_failures = r3_selftest_run(roll3_test_report);
+    roll3_failures += roll3_renderer_selftest(roll3_test_report);
+    roll3_failures += roll3_session_selftest(roll3_test_report);
     rt_kprintf("[roll3:selftest] summary %s failures=%d\n",
                roll3_failures ? "FAIL" : "PASS", roll3_failures);
     if (roll3_failures)
@@ -73,6 +78,10 @@ int main(void)
                (int)maze_runtime_init_status(), (int)runtime_result);
     if (runtime_result != MAZE_OK)
         rt_kprintf("[maze] runtime unavailable; production entry must stay disabled\n");
+    bool roll3_ready = roll3_runtime_init(roll3_failures == 0);
+    if (roll3_ready)
+        maze_menu_set_roll3(roll3_page_open, roll3_page_close, roll3_runtime_busy);
+    rt_kprintf("[roll3:boot] ready=%d\n", (int)roll3_ready);
     /* Internal lab_io is needed by A's sampler; the product entry is B's menu. */
     int ui_result = maze_menu_create();
     if (ui_result != MAZE_UI_SUCCESS) {

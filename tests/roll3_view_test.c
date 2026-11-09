@@ -4,6 +4,8 @@
 #include "roll3_renderer.h"
 #include "roll3_scene.h"
 #include "roll3_font.h"
+#include "roll3_page.h"
+#include "roll3_runtime.h"
 #include "lvgl.h"
 #include "src/draw/lv_draw_buf_private.h"
 #ifdef NDEBUG
@@ -20,15 +22,48 @@ static unsigned buffer_live,buffer_attempts,draw_attempts;
 static size_t largest_draw;
 static bool fail_buffer;
 static void *owned_buffer;
-extern void *__real_lv_malloc(size_t);
-extern void __real_lv_free(void *);
-void *__wrap_lv_malloc(size_t n)
+void *roll3_test_malloc(size_t n)
 {
     if(n==R3_VIEW_PIXELS*4){++buffer_attempts;if(fail_buffer)return NULL;
-        void *p=__real_lv_malloc(n);assert(!owned_buffer);owned_buffer=p;if(p)++buffer_live;return p;}
-    return __real_lv_malloc(n);
+        void *p=lv_malloc(n);assert(!owned_buffer);owned_buffer=p;if(p)++buffer_live;return p;}
+    return lv_malloc(n);
 }
-void __wrap_lv_free(void *p){if(p&&p==owned_buffer){owned_buffer=NULL;--buffer_live;}__real_lv_free(p);}
+void roll3_test_free(void *p){if(p&&p==owned_buffer){owned_buffer=NULL;--buffer_live;}lv_free(p);}
+
+static r3_snapshot_t live_snapshot;
+static bool live_open, live_pending;
+static unsigned requests, closes;
+static r3_action_kind_t last_action;
+
+bool roll3_runtime_open(void)
+{
+    if (live_open) return false;
+    live_snapshot = (r3_snapshot_t){.version = ROLL3_CONTRACT_VERSION, .radius = R3_RADIUS,
+        .position = r3_demo_world()->spawn, .orientation = {1, 0, 0, 0}};
+    live_pending = false;
+    return live_open = true;
+}
+void roll3_runtime_close(void)
+{
+    assert(live_open);
+    live_open = false;
+    ++closes;
+}
+bool roll3_runtime_read(r3_snapshot_t *out, bool *pending, r3_result_t *result)
+{
+    if (!live_open) return false;
+    *out = live_snapshot;
+    *pending = live_pending;
+    *result = R3_OK;
+    return true;
+}
+bool roll3_runtime_submit(r3_action_kind_t action, uint32_t run)
+{
+    assert(live_open && run == live_snapshot.run && !live_pending);
+    last_action = action;
+    ++requests;
+    return live_pending = true;
+}
 static lv_draw_buf_malloc_cb_t original_draw;
 static void *draw_alloc(size_t n,lv_color_format_t f)
 {++draw_attempts;if(n>largest_draw)largest_draw=n;return original_draw(n,f);}
@@ -56,6 +91,20 @@ static void screenshot(const char *name)
     FILE *f=fopen(name,"wb");assert(f);fprintf(f,"P6\n390 450\n255\n");
     for(unsigned i=0;i<sizeof(frame);i+=4){fputc(frame[i+2],f);fputc(frame[i+1],f);fputc(frame[i],f);}fclose(f);
 }
+static void click(const char *caption)
+{
+    lv_obj_t *target = find(lv_layer_top(), caption);
+    assert(target);
+    lv_obj_send_event(lv_obj_get_parent(target), LV_EVENT_CLICKED, NULL);
+}
+static void publish(r3_state_t state)
+{
+    live_snapshot.state = state;
+    ++live_snapshot.revision;
+    live_pending = false;
+    lv_tick_inc(67);
+    lv_timer_handler();
+}
 static void math_report(const char *name,bool ok){printf("%s %s\n",name,ok?"PASS":"FAIL");}
 static void render(const r3_snapshot_t *s,const r3_world_t *w)
 {assert(roll3_renderer_render(color+1,depth+1,s,w)==0);assert(color[0]==0xabcd&&color[R3_VIEW_PIXELS+1]==0xabcd);
@@ -63,7 +112,7 @@ static void render(const r3_snapshot_t *s,const r3_world_t *w)
 static unsigned coverage(void){unsigned n=0;for(unsigned i=1;i<=R3_VIEW_PIXELS;++i)n+=depth[i]!=65535;return n;}
 int main(void)
 {
-    puts("SYNTHETIC 3D VIEW ONLY: no physical input, no r3_step, no production page integration");
+    puts("3D host view and production page adapter with fake runtime");
     color[0]=color[R3_VIEW_PIXELS+1]=depth[0]=depth[R3_VIEW_PIXELS+1]=0xabcd;
     assert(roll3_renderer_selftest(math_report)==0);
     const r3_world_t *world=r3_demo_world();
@@ -129,6 +178,38 @@ int main(void)
         roll3_view_destroy();roll3_view_destroy();assert(buffer_live==0&&objects(lv_layer_top())==base&&timers()==clock_base);
     }
     printf("TC-501 seven Chinese states/glyphs, controls, allocation failure, 20 cycles PASS; persistent buffers=115200 bytes\n");
+    fail_buffer = true;
+    assert(roll3_page_open() == -103 && !live_open && closes == 1);
+    fail_buffer = false;
+    assert(roll3_page_open() == 0 && roll3_page_open() == -104);
+    lv_obj_update_layout(lv_layer_top());
+    lv_obj_t *live_root = lv_obj_get_child(lv_layer_top(), -1);
+    lv_obj_t *live_image = lv_obj_get_child(live_root, 0);
+    lv_obj_t *live_detail = lv_obj_get_child(live_root, 2);
+    int32_t image_bottom = lv_obj_get_y(live_image) +
+        (R3_VIEW_H * lv_image_get_scale(live_image) + 255) / 256;
+    assert(image_bottom <= lv_obj_get_y(live_detail));
+    click("开始"); assert(requests == 1 && last_action == R3_START);
+    click("开始"); assert(requests == 1);
+    live_snapshot.run = 1;
+    publish(R3_CALIBRATING);
+    click("开始"); assert(requests == 1);
+    publish(R3_RUNNING);
+    click("暂停"); assert(requests == 2 && last_action == R3_PAUSE);
+    publish(R3_PAUSED);
+    click("继续"); assert(requests == 3 && last_action == R3_RESUME);
+    publish(R3_FALLEN);
+    click("回检查点"); assert(requests == 4 && last_action == R3_RESPAWN);
+    publish(R3_WON);
+    click("重开"); assert(requests == 5 && last_action == R3_RESTART);
+    glyphs(lv_layer_top());
+    click("返回"); assert(!live_open && closes == 2);
+    assert(roll3_page_open() == 0);
+    lv_obj_delete(lv_obj_get_child(lv_layer_top(), -1));
+    roll3_page_close();
+    assert(!live_open && closes == 3 && !buffer_live &&
+           objects(lv_layer_top()) == base && timers() == clock_base);
+    puts("TC-504 live layout, buttons, duplicate guard, return, external delete PASS");
     printf("LVGL draw-buffer malloc attempts=%u largest=%lu bytes (in addition to caller buffers)\n",draw_attempts,(unsigned long)largest_draw);
     return 0;
 }

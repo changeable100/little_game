@@ -625,3 +625,14 @@ p1_3d_physics:
   physical: "三维新27项板上自检/三维画面/任务调度/手感尚未实测；与P2整合后集中验证，不重复烧录旧UI"
   pending: "P2 A独立物理任务/消息与采样所有权；B固定透视/深度遮挡/中文页面；真实操控手感与性能"
   submission: "王若豪已读两份hw/feat正文并确认分两次本地保存，实际提交号见Git历史；本轮不推送"
+
+p2_3d_integration:
+  date: "2026-11-09"
+  reviewed_b_head: "105268121adb682e3360b131aa41640b7b90f9fe"
+  requirements: "REQ-504 / TC-504"
+  runtime: "独立物理任务、5ms 步长、250ms 补算上限、单槽动作邮箱、三维 IMU 会话及退出释放"
+  ui: "B 固定透视与中文七态接入首页 3D 挑战，UI 定时读取完整快照"
+  software: "114 项主机回归、三维和二维 LVGL 接入测试、字库校验及 SDK 2.5.1 构建通过"
+  evidence: "evidence/M4/p2-integration-2026-11-09/README.md"
+  fingerprint: "evidence/M4/p2-integration-2026-11-09/firmware.json"
+  physical: "待首次三维整机验证"

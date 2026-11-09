@@ -39,7 +39,8 @@ else:
 if not args.maze_only and not args.runtime_ui and not args.roll3_view:
     app_sources += ('lab_game_ui.c', 'lab_ride.c', 'lab_ui.c', 'lab_ble_ui.c', 'lab_pan_ui.c', 'lab_registry.c', 'modules/test_display.c', 'modules/test_touch.c', 'modules/touch_decode.c')
 if args.roll3_view:
-    app_sources=('roll3_renderer.c','roll3_view.c','roll3_physics.c','roll3_scene.c','roll3_font_16.c','roll3_font_20.c')
+    app_sources=('roll3_renderer.c','roll3_view.c','roll3_page.c','roll3_physics.c',
+                 'roll3_scene.c','roll3_font_16.c','roll3_font_20.c')
     sources=[p for p in sources if p.name!='maze_runtime_unavailable.c']
 sources += [root.parent / 'src' / name for name in app_sources]
 sources.append(root / ('roll3_view_test.c' if args.roll3_view else 'maze_ui_runtime_test.c' if args.runtime_ui else 'maze_ui_test.c' if args.maze_only else 'ui_test.c'))
@@ -49,12 +50,15 @@ header_mtime = max(p.stat().st_mtime for p in headers)
 
 def compile_one(item):
     _, source = item
-    key = hashlib.sha256((str(source) + repr(flags) + cc).encode()).hexdigest()[:20]
+    source_flags = flags
+    if args.roll3_view and source.name == 'roll3_view.c':
+        source_flags = flags + ['-Dlv_malloc=roll3_test_malloc', '-Dlv_free=roll3_test_free']
+    key = hashlib.sha256((str(source) + repr(source_flags) + cc).encode()).hexdigest()[:20]
     obj = out / f'{key}.o'
     # Rebuild after config changes too; cached SDK objects make UI iterations quick.
     newest = max(source.stat().st_mtime, header_mtime)
     if not obj.exists() or obj.stat().st_mtime < newest:
-        result = subprocess.run([cc, *flags, '-c', str(source), '-o', str(obj)], capture_output=True, text=True)
+        result = subprocess.run([cc, *source_flags, '-c', str(source), '-o', str(obj)], capture_output=True, text=True)
         if result.returncode:
             raise RuntimeError(result.stderr)
     return str(obj)
@@ -67,8 +71,6 @@ exe = out / 'ui-test'
 link_inputs = out / 'ui-link.rsp'
 link_inputs.write_text('\n'.join('"' + Path(obj).as_posix() + '"' for obj in objects) + '\n', encoding='utf-8')
 wraps = ['-Wl,--wrap=' + n for n in ('maze_runtime_snapshot','maze_runtime_next_request','maze_runtime_action','maze_runtime_init_status')] if args.runtime_ui else []
-if args.roll3_view:
-    wraps=['-Wl,--wrap=lv_malloc','-Wl,--wrap=lv_free']
 subprocess.run([cc, *platform_flags, '@' + str(link_inputs), *wraps, '-lm', '-o', str(exe)], check=True)
 subprocess.run([str(exe)], cwd=out, check=True, timeout=30)
 if args.maze_only or args.ui_only or args.runtime_ui or args.roll3_view:

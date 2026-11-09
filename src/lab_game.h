@@ -17,6 +17,8 @@ void lab_motion_publish(const lab_motion_t *sample);
 void lab_motion_snapshot(lab_motion_t *sample);
 /* Maze service: shares the sole lab_io slot; fails if any other job owns it. */
 bool lab_maze_motion_start(uint32_t session);
+#define LAB_ROLL3_SESSION_BIT UINT32_C(0x80000000)
+bool lab_roll3_motion_start(uint32_t run);
 bool lab_motion_try_snapshot(lab_motion_t *sample);
 void lab_maze_motion_run(unsigned session);
 /* Nonblocking ownership checks: never stop a different Lab job. */

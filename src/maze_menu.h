@@ -7,6 +7,7 @@
  * Returns maze_ui_result codes. No Lab worker, radio, game clock or model
  * instance is started here. Production entry gates on runtime startup status. */
 int maze_menu_create(void);
+void maze_menu_set_roll3(int (*open)(void), void (*close)(void), bool (*busy)(void));
 /* Explicit host/simulated menu; never used by production main. */
 int maze_menu_create_preview(void);
 /* Idempotent; first releases the menu-owned maze preview and help page. */
