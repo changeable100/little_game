@@ -61,6 +61,11 @@ code:
   commit_range: A阶段二f4610d7与B已发布main e6bd646合并；本次合并版本未上板，HEAD见git log
   a_model_source: origin/feat/req-301-maze-model@9595000；模型实现源提交 77b15d3
 physical_verification:
+- item: TC-504三维掉落页面实物照片子项
+  required_action: 用户回传三维运行画面与体验反馈
+  executed_at: 2026-11-09收到照片，实际拍摄时刻未知
+  evidence_path: evidence/M4/p2-integration-2026-11-09/board-run01/photo-review.md
+  agent_conclusion: 照片支持赛道和中文掉落页面显示；用户反馈可玩但太小。无串口/动态视频，TC-504全项不判通过，REQ-505新画面待板测
 - item: P0迟帧容错固件启动与正常游玩
   required_action: 新镜像启动日志、游玩status与实际画面
   executed_at: 2026-11-08收到附件/内联片段及照片，精确操作时刻未知
