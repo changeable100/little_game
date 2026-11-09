@@ -1,0 +1,6 @@
+clang version 18.1.6 (https://github.com/ziglang/zig-bootstrap 98bc6bf4fc4009888d33941daf6b600d20a42a56)
+Target: x86_64-unknown-windows-gnu
+Thread model: posix
+InstalledDir: D:/course_starter/build/maze-integration
+error: unable to find zig installation directory: FileNotFound
+Failure retained: D:\course_starter\build\maze-integration\evidence\M2\maze_adapter\host_2026-11-09_151317.txt

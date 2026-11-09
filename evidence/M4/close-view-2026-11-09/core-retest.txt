@@ -1,0 +1,206 @@
+clang version 18.1.6 (https://github.com/ziglang/zig-bootstrap 98bc6bf4fc4009888d33941daf6b600d20a42a56)
+Target: x86_64-unknown-windows-gnu
+Thread model: posix
+InstalledDir: D:/course_starter/build/maze-integration
+TC-301 start-calibrate PASS
+TC-302 right PASS
+TC-302 left PASS
+TC-302 down PASS
+TC-302 up PASS
+TC-303 thin-wall PASS
+TC-303 horizontal-wall PASS
+TC-303 corner PASS
+TC-303 slide PASS
+TC-303 right-edge PASS
+TC-303 left-edge PASS
+TC-303 bottom-edge PASS
+TC-303 top-edge PASS
+TC-304 pause-resume PASS
+TC-304 restart-stale-back PASS
+TC-305 win-freeze PASS
+TC-306 bad-maps PASS
+TC-306 invalid-sample PASS
+TC-306 nan PASS
+TC-306 infinity PASS
+TC-306 range PASS
+TC-306 long-dt PASS
+TC-306 counters PASS
+TC-306 api-guards PASS
+TC-201 fixed-map-structure-and-reachability PASS
+TC-202 disconnected-map PASS
+TC-202 diagonal-only-map PASS
+TC-202 malformed-maps PASS
+TC-401 request-stale-exhaustion PASS
+TC-401 old-run-and-sample PASS
+TC-402 calibration-32-unique PASS
+TC-402 unstable-restarts-window PASS
+TC-402 timeout PASS
+TC-403 right PASS
+TC-403 left PASS
+TC-403 down PASS
+TC-403 up PASS
+TC-403 deadband-filter PASS
+TC-403 board-edge-direction-replay PASS
+TC-403 duplicate-not-refiltered PASS
+TC-403 invalid PASS
+TC-403 nan PASS
+TC-403 infinity PASS
+TC-403 stale-sample PASS
+TC-403 reversed-sequence PASS
+TC-403 future-timestamp PASS
+TC-403 range PASS
+TC-403 missing-sample PASS
+TC-404 pause-resume-clock PASS
+TC-503 short-delays-bounded-catchup PASS
+TC-503 long-delay-recoverable-pause PASS
+TC-503 fractional-time-survives-pause-reconnect PASS
+TC-503 fresh-sample-resume-and-run-reset PASS
+TC-503 interruption-counter-saturation PASS
+TC-503 delay-clock-wrap PASS
+TC-503 stale-intent-before-publication PASS
+TC-404 clock-wrap PASS
+TC-406 api-and-calibration-failure PASS
+TC-406 reconnect-preserves-game PASS
+summary PASS failures=0
+TC-408 cold-status-and-unavailable-guards PASS
+TC-408 selftest-failure-no-resources PASS
+TC-408 queue-failure-no-detach PASS
+TC-408 timer-cleanup-and-retry PASS
+TC-408 ready-not-overwritten PASS
+TC-408 startup-cancel-cleanup-retry PASS
+TC-406 runtime-single-owner-and-timer PASS
+TC-406 detach-reopen-no-reset-no-callback PASS
+[maze] sampling slot unavailable
+TC-405 busy-slot-and-stop-ownership PASS
+[maze:command] queued=5 result=0
+[maze:command] queued=5 result=0
+[maze:command] queued=5 result=0
+[maze:command] queued=5 result=0
+[maze:command] queued=5 result=0
+[maze:command] queued=5 result=0
+[maze:command] queued=5 result=0
+[maze:command] queued=5 result=0
+[maze:command] queued=5 result=-1
+[maze:diag] run=3 rev=10 state=5 error=2 elapsed=0 cal=0
+[maze:imu] run=3 seq=2 age=40 a_mg=100,-100,1000
+[maze:gyro] seq=2 g_mdps=0,0,0
+[maze:input] seq=2 bias_mg=0,0 tilt_milli=0,0 pos_milli=1500,1500
+[maze:clock] run=3 pause=0 interrupted=0 pending=0
+TC-406 board-console-no-truncation PASS
+TC-406 shell-bounded-ui-queue PASS
+[maze:diag] run=4 rev=11 state=1 error=0 elapsed=0 cal=25
+[maze:imu] run=4 seq=25 age=0 a_mg=100,-100,1000
+[maze:gyro] seq=25 g_mdps=0,0,0
+[maze:input] seq=25 bias_mg=0,0 tilt_milli=0,0 pos_milli=1500,1500
+[maze:clock] run=4 pause=0 interrupted=0 pending=0
+[maze:timing] run=4 gap=251 render=0 prep=0
+[maze:loop] run=4 handler=0 wait=0 valid=0 rv=1
+[maze:pause] run=4 state=3 interrupted=251
+TC-405 timing-unmeasured-loop-explicitly-marked PASS
+[maze:diag] run=5 rev=14 state=1 error=0 elapsed=0 cal=6
+[maze:imu] run=5 seq=6 age=0 a_mg=100,-100,1000
+[maze:gyro] seq=6 g_mdps=0,0,0
+[maze:input] seq=6 bias_mg=0,0 tilt_milli=0,0 pos_milli=1500,1500
+[maze:clock] run=5 pause=0 interrupted=0 pending=0
+[maze:diag] run=5 rev=14 state=1 error=0 elapsed=0 cal=31
+[maze:imu] run=5 seq=31 age=0 a_mg=100,-100,1000
+[maze:gyro] seq=31 g_mdps=0,0,0
+[maze:input] seq=31 bias_mg=0,0 tilt_milli=0,0 pos_milli=1500,1500
+[maze:clock] run=5 pause=0 interrupted=0 pending=0
+[maze:timing] run=5 gap=262 render=260 prep=0
+[maze:loop] run=5 handler=265 wait=2 valid=1 rv=1
+[maze:pause] run=5 state=3 interrupted=264
+[maze:diag] run=5 rev=21 state=3 error=0 elapsed=270 cal=32
+[maze:imu] run=5 seq=37 age=0 a_mg=100,-100,1000
+[maze:gyro] seq=37 g_mdps=0,0,0
+[maze:input] seq=37 bias_mg=99,-99 tilt_milli=0,0 pos_milli=1500,1500
+[maze:clock] run=5 pause=2 interrupted=264 pending=0
+[maze:diag] run=5 rev=21 state=3 error=0 elapsed=270 cal=32
+[maze:imu] run=5 seq=38 age=0 a_mg=100,-100,1000
+[maze:gyro] seq=38 g_mdps=0,0,0
+[maze:input] seq=38 bias_mg=99,-99 tilt_milli=0,0 pos_milli=1500,1500
+[maze:clock] run=5 pause=2 interrupted=264 pending=0
+TC-503 short-render-stall-tolerated-severe-stall-pauses PASS
+[maze:diag] run=6 rev=22 state=1 error=0 elapsed=0 cal=25
+[maze:imu] run=6 seq=25 age=0 a_mg=100,-100,1000
+[maze:gyro] seq=25 g_mdps=0,0,0
+[maze:input] seq=25 bias_mg=0,0 tilt_milli=0,0 pos_milli=1500,1500
+[maze:clock] run=6 pause=0 interrupted=0 pending=0
+[maze:timing] run=6 gap=251 render=0 prep=0
+[maze:loop] run=6 handler=3 wait=251 valid=1 rv=1
+[maze:pause] run=6 state=3 interrupted=251
+[maze:diag] run=6 rev=25 state=3 error=0 elapsed=0 cal=32
+[maze:imu] run=6 seq=33 age=0 a_mg=100,-100,1000
+[maze:gyro] seq=33 g_mdps=0,0,0
+[maze:input] seq=33 bias_mg=99,-99 tilt_milli=0,0 pos_milli=1500,1500
+[maze:clock] run=6 pause=2 interrupted=251 pending=0
+[maze:command] queued=5 result=0
+[maze:timing] run=6 gap=251 render=0 prep=0
+[maze:loop] run=6 handler=3 wait=251 valid=1 rv=1
+[maze:pause] run=6 state=3 interrupted=251
+[maze:diag] run=6 rev=25 state=3 error=0 elapsed=0 cal=32
+[maze:imu] run=6 seq=33 age=20 a_mg=100,-100,1000
+[maze:gyro] seq=33 g_mdps=0,0,0
+[maze:input] seq=33 bias_mg=99,-99 tilt_milli=0,0 pos_milli=1500,1500
+[maze:clock] run=6 pause=2 interrupted=251 pending=0
+TC-405 timing-pause-fault-frozen-status-and-owner-guard PASS
+[maze:diag] run=7 rev=26 state=1 error=0 elapsed=0 cal=25
+[maze:imu] run=7 seq=25 age=0 a_mg=100,-100,1000
+[maze:gyro] seq=25 g_mdps=0,0,0
+[maze:input] seq=25 bias_mg=0,0 tilt_milli=0,0 pos_milli=1500,1500
+[maze:clock] run=7 pause=0 interrupted=0 pending=0
+TC-503 pause-settlement-consumes-latest-publication PASS
+[maze:diag] run=8 rev=31 state=1 error=0 elapsed=0 cal=1
+[maze:imu] run=8 seq=1 age=0 a_mg=100,-100,1000
+[maze:gyro] seq=1 g_mdps=0,0,0
+[maze:input] seq=1 bias_mg=0,0 tilt_milli=0,0 pos_milli=1500,1500
+[maze:clock] run=8 pause=0 interrupted=0 pending=0
+[maze:diag] run=8 rev=31 state=1 error=0 elapsed=0 cal=26
+[maze:imu] run=8 seq=26 age=0 a_mg=100,-100,1000
+[maze:gyro] seq=26 g_mdps=0,0,0
+[maze:input] seq=26 bias_mg=0,0 tilt_milli=0,0 pos_milli=1500,1500
+[maze:clock] run=8 pause=0 interrupted=0 pending=0
+TC-404 timing-wraparound-regression PASS
+summary PASS failures=0
+TC-408 main-platform-failure-gates PASS
+TC-408 main-runtime-before-menu PASS
+TC-408 main-three-selftest-failure-gates PASS
+TC-501 experimental-3d-selftest-isolated-from-2d PASS
+TC-408 main-runtime-failure-visible PASS
+TC-408 main-menu-failure-stops-loop PASS
+TC-404 main-measures-handler-and-actual-wait-across-wrap PASS
+summary PASS failures=0
+TC-501 scene-xyz-contract PASS
+TC-501 malformed-world PASS
+TC-501 stale-and-api-guards PASS
+TC-501 calibration-pause-restart-back PASS
+TC-502 stationary-2000-steps PASS
+TC-502 xyz-freeflight-orientation PASS
+TC-502 freefall-gravity PASS
+TC-502 elastic-face-tangent PASS
+TC-502 thin-wall-8mps PASS
+TC-502 rounded-edge PASS
+TC-502 rounded-corner PASS
+TC-502 rotated-box-normal PASS
+TC-502 ramp-natural-roll PASS
+TC-502 no-slip-preserves-energy PASS
+TC-502 friction-spinup PASS
+TC-502 rolling-resistance-dissipates PASS
+TC-502 repeated-elastic-energy PASS
+TC-502 multi-contact-corner PASS
+TC-501 checkpoint-fall-respawn PASS
+TC-501 goal-freeze PASS
+TC-502 invalid-input PASS
+TC-501 counters-and-exhaustion PASS
+TC-502 quaternion-normalization PASS
+TC-502 rounded-box-near-miss PASS
+TC-502 bounded-deep-contact PASS
+TC-502 linear-angular-speed-budget PASS
+TC-505 continuous-ramp-two-turn-route PASS
+TC-504 calibration-session-and-axes PASS
+TC-504 clock-wrap-catchup-heartbeat PASS
+TC-504 input-timeout-and-old-run PASS
+roll3 summary PASS failures=0
+TC-504 runtime owner, single slot, calibration and stale run PASS
+TC-504 close discards pending action and waits for own IMU cleanup PASS
+Raw host evidence: D:\course_starter\build\maze-integration\evidence\M2\maze_adapter\host_2026-11-09_151551.txt

@@ -14,6 +14,7 @@ static void (*on_closed)(void);
 static bool valid_frame, action_pending;
 static r3_state_t view_state;
 static uint16_t *buffers;
+static r3_camera_follow_t camera_follow;
 static lv_image_dsc_t image;
 static const char *error_text="";
 static char status_text[80],detail_text[240];
@@ -81,6 +82,7 @@ static int create(void (*action)(r3_action_kind_t), void (*closed)(void))
     send_action = action;
     on_closed = closed;
     valid_frame = action_pending = false;
+    memset(&camera_follow,0,sizeof(camera_follow));
     page=lv_obj_create(lv_layer_top());lv_obj_remove_style_all(page);
     lv_obj_set_size(page,390,450);lv_obj_set_style_bg_color(page,lv_color_hex(0x0c1220),0);
     lv_obj_set_style_bg_opa(page,LV_OPA_COVER,0);lv_obj_remove_flag(page,LV_OBJ_FLAG_SCROLLABLE);
@@ -90,7 +92,7 @@ static int create(void (*action)(r3_action_kind_t), void (*closed)(void))
     /* Empty frame is safe even before the first valid snapshot. */
     roll3_renderer_render(buffers,buffers+R3_VIEW_PIXELS,NULL,NULL);
     image_obj=lv_image_create(page);lv_image_set_src(image_obj,&image);
-    lv_image_set_pivot(image_obj,0,0);lv_image_set_scale(image_obj,416);lv_obj_set_pos(image_obj,65,40);
+    lv_image_set_pivot(image_obj,0,0);lv_image_set_scale(image_obj,512);lv_obj_set_pos(image_obj,15,35);
     status=label(page,action ? "准备开始" : "三维预览",40,10,310,&roll3_font_20);
     detail=label(page,"等待完整快照",40,335,310,&roll3_font_16);
     footer=label(page,action ? "" : "主机预览：操作尚未接入",40,378,310,&roll3_font_16);
@@ -132,7 +134,7 @@ void roll3_view_action_status(bool pending, r3_result_t result)
 void roll3_view_render(const r3_snapshot_t *s,const r3_world_t *world)
 {
     if(!page)return;
-    int result=roll3_renderer_render(buffers,buffers+R3_VIEW_PIXELS,s,world);
+    int result=roll3_renderer_render_follow(buffers,buffers+R3_VIEW_PIXELS,s,world,&camera_follow);
     lv_image_cache_drop(&image);lv_obj_invalidate(image_obj);
     valid_frame = result == 0;
     if(result){lv_label_set_text_static(status,"三维数据无效");lv_label_set_text_static(detail,"请检查快照版本、姿态与关卡");controls();return;}

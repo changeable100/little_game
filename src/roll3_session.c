@@ -54,8 +54,10 @@ r3_result_t roll3_session_action(roll3_session_t *s, r3_action_kind_t kind,
 
 static float normalized(float value)
 {
-    float magnitude = (fabsf(value) - 0.03f) / (0.35f - 0.03f);
-    return copysignf(fminf(1.0f, fmaxf(0.0f, magnitude)), value);
+    float magnitude = (fabsf(value) - 0.045f) / (0.45f - 0.045f);
+    float u = fminf(1.0f, fmaxf(0.0f, magnitude));
+    /* Gentle fine control, retaining full uphill acceleration. */
+    return copysignf(u * (0.65f + 0.35f * u), value);
 }
 
 static void calibrate(roll3_session_t *s, const lab_motion_t *m, uint32_t now)

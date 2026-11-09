@@ -16,6 +16,10 @@ requirements:
 design:
   architecture_doc_path: docs/02-方案设计说明.md
   key_decisions:
+  - decision: ADR-0008近景固定朝向跟随球与宽平台转弯赛道
+    alternatives_considered: B保留全景并放大显示区域
+    rationale: 解决球和路太小，接受局部视野，物理手感参数后置
+    decided_by: 用户2026-11-09明确回复a
   - decision: B三维视图采用正对赛道固定透视相机，见ADR-0007
     alternatives_considered: camera=(8,-8,7)斜角观察，需要混合世界x/y输入映射
     rationale: camera=(3,-8,6)看(3,0,0.2)，地面屏幕右=世界+x、屏幕上=世界+y，A据此映射IMU；B不反转或交换轴
@@ -641,3 +645,21 @@ p2_3d_integration:
   evidence: "evidence/M4/p2-integration-2026-11-09/README.md"
   fingerprint: "evidence/M4/p2-integration-2026-11-09/firmware.json"
   physical: "待首次三维整机验证"
+
+close_view_20261109:
+  requirements: REQ-505 / TC-505 / ADR-0008
+  software: 114项主机PASS，真实SDK LVGL近景/七态/按钮/遮挡/20轮资源回收PASS，最终SDK编译PASS
+  evidence: evidence/M4/close-view-2026-11-09/README.md
+  fingerprint: evidence/M4/close-view-2026-11-09/firmware.json
+  physical: 新固件待板测，旧照片仅支持掉落显示子项，未宣称TC-504全项PASS
+  submission: 实现完成未提交，hw与feat正文待负责人阅读确认；不推送
+
+p3_tuning_20261109:
+  requirements: REQ-506 / TC-506
+  user_feedback: 惯性有点大，灵敏度有点高，而且运动过程中地图有抖动；仅文字，无新视频/串口
+  changes: 渐进输入与扩大死区、滚阻0.08、视图焦点平滑和空间死区、消除共面平台顶面重叠
+  software: 116项核心主机、真实SDK LVGL相机与七态回归及SDK编译PASS
+  evidence: evidence/M4/p3-tuning-2026-11-09/README.md
+  fingerprint: evidence/M4/p3-tuning-2026-11-09/firmware.json
+  physical: 待新板测，未宣称抖动已真实消除，不新增physical_verification通过项
+  submission: 与近景版均未提交，待最终正文阅读确认，不推送

@@ -81,13 +81,32 @@ static bool lifecycle(void)
     return s.game.s.state == R3_READY && !roll3_session_needs_motion(&s);
 }
 
+static float settled_input(roll3_session_t *s,float tilt,uint32_t *now,uint32_t *seq)
+{
+    for(unsigned i=0;i<64;++i){*now+=20;lab_motion_t m=sample(s,++*seq,*now);
+        m.a[1]=tilt;roll3_session_update(s,*now,&m,true);}
+    return s->input.acceleration.x;
+}
+static bool gentle_input(void)
+{
+    roll3_session_t s;
+    if(!calibrated(&s,100))return false;
+    uint32_t now=740,seq=32;
+    if(roll3_session_action(&s,R3_PAUSE,s.game.s.run,now)!=R3_OK)return false;
+    float small=settled_input(&s,.15f,&now,&seq);
+    float dead=settled_input(&s,.03f,&now,&seq);
+    float right=settled_input(&s,.45f,&now,&seq);
+    float left=settled_input(&s,-.45f,&now,&seq);
+    return small>=.8f&&small<=1.1f&&dead==0&&right>4.89f&&left<-4.89f;
+}
 int roll3_session_selftest(maze_test_report_t report)
 {
-    bool axis = axes(), clock = timing(), life = lifecycle();
+    bool axis = axes(), clock = timing(), life = lifecycle(), gentle=gentle_input();
     if (report) {
         report("TC-504 calibration-session-and-axes", axis);
         report("TC-504 clock-wrap-catchup-heartbeat", clock);
         report("TC-504 input-timeout-and-old-run", life);
+        report("TC-506 gentle-input-and-full-uphill-range",gentle);
     }
-    return !axis + !clock + !life;
+    return !axis + !clock + !life + !gentle;
 }

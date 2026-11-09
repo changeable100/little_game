@@ -120,11 +120,15 @@ int main(void)
     r3_box_t distant=world->boxes[0];distant.center=(r3_vec_t){30,20,0};
     r3_world_t lone=*world;lone.boxes=&distant;lone.box_count=1;
     render(&s,&lone);unsigned near_count=coverage();memcpy(saved,color+1,sizeof(saved));
-    s.position.y=3;render(&s,&lone);assert(coverage()<near_count);
+    s.position.y=3;render(&s,&lone);assert(coverage()==near_count);
+    float px,py,pz,qx,qy,qz;
+    assert(roll3_renderer_project_focus((r3_vec_t){.2f,0,.2f},(r3_vec_t){0,0,.2f},&px,&py,&pz));
+    assert(roll3_renderer_project_focus((r3_vec_t){.2f,3,.2f},(r3_vec_t){0,0,.2f},&qx,&qy,&qz));
+    assert(qz>pz&&fabsf(qx-90)<fabsf(px-90));
     s.position.y=0;s.orientation=(r3_quat_t){.92387953f,.38268343f,0,0};render(&s,&lone);
     assert(memcmp(saved,color+1,sizeof(saved))!=0);
     s.orientation=(r3_quat_t){1,0,0,0};render(&s,world);float x,y,z;
-    assert(roll3_renderer_project(s.position,&x,&y,&z));unsigned center=(unsigned)y*R3_VIEW_W+(unsigned)x;
+    assert(roll3_renderer_project_focus(s.position,roll3_renderer_focus(&s,world),&x,&y,&z));unsigned center=(unsigned)y*R3_VIEW_W+(unsigned)x;
     uint16_t ball_pixel=color[1+center];
     r3_box_t boxes[R3_MAX_BOXES];memcpy(boxes,world->boxes,world->box_count*sizeof(*boxes));
     boxes[world->box_count]=distant;boxes[world->box_count].center=(r3_vec_t){3,-1.5f,1.2f};
@@ -149,6 +153,25 @@ int main(void)
     s.radius=.2f;assert(roll3_renderer_render(color+1,depth+1,&s,NULL)<0);
     puts("TC-501 perspective size, quaternion stripes, OBB slope axes, occlusion, clipping/canaries PASS");
 
+    s=(r3_snapshot_t){.version=1,.radius=R3_RADIUS,.orientation={1,0,0,0},
+        .position={99,99,-3},.state=R3_FALLEN};
+    r3_vec_t focus=roll3_renderer_focus(&s,world);
+    assert(focus.x==world->spawn.x&&focus.y==world->spawn.y&&focus.z==world->spawn.z);
+    s.checkpoint=1;focus=roll3_renderer_focus(&s,world);
+    assert(focus.x==world->checkpoint_spawn.x&&focus.y==world->checkpoint_spawn.y);
+    s.state=R3_RUNNING;s.position=world->checkpoint_spawn;focus=roll3_renderer_focus(&s,world);
+    assert(focus.x==s.position.x&&focus.y==s.position.y&&focus.z==s.position.z);
+    puts("TC-505 fallen checkpoint framing and immediate respawn focus PASS");
+
+    r3_camera_follow_t follow={0};
+    s=(r3_snapshot_t){.version=1,.radius=R3_RADIUS,.orientation={1,0,0,0},.position=world->spawn};
+    assert(roll3_renderer_render_follow(color+1,depth+1,&s,world,&follow)==0);
+    r3_camera_follow_t before_follow=follow;
+    s.orientation.w=0;
+    assert(roll3_renderer_render_follow(color+1,depth+1,&s,world,&follow)<0);
+    assert(memcmp(&follow,&before_follow,sizeof(follow))==0);
+    puts("TC-506 invalid snapshot preserves camera PASS");
+
     lv_init();lv_display_t *d=lv_display_create(390,450);lv_display_set_color_format(d,LV_COLOR_FORMAT_XRGB8888);
     lv_display_set_buffers(d,display_buffer,NULL,sizeof(display_buffer),LV_DISPLAY_RENDER_MODE_FULL);lv_display_set_flush_cb(d,flush);
     original_draw=lv_draw_buf_get_handlers()->buf_malloc_cb;lv_draw_buf_get_handlers()->buf_malloc_cb=draw_alloc;
@@ -162,7 +185,7 @@ int main(void)
                 .position=world->spawn,.state=(r3_state_t)st,.run=1,.revision=st,
                 .elapsed_ms=st>=2?12345:0,.falls=st>=2?1:0,.checkpoint=st>=2?1:0};
             if(st>=2)s.position=(r3_vec_t){3.5f,0,.7f};
-            if(st==R3_FALLEN)s.position.z=-1;if(st==R3_WON)s.position=(r3_vec_t){6,0,.7f};
+            if(st==R3_FALLEN)s.position.z=-1;if(st==R3_WON)s.position=(r3_vec_t){10,4.2f,.7f};
             if(st==R3_ERROR)s.error=R3_INPUT_ERROR;
             s.orientation=(r3_quat_t){.92387953f,.38268343f,0,0};
             roll3_view_render(&s,world);glyphs(lv_layer_top());
@@ -177,7 +200,7 @@ int main(void)
             lv_obj_send_event(lv_obj_get_parent(find(lv_layer_top(),"返回")),LV_EVENT_CLICKED,NULL);
         roll3_view_destroy();roll3_view_destroy();assert(buffer_live==0&&objects(lv_layer_top())==base&&timers()==clock_base);
     }
-    printf("TC-501 seven Chinese states/glyphs, controls, allocation failure, 20 cycles PASS; persistent buffers=115200 bytes\n");
+    printf("TC-501 seven Chinese states/glyphs, controls, allocation failure, 20 cycles PASS; persistent buffers=%u bytes\n",R3_VIEW_PIXELS*4);
     fail_buffer = true;
     assert(roll3_page_open() == -103 && !live_open && closes == 1);
     fail_buffer = false;
@@ -189,6 +212,8 @@ int main(void)
     int32_t image_bottom = lv_obj_get_y(live_image) +
         (R3_VIEW_H * lv_image_get_scale(live_image) + 255) / 256;
     assert(image_bottom <= lv_obj_get_y(live_detail));
+    assert(lv_obj_get_x(live_image)>=0&&lv_obj_get_x(live_image)+R3_VIEW_W*2<=390);
+    assert(lv_obj_get_y(live_image)>=35&&lv_image_get_scale(live_image)==512);
     click("开始"); assert(requests == 1 && last_action == R3_START);
     click("开始"); assert(requests == 1);
     live_snapshot.run = 1;

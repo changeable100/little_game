@@ -31,7 +31,7 @@ static bool scene(void) {
     r3_game_t g;r3_snapshot_t s;
     CHECK(r3_world_validate(r3_demo_world())==R3_OK&&start(&g,r3_demo_world()));
     CHECK(r3_snapshot(&g,&s)==R3_OK&&s.version==1&&s.radius==R3_RADIUS);
-    CHECK(r3_demo_world()->box_count==6&&r3_demo_world()->boxes[1].axis[0].z>0);
+    CHECK(r3_demo_world()->box_count==10&&r3_demo_world()->boxes[1].axis[0].z>0);
     CHECK(s.orientation.w==1&&s.position.z==R3_RADIUS);
     return true;
 }
@@ -183,7 +183,7 @@ static bool respawn(void) {
     return true;
 }
 static bool win(void) {
-    r3_game_t g;CHECK(start(&g,r3_demo_world()));g.s.position=(r3_vec_t){6,0,0.7f};
+    r3_game_t g;CHECK(start(&g,r3_demo_world()));g.s.position=(r3_vec_t){10,4.2f,0.7f};
     CHECK(steps(&g,&gravity,1)&&g.s.state==R3_WON);
     r3_snapshot_t before=g.s;CHECK(r3_step(&g,&gravity,5)==R3_WRONG_STATE&&memcmp(&before,&g.s,sizeof(before))==0);
     CHECK(act(&g,R3_RESTART)==R3_OK&&g.s.elapsed_ms==0);return true;
@@ -236,11 +236,28 @@ static bool speed_budget(void) {
     CHECK(near(g.s.velocity.x,8,1e-6f)&&near(g.s.omega.z,80,1e-6f));
     CHECK(near(g.s.position.x,0.04f,1e-6f));return true;
 }
+static bool tuned_coast(void) {
+    r3_box_t b=floor_box;b.rolling_friction=r3_demo_world()->boxes[0].rolling_friction;
+    r3_world_t w=test_world(&b,1);r3_game_t g;CHECK(start(&g,&w));
+    g.s.velocity.x=1;g.s.omega.y=1/R3_RADIUS;
+    float previous=energy(&g);
+    for(unsigned i=0;i<500;++i){CHECK(steps(&g,&gravity,1));
+        float current=energy(&g);CHECK(current<=previous+.00001f&&g.s.velocity.x>=-.00001f);
+        previous=current;}
+    CHECK(g.s.velocity.x<.08f&&g.s.position.x<1.5f&&g.s.state==R3_RUNNING);
+    return true;
+}
 static bool demo_route(void) {
     r3_game_t g;CHECK(start(&g,r3_demo_world()));
-    const r3_input_t uphill={{4,0,-9.81f},true};
-    for(unsigned i=0;i<1000&&g.s.state==R3_RUNNING;i++) {
-        CHECK(steps(&g,&uphill,1)&&!g.s.limited);
+    const r3_vec_t route[]={{3.5f,0,0},{6,0,0},{6,4.2f,0},{10,4.2f,0}};
+    unsigned next=0;
+    for(unsigned i=0;i<16000&&g.s.state==R3_RUNNING;i++) {
+        r3_vec_t target=route[next];
+        float dx=target.x-g.s.position.x,dy=target.y-g.s.position.y;
+        if(next<3&&dx*dx+dy*dy<.04f&&norm2(g.s.velocity)<.16f)++next;
+        r3_input_t input={{fmaxf(-4,fminf(4,3*dx-4*g.s.velocity.x+((g.s.position.x>1&&g.s.position.x<3)?2.4525f:0))),
+                           fmaxf(-4,fminf(4,3*dy-4*g.s.velocity.y)),-9.81f},true};
+        CHECK(steps(&g,&input,1)&&!g.s.limited);
     }
     CHECK(g.s.state==R3_WON&&g.s.checkpoint==1&&g.s.falls==0);
     return true;
@@ -274,7 +291,8 @@ int r3_selftest_run(maze_test_report_t report) {
     RUN("TC-502 rounded-box-near-miss",near_miss());
     RUN("TC-502 bounded-deep-contact",iteration_budget());
     RUN("TC-502 linear-angular-speed-budget",speed_budget());
-    RUN("TC-501 demo-ramp-bridge-route",demo_route());
+    RUN("TC-505 continuous-ramp-two-turn-route",demo_route());
+    RUN("TC-506 level-coast-stops-without-energy-gain",tuned_coast());
 #undef RUN
     return failures;
 }

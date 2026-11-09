@@ -1,0 +1,11 @@
+COMMAND C:\Users\10436\AppData\Local\uv\cache\archive-v0\BwMOkx4NJxyDmgJP\Scripts\python.exe -m ziglang cc --version
+clang version 18.1.6 (https://github.com/ziglang/zig-bootstrap 98bc6bf4fc4009888d33941daf6b600d20a42a56)
+Target: x86_64-unknown-windows-gnu
+Thread model: posix
+InstalledDir: D:/course_starter/build/maze-integration
+
+exit_code=0
+COMMAND C:\Users\10436\AppData\Local\uv\cache\archive-v0\BwMOkx4NJxyDmgJP\Scripts\python.exe -m ziglang cc -std=c11 -Wall -Wextra -Werror -O2 -Isrc src/maze_game.c src/maze_selftest.c src/maze_levels.c src/maze_levels_selftest.c src/maze_controller.c src/maze_controller_selftest.c tests/maze_adapter_host.c -o D:\course_starter\build\maze-integration\build\maze_adapter_host.exe
+error: unable to open zig lib directory 'C:\Users\10436\AppData\Local\uv\cache\archive-v0\BwMOkx4NJxyDmgJP\Lib\site-packages\ziglang\lib': AccessDenied
+
+exit_code=1
