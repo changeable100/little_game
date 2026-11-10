@@ -1,0 +1,40 @@
+seam S-R1: offsets of each top edge from each shared endpoint
+seam_endpoint_offset_mm 0.000067
+seam_endpoint_offset_mm 0.000015
+seam_endpoint_offset_mm 0.000030
+seam_endpoint_offset_mm 0.000119
+seam R1-C1: offsets of each top edge from each shared endpoint
+seam_endpoint_offset_mm 0.000060
+seam_endpoint_offset_mm 0.000030
+seam_endpoint_offset_mm 0.000240
+seam_endpoint_offset_mm 0.000030
+seam C1-R2: offsets of each top edge from each shared endpoint
+seam_endpoint_offset_mm 0.000030
+seam_endpoint_offset_mm 0.000127
+seam_endpoint_offset_mm 0.000268
+seam_endpoint_offset_mm 0.000342
+seam R2-C2: offsets of each top edge from each shared endpoint
+seam_endpoint_offset_mm 0.000273
+seam_endpoint_offset_mm 0.000000
+seam_endpoint_offset_mm 0.000405
+seam_endpoint_offset_mm 0.000000
+seam C2-R3: offsets of each top edge from each shared endpoint
+seam_endpoint_offset_mm 0.000238
+seam_endpoint_offset_mm 0.000250
+seam_endpoint_offset_mm 0.000119
+seam_endpoint_offset_mm 0.000359
+seam R3-G: offsets of each top edge from each shared endpoint
+seam_endpoint_offset_mm 0.000238
+seam_endpoint_offset_mm 0.000695
+seam_endpoint_offset_mm 0.000133
+seam_endpoint_offset_mm 0.000119
+cross=1 elapsed_ms=930 u=0.0000 v=1.0014 z=1.7000
+cross=2 elapsed_ms=2785 u=0.0000 v=4.5039 z=1.2512
+turn=1 elapsed_ms=14260 u=0.0000 v=5.3000 speed=0.0071 checkpoint=1
+cross=3 elapsed_ms=15235 u=1.1023 v=5.3754 z=1.2500
+cross=4 elapsed_ms=16840 u=4.3028 v=5.4708 z=0.8016
+turn=2 elapsed_ms=28525 u=5.3001 v=5.4952 speed=0.0071 checkpoint=1
+cross=5 elapsed_ms=29460 u=5.3716 v=6.5094 z=0.8000
+cross=6 elapsed_ms=31310 u=5.4758 v=10.0030 z=0.3016
+finish elapsed_ms=32280 state=5 seams=6 checkpoint=1 falls=0
+TC-513 instrumented replay PASS

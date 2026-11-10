@@ -1,26 +1,45 @@
 #include "roll3_scene.h"
-#define BASIS {{1,0,0},{0,1,0},{0,0,1}}
-#define RAMP_COS 0.9701425f
-#define RAMP_SIN 0.2425356f
-#define RAMP_HALF_THICKNESS 0.15f
-static const r3_box_t boxes[]={
-    {{0,0,-0.2f},{1.0f,1.35f,0.2f},BASIS,0.25f,0.6f,0.08f,0x398fba},
-    /* Top surface: x=1..3, z=0..0.5; actual OBB, not a drawn fake slope. */
-    {{2+RAMP_HALF_THICKNESS*RAMP_SIN,0,.25f-RAMP_HALF_THICKNESS*RAMP_COS},
-     {1/RAMP_COS,1.1f,RAMP_HALF_THICKNESS},
-     {{RAMP_COS,0,RAMP_SIN},{0,1,0},{-RAMP_SIN,0,RAMP_COS}},0.25f,0.6f,0.08f,0x36b49b},
-    {{3.525f,0,0.3f},{0.525f,1.1f,0.2f},BASIS,0.25f,0.6f,0.08f,0x398fba},
-    {{4.675f,0,0.3f},{0.625f,0.65f,0.2f},BASIS,0.25f,0.6f,0.08f,0xd6ab46},
-    {{6,0,0.3f},{0.7f,1.1f,0.2f},BASIS,0.25f,0.6f,0.08f,0x36b49b},
-    {{3.5f,1.15f,0.8f},{0.55f,0.05f,0.3f},BASIS,0.35f,0.4f,0.08f,0xb78cca},
-    /* Wide north turn then east to the finish, with a 0.5m deck height. */
-    {{6,2.3f,0.3f},{0.7f,1.2f,0.2f},BASIS,0.25f,0.6f,0.08f,0x67b7ac},
-    {{6,4.2f,0.3f},{1.1f,0.7f,0.2f},BASIS,0.25f,0.6f,0.08f,0x67b7ac},
-    {{8.1f,4.2f,0.3f},{1.0f,0.7f,0.2f},BASIS,0.25f,0.6f,0.08f,0xd6ab46},
-    {{10,4.2f,0.3f},{0.9f,1.1f,0.2f},BASIS,0.25f,0.6f,0.08f,0x75ba76}
+#include "roll3_camera_basis.h"
+
+/* Local coordinates: u right, v down. These rotate with the existing camera
+ * basis, so the world geometry and the player's tilt directions agree. */
+#define X(u,v) ((u)*R3_CAM_COS-(v)*R3_CAM_SIN)
+#define Y(u,v) (-(u)*R3_CAM_SIN-(v)*R3_CAM_COS)
+#define LOCAL(u,v,z) {X(u,v),Y(u,v),(z)}
+#define TOP_HALF .15f
+#define MATERIAL(color) .25f,.6f,.08f,(color)
+#define DECK(u,v,z,hu,hv,color) \
+    {LOCAL(u,v,(z)-TOP_HALF),{hu,hv,TOP_HALF}, \
+     {LOCAL(1,0,0),LOCAL(0,-1,0),LOCAL(0,0,1)},MATERIAL(color)}
+/* d=(du,dv) points downhill; the world XY perpendicular (-d.y,d.x)
+ * corresponds to (dv,-du) in the screen-down local basis.
+ * Top center minus half thickness along the upward normal is the box center. */
+#define SLOPE(u,v,z,du,dv,half_length,half_width,c,s,color) \
+    {LOCAL((u)-TOP_HALF*(s)*(du),(v)-TOP_HALF*(s)*(dv),(z)-TOP_HALF*(c)), \
+     {half_length,half_width,TOP_HALF}, \
+     {LOCAL((du)*(c),(dv)*(c),-(s)),LOCAL(dv,-(du),0),LOCAL((du)*(s),(dv)*(s),c)}, \
+     MATERIAL(color)}
+
+static const r3_box_t boxes[] = {
+    DECK(0,0,1.50f,1.1f,1,0x398fba),                                /* S */
+    SLOPE(0,2.75f,1.275f,0,1,1.7644050f,1.1f,.991835775f,.127521743f,0x36b49b), /* R1 */
+    DECK(0,5.5f,1.05f,1.1f,1,0xb78cca),                             /* C1 */
+    SLOPE(2.7f,5.5f,.825f,1,0,1.6157429f,1,.990256579f,.139254831f,0x398fba),  /* R2 */
+    DECK(5.5f,5.5f,.60f,1.2f,1,0x398fba),                          /* C2 */
+    SLOPE(5.5f,8.25f,.35f,0,1,1.7677670f,1.1f,.989949494f,.141421356f,0x36b49b), /* R3 */
+    DECK(5.5f,11,.10f,1.1f,1,0xd6ab46)                             /* G */
 };
-static const r3_world_t scene={boxes,sizeof(boxes)/sizeof(boxes[0]),
-    {0,0,R3_RADIUS},{3.45f,0,0.5f+R3_RADIUS},
-    {{3.1f,-0.4f,0.5f},{3.9f,0.4f,1.3f}},
-    {{9.7f,3.8f,0.5f},{10.4f,4.6f,1.3f}},-3};
+_Static_assert(sizeof(boxes)/sizeof(boxes[0]) <= R3_MAX_BOXES, "M1 exceeds OBB budget");
+
+/* Axis-aligned in world XY, not in local (u,v). A 0.42m half-extent
+ * projects to less than 0.574m along either deck axis. */
+#define ZONE(u,v,z) {{X(u,v)-.42f,Y(u,v)-.42f,(z)}, \
+                      {X(u,v)+.42f,Y(u,v)+.42f,(z)+.60f}}
+static const r3_world_t scene = {
+    .boxes=boxes,.box_count=sizeof(boxes)/sizeof(boxes[0]),
+    .spawn=LOCAL(0,0,1.50f+R3_RADIUS),
+    .checkpoint_spawn=LOCAL(0,5.5f,1.05f+R3_RADIUS),
+    .checkpoint=ZONE(0,5.5f,1.05f),.goal=ZONE(5.5f,11,.10f),.fall_z=-3
+};
+
 const r3_world_t *r3_demo_world(void) {return &scene;}

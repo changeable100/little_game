@@ -1,0 +1,9 @@
+tests/roll3_edge_compare.c: In function 'time_ms':
+tests/roll3_edge_compare.c:100:5: warning: implicit declaration of function 'timespec_get' [-Wimplicit-function-declaration]
+     assert(timespec_get(&t,TIME_UTC)==TIME_UTC);
+     ^
+In file included from tests/roll3_edge_compare.c:8:0:
+tests/roll3_edge_compare.c:100:28: error: 'TIME_UTC' undeclared (first use in this function)
+     assert(timespec_get(&t,TIME_UTC)==TIME_UTC);
+                            ^
+tests/roll3_edge_compare.c:100:28: note: each undeclared identifier is reported only once for each function it appears in

@@ -16,6 +16,10 @@ requirements:
 design:
   architecture_doc_path: docs/02-方案设计说明.md
   key_decisions:
+  - decision: 三维第一关采用 M1 三段缓坡和两个平转角，见 ADR-0012
+    alternatives_considered: M2 长陡坡、明显落差和窄终点
+    rationale: M1 可在平转角收速，仍有连续下降感，保持相机与输入方向
+    decided_by: 用户于 2026-11-10 明确选择 M1 并保留原相机方向
   - decision: ADR-0011 局部四点边缘覆盖
     alternatives_considered: 240×200或360×300整帧四点
     rationale: 主机对照显示几何覆盖改善轮廓，局部方案复用深度缓冲并限制工作区
@@ -634,6 +638,18 @@ p0_delay_tolerance:
   physical: "board-run01新日志和实物画面支持59项启动自检、正常运行/可玩子项PASS；严重迟帧恢复未自然触发，真3D模型/任务/手感另行验证"
   user_feedback: "用户报告可以正常玩、没有感觉到延迟，随后已补齐启动/status/新画面；见board-run01/analysis.md。正常运行子项PASS，不推定定量时延或严重迟帧恢复通过"
   submission: "前轮已按正文保存5c0121e/f276000；当前P0 board-run01新证据正文已读并确认hw本地保存，正常运行结论见physical_verification，本轮不推送"
+
+b_roll3_downhill:
+  date: "2026-11-10"
+  baseline: "d422c3cc8c17bb2133a6d46b794306cd756f34e8"
+  branch: "codex/roll3-downhill-b"
+  requirement: REQ-513 / TC-513 / ADR-0012
+  scope: "M1 七块共享 OBB，三段缓坡与两转角；原相机、240x200采样/分带预算、A物理及输入保持"
+  software: "129项核心、5ms连续回放32280ms通关（六接缝/先检查点/零掉落）、SDK LVGL四图、36姿势分带和SDK编译PASS"
+  handoff: "docs/guides/B三维下坡M1交接.md"
+  evidence: "evidence/M4/b-downhill-2026-11-10/README.md"
+  fingerprint: "evidence/M4/b-downhill-2026-11-10/firmware.json"
+  physical: "无新增实物验收；待A合入后验证轻倾、回平、接缝、掉落复活、帧时和终点"
 
 b_roll3_view:
   date: "2026-11-08"

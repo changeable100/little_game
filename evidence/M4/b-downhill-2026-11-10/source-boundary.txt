@@ -1,0 +1,3 @@
+PASS: baseline d422c3cc8c17bb2133a6d46b794306cd756f34e8
+Changed code/tests: src/roll3_scene.c, src/roll3_selftest.c, tests/roll3_edge_compare.c, tests/roll3_view_test.c
+PASS: physical_verification equals baseline; no A-owned source or SDK project change

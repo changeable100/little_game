@@ -1,0 +1,8 @@
+WARN `--no-project` was provided, but no project was found
+frames=36 candidates=348975 coverage_match=348974 changed=56788
+dense_match=48000/48000
+mean_host_ms center=0.838 local_full_depth=2.662 full=3.402 rows100=2.904 rows50=3.223
+mean_host_ms play_center_rows100=0.905
+TC-512 play center bands match full-depth center output and guards PASS
+TC-510 100/50-row exact output, dense low-memory bands and scratch guards PASS
+TC-509 local coverage, unchanged interior, dense bands and guards PASS

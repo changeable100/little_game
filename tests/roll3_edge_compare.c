@@ -21,10 +21,18 @@ static r3_edge_aa_t edges;
 
 static r3_snapshot_t pose(unsigned frame)
 {
-    float t=(float)frame/(FRAME_COUNT-1),rotation=.39269908f+t*.32f;
+    /* Twelve synthetic poses per straight leg, including both turns and the
+     * finish. The continuous physics replay is checked in roll3_selftest.c. */
+    unsigned leg=frame/12;
+    float t=(float)(frame%12)/11,rotation=.39269908f+(float)frame*.04f;
+    float u=leg==0?0:leg==1?5.5f*t:5.5f;
+    float v=leg==0?5.5f*t:leg==1?5.5f:5.5f+5.5f*t;
+    float z=leg==0?1.50f-.45f*fminf(1,fmaxf(0,(v-1)/3.5f)):
+            leg==1?1.05f-.45f*fminf(1,fmaxf(0,(u-1.1f)/3.2f)):
+                      .60f-.50f*fminf(1,fmaxf(0,(v-6.5f)/3.5f));
     return (r3_snapshot_t){
         .version=ROLL3_CONTRACT_VERSION,.radius=R3_RADIUS,.state=R3_RUNNING,
-        .position={3.48f+.24f*t,.05f*t,.7f},
+        .position={u*R3_CAM_COS-v*R3_CAM_SIN,-u*R3_CAM_SIN-v*R3_CAM_COS,z+R3_RADIUS},
         .orientation={cosf(rotation),sinf(rotation),0,0}
     };
 }

@@ -1,0 +1,47 @@
+{
+  "baseline": "d422c3cc8c17bb2133a6d46b794306cd756f34e8",
+  "branch": "codex/roll3-downhill-b",
+  "test": "REQ-513 / TC-513",
+  "sdk": "SiFli SDK v2.5.1 / sf32lb52-lchspi-ulp / GCC 14.2.1",
+  "physical": "Not run. Board verification follows A integration.",
+  "images": {
+    "project/build_sf32lb52-lchspi-ulp_hcpu/main.bin": {
+      "bytes": 1229288,
+      "sha256": "c32cdf46af41c9cb8891c35d5a2431665eca0e3b812ff579aa4f258866beea99"
+    },
+    "project/build_sf32lb52-lchspi-ulp_hcpu/bootloader/bootloader.bin": {
+      "bytes": 58496,
+      "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21"
+    },
+    "project/build_sf32lb52-lchspi-ulp_hcpu/ftab/ftab.bin": {
+      "bytes": 11288,
+      "sha256": "c69d43b43b43c01f3a88b2187499bb1237119cde2f50581e7bbfc57016d8ec8d"
+    }
+  },
+  "sources_worktree_sha256": {
+    "src/roll3_scene.c": "890c174efbc29c0fbd1e0811691d43055a5154c55646051d3527a410845c003b",
+    "src/roll3_selftest.c": "b65d232e07e9010818e607ebf64a3ca0fb0906ec03afcb92a1145b5f42ef8dad",
+    "tests/roll3_edge_compare.c": "3814c3bf4ab55aeefd2048c1efdf7661ec7fb9131df95557cf1f6a730702fc87",
+    "tests/roll3_view_test.c": "15adefd41a7aca7733bcaa741a2aff665d4e72f8f396dac03de59983816af481"
+  },
+  "evidence_sha256": {
+    "evidence/M2/maze_adapter/host_2026-11-10_143054.txt": "0caddf0ee150c23c9b0142087dcb06993f75f306ffc6ace9b752f1492ad265f4",
+    "evidence/M2/maze_adapter/host_2026-11-10_143341.txt": "15481fabd5a4b866aa8f706b073a56cd5693f6bbad69446ddd6624f955c0069c",
+    "evidence/M4/b-downhill-2026-11-10/core-final.txt": "2b5e86c6b9f34d9dd62be023a66b9444eaf06b61496f7329a3fe725ccb946cd6",
+    "evidence/M4/b-downhill-2026-11-10/core-initial.txt": "b628d68ee4c30f375d139bb1fcf4d75dfd84e72d9a2d64c9b1eff10c8c45dfdb",
+    "evidence/M4/b-downhill-2026-11-10/course-checks.txt": "826947bc49cf993ac6ff9e7f8454783464331d05fee14c235bac6a504dbc6d00",
+    "evidence/M4/b-downhill-2026-11-10/edge-initial.txt": "aa43067f156aa605c2931fc7a7a3ed7bc99ad8549087d5e34f15ddf2591a7a4a",
+    "evidence/M4/b-downhill-2026-11-10/edge-zig.txt": "d2e9e17ff4d7c30adc6a074e61e8d0c6f120c678d1e3deed28d396b351bc6dc1",
+    "evidence/M4/b-downhill-2026-11-10/M1-C1.png": "ebbe69d27bf7014fc8b6f79c6537ab756737d3442f85ed6ff5ff2909ad65b1a8",
+    "evidence/M4/b-downhill-2026-11-10/M1-C2.png": "c61b15e339bba4a280eabbf46b754ddbca764089e864f09618be2d53b852671a",
+    "evidence/M4/b-downhill-2026-11-10/M1-G.png": "50955f71f23321389205ba89810ec599d315da81dad129d24eddd7d78ef8df19",
+    "evidence/M4/b-downhill-2026-11-10/M1-S.png": "6d6afdab38a43563091aad755d4209c8aa812a96e29059b0ce3f76b5a7b23714",
+    "evidence/M4/b-downhill-2026-11-10/README.md": "69102a0c7f5634d84aedd7995006d4b13bc3710187426a5ee1c054724b710a36",
+    "evidence/M4/b-downhill-2026-11-10/route-trace.py": "41b3326f563ae5cc4e701d8aa90b762d5a254bf4e801a5650b3fb366312d02de",
+    "evidence/M4/b-downhill-2026-11-10/route-trace.txt": "018cc672d3bfed9937a57b1d8e303546016ababca4b03b73c346a26734ec5012",
+    "evidence/M4/b-downhill-2026-11-10/sdk-build.txt": "4ab197a9b9f99a3091f2a22c9f6890dd6ca0df17d100aff8d70b03d8ca129c55",
+    "evidence/M4/b-downhill-2026-11-10/source-boundary.txt": "e20970ae6e239275e8b0c6e4234c05afc56c871850d7f7880ccb3b98d83a22b7",
+    "evidence/M4/b-downhill-2026-11-10/trace.txt": "a6aa00930151edecab66a8f0061df3b4b6706d03fa19f9cb7f7e75f452e715d0",
+    "evidence/M4/b-downhill-2026-11-10/view-initial.txt": "98fccc6d0029c4aac164f1f896fdd72c27bd5a053fa2119ca464af4cdfc98fb3"
+  }
+}
