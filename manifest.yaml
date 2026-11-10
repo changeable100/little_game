@@ -740,3 +740,10 @@ roll3_responsive_play_20261110:
   evidence: evidence/M4/roll3-responsive-play-2026-11-10/README.md
   fingerprint: evidence/M4/roll3-responsive-play-2026-11-10/firmware.json
   physical: 新视频支持可玩和通关画面，帧时未测，手感仍需调整
+
+downhill_plan_20261110:
+  status: 文档已准备，M1与H1待负责人选择，未实现
+  a: docs/guides/A三维下坡关卡-操控与集成任务书.md
+  b: docs/guides/B三维下坡关卡-路线与画面任务书.md
+  next_requirements: REQ-513/514待确认
+  baseline: d422c3cc8c17bb2133a6d46b794306cd756f34e8
