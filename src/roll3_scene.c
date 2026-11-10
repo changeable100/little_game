@@ -1,11 +1,15 @@
 #include "roll3_scene.h"
 #define BASIS {{1,0,0},{0,1,0},{0,0,1}}
+#define RAMP_COS 0.9701425f
+#define RAMP_SIN 0.2425356f
+#define RAMP_HALF_THICKNESS 0.15f
 static const r3_box_t boxes[]={
-    {{0,0,-0.2f},{1.05f,1.35f,0.2f},BASIS,0.25f,0.6f,0.08f,0x398fba},
+    {{0,0,-0.2f},{1.0f,1.35f,0.2f},BASIS,0.25f,0.6f,0.08f,0x398fba},
     /* Top surface: x=1..3, z=0..0.5; actual OBB, not a drawn fake slope. */
-    {{2.03638f,0,0.10448f},{1.0307764f,1.1f,0.15f},
-     {{0.9701425f,0,0.2425356f},{0,1,0},{-0.2425356f,0,0.9701425f}},0.25f,0.6f,0.08f,0x36b49b},
-    {{3.5f,0,0.3f},{0.55f,1.1f,0.2f},BASIS,0.25f,0.6f,0.08f,0x398fba},
+    {{2+RAMP_HALF_THICKNESS*RAMP_SIN,0,.25f-RAMP_HALF_THICKNESS*RAMP_COS},
+     {1/RAMP_COS,1.1f,RAMP_HALF_THICKNESS},
+     {{RAMP_COS,0,RAMP_SIN},{0,1,0},{-RAMP_SIN,0,RAMP_COS}},0.25f,0.6f,0.08f,0x36b49b},
+    {{3.525f,0,0.3f},{0.525f,1.1f,0.2f},BASIS,0.25f,0.6f,0.08f,0x398fba},
     {{4.675f,0,0.3f},{0.625f,0.65f,0.2f},BASIS,0.25f,0.6f,0.08f,0xd6ab46},
     {{6,0,0.3f},{0.7f,1.1f,0.2f},BASIS,0.25f,0.6f,0.08f,0x36b49b},
     {{3.5f,1.15f,0.8f},{0.55f,0.05f,0.3f},BASIS,0.35f,0.4f,0.08f,0xb78cca},

@@ -1,0 +1,4 @@
+frames=36 candidates=520420 coverage_match=520419 changed=96967
+dense_match=48000/48000
+mean_host_ms center=0.474 local=1.520 full=1.850, view_bytes=201600
+TC-509 local coverage, unchanged interior, dense bands and guards PASS

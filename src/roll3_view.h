@@ -18,4 +18,5 @@ void roll3_view_action_status(bool pending, r3_result_t result);
 void roll3_view_render(const r3_snapshot_t *snapshot,const r3_world_t *world);
 void roll3_view_destroy(void);
 const char *roll3_view_error_text(void);
+unsigned roll3_view_depth_rows(void);
 #endif

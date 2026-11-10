@@ -160,6 +160,8 @@ static void enter_roll3(lv_event_t *event)
     int result = roll3_open();
     if (result != 0)
         lv_label_set_text_fmt(entry_feedback, "游戏界面打开失败（%d）", result);
+    else
+        lv_label_set_text(entry_feedback,maze_ui_runtime_startup_text());
 }
 
 static void home_deleted(lv_event_t *event)

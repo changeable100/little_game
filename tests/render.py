@@ -53,6 +53,8 @@ def compile_one(item):
     source_flags = flags
     if args.roll3_view and source.name == 'roll3_view.c':
         source_flags = flags + ['-Dlv_malloc=roll3_test_malloc', '-Dlv_free=roll3_test_free']
+    if args.roll3_view and source.name == 'roll3_page.c':
+        source_flags = flags + ['-Dlv_timer_create=roll3_test_timer_create']
     key = hashlib.sha256((str(source) + repr(source_flags) + cc).encode()).hexdigest()[:20]
     obj = out / f'{key}.o'
     # Rebuild after config changes too; cached SDK objects make UI iterations quick.

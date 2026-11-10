@@ -16,6 +16,18 @@ requirements:
 design:
   architecture_doc_path: docs/02-方案设计说明.md
   key_decisions:
+  - decision: ADR-0011 局部四点边缘覆盖
+    alternatives_considered: 240×200或360×300整帧四点
+    rationale: 主机对照显示几何覆盖改善轮廓，局部方案复用深度缓冲并限制工作区
+    decided_by: 负责人2026-11-10在看到对照及建议后要求继续做
+  - decision: ADR-0010 240×200单采样与1.5倍抗锯齿缩放
+    alternatives_considered: 同分辨率双采样，增加缓冲与帧耗时
+    rationale: 细化轮廓台阶并优先跟手
+    decided_by: 负责人2026-11-09交互选择A
+  - decision: ADR-0009固定斜俯视透视，保持屏幕相对操控
+    alternatives_considered: 固定等距俯视
+    rationale: 三面可见且保留近大远小，符合仓鼠球参考图
+    decided_by: 负责人2026-11-09交互选择A
   - decision: ADR-0008近景固定朝向跟随球与宽平台转弯赛道
     alternatives_considered: B保留全景并放大显示区域
     rationale: 解决球和路太小，接受局部视野，物理手感参数后置
@@ -683,3 +695,48 @@ p3_tuning_20261109:
   fingerprint: evidence/M4/p3-tuning-2026-11-09/firmware.json
   physical: 待新板测，未宣称抖动已真实消除，不新增physical_verification通过项
   submission: 与近景版均未提交，待最终正文阅读确认，不推送
+
+
+oblique_view_20261109:
+  requirements: REQ-507 / TC-507 / ADR-0009
+  software: 117项核心主机、真实SDK LVGL三面与边缘覆盖、20轮生命周期和SDK编译PASS
+  evidence: evidence/M4/oblique-view-2026-11-09/README.md
+  fingerprint: evidence/M4/oblique-view-2026-11-09/firmware.json
+  physical: 新固件待复测像素跳变、刷新和输入方向
+
+
+responsive_view_20261109:
+  requirements: REQ-508 / TC-508 / ADR-0010
+  user_feedback: 倾斜反馈慢、坡台疑似缝和强锯齿，用户交互选择A
+  software: 119项核心与真实SDK LVGL回归通过，首轮反倾FAIL留档
+  evidence: evidence/M4/responsive-view-2026-11-09/README.md
+  fingerprint: evidence/M4/responsive-view-2026-11-09/firmware.json
+  physical: 等待真机反倾回平、接缝和轮廓复测
+
+local_edge_aa_20261110:
+  requirements: REQ-509 / TC-509 / ADR-0011
+  software: 局部边缘36帧和密集遮罩、119项核心、真实SDK LVGL回归通过
+  evidence: evidence/M4/local-aa-2026-11-10/README.md
+  fingerprint: evidence/M4/local-aa-2026-11-10/firmware.json
+  physical: 实拍入口-103未进入，边缘和帧时未测，见board-run01
+
+roll3_memory_20261110:
+  requirements: REQ-510 / TC-510
+  software: 153600与129600字节预算、分带画面、失败清理与定时器错误回归通过
+  evidence: evidence/M4/roll3-memory-2026-11-10/README.md
+  fingerprint: evidence/M4/roll3-memory-2026-11-10/firmware.json
+  physical: 学生文字报告可进入，校准后约半秒出现输入异常，缺本轮串口与画面
+
+roll3_input_20261110:
+  requirements: REQ-511 / TC-511
+  software: 三维采样临时优先级17，121项主机核心及故障分类通过
+  evidence: evidence/M4/roll3-input-2026-11-10/README.md
+  fingerprint: evidence/M4/roll3-input-2026-11-10/firmware.json
+  physical: 视频支持持续游玩，学生报告严重延迟与轻倾突进，缺串口和独立镜像指纹
+
+roll3_responsive_play_20261110:
+  requirements: REQ-512 / TC-512
+  software: 122项核心和36帧游玩绘制对照通过
+  evidence: evidence/M4/roll3-responsive-play-2026-11-10/README.md
+  fingerprint: evidence/M4/roll3-responsive-play-2026-11-10/firmware.json
+  physical: 新视频支持可玩和通关画面，帧时未测，手感仍需调整

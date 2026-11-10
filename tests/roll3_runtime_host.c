@@ -44,7 +44,7 @@ static r3_snapshot_t read_page(bool expected_pending)
     r3_snapshot_t snapshot;
     bool pending;
     r3_result_t result;
-    assert(roll3_runtime_read(&snapshot, &pending, &result));
+    assert(roll3_runtime_read(&snapshot, &pending, &result, NULL));
     assert(pending == expected_pending && result == R3_OK);
     return snapshot;
 }
@@ -86,5 +86,14 @@ int main(void)
     run_cycle();
     assert(held_token == 4 && stops == 1 && !roll3_runtime_busy());
     puts("TC-504 close discards pending action and waits for own IMU cleanup PASS");
+    held_token = 0;
+    assert(roll3_runtime_open());
+    assert(roll3_runtime_submit(R3_START, read_page(false).run));
+    run_cycle();
+    assert(read_page(false).state == R3_CALIBRATING && held_token != 0);
+    held_token = 0;
+    run_cycle();
+    assert(read_page(false).state == R3_ERROR && session.input_fault == ROLL3_INPUT_FAULT_OWNER_LOST);
+    puts("TC-511 runtime owner loss diagnosed PASS");
     return 0;
 }

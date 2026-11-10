@@ -1,4 +1,5 @@
 #include "roll3_session.h"
+#include "roll3_camera_basis.h"
 #include "maze_controller.h" /* Shared timing and calibration bounds. */
 #include <math.h>
 #include <string.h>
@@ -18,6 +19,12 @@ bool roll3_session_needs_motion(const roll3_session_t *s)
     r3_state_t state = s->game.s.state;
     return state == R3_CALIBRATING || state == R3_RUNNING ||
            state == R3_PAUSED || state == R3_FALLEN;
+}
+
+void roll3_session_fail_input(roll3_session_t *s, roll3_input_fault_t fault)
+{
+    if (r3_input_failed(&s->game, s->game.s.run) == R3_OK)
+        s->input_fault = fault;
 }
 
 r3_result_t roll3_session_init(roll3_session_t *s, const r3_world_t *world)
@@ -54,10 +61,10 @@ r3_result_t roll3_session_action(roll3_session_t *s, r3_action_kind_t kind,
 
 static float normalized(float value)
 {
-    float magnitude = (fabsf(value) - 0.045f) / (0.45f - 0.045f);
+    float magnitude = (fabsf(value) - 0.03f) / (0.45f - 0.03f);
     float u = fminf(1.0f, fmaxf(0.0f, magnitude));
     /* Gentle fine control, retaining full uphill acceleration. */
-    return copysignf(u * (0.65f + 0.35f * u), value);
+    return copysignf(u * (0.43f + 0.57f * u), value);
 }
 
 static void calibrate(roll3_session_t *s, const lab_motion_t *m, uint32_t now)
@@ -94,20 +101,36 @@ static void consume(roll3_session_t *s, const lab_motion_t *m, uint32_t now)
         if (!isfinite(m->a[i]) || !isfinite(m->g[i]) ||
             fabsf(m->a[i]) > 4.0f || fabsf(m->g[i]) > 300.0f) valid = false;
     }
-    if (!valid || m->sequence < s->sequence ||
+    if (!valid) {
+        roll3_session_fail_input(s, ROLL3_INPUT_FAULT_INVALID_SAMPLE);
+        return;
+    }
+    if (m->sequence < s->sequence ||
         (m->sequence > s->sequence && s->sequence && !newer(m->sampled_ms, s->stamp))) {
-        (void)r3_input_failed(&s->game, run);
+        roll3_session_fail_input(s, ROLL3_INPUT_FAULT_SEQUENCE);
         return;
     }
     if (m->sequence == s->sequence) return;
     if (s->game.s.state == R3_CALIBRATING) {
         calibrate(s, m, now);
     } else {
-        for (unsigned i = 0; i < 2; ++i)
-            s->filtered[i] += 0.25f * (m->a[i] - s->bias[i] - s->filtered[i]);
-        /* ADR-0007: right is +world x, screen up is +world y. */
-        s->input.acceleration.x = 4.9f * normalized(s->filtered[1]);
-        s->input.acceleration.y = 4.9f * normalized(s->filtered[0]);
+        for (unsigned i = 0; i < 2; ++i) {
+            float tilt = m->a[i] - s->bias[i];
+            if (fabsf(tilt) <= .02f) {
+                s->filtered[i] = 0;
+            } else {
+                float delta = tilt - s->filtered[i];
+                float gain = .25f;
+                if (fabsf(delta) >= .02f)
+                    gain = tilt * s->filtered[i] < 0 ? .75f : .65f;
+                s->filtered[i] = fabsf(delta)<1e-6f ? tilt : s->filtered[i]+gain*delta;
+            }
+        }
+        /* ADR-0009: map screen-right and screen-up into the ground plane. */
+        float right = 4.9f * normalized(s->filtered[1]);
+        float forward = 4.9f * normalized(s->filtered[0]);
+        s->input.acceleration.x = R3_CAM_COS * right + R3_CAM_SIN * forward;
+        s->input.acceleration.y = -R3_CAM_SIN * right + R3_CAM_COS * forward;
     }
     memcpy(s->previous, m->a, sizeof(s->previous));
     s->sequence = m->sequence;
@@ -129,18 +152,21 @@ void roll3_session_update(roll3_session_t *s, uint32_t now, const lab_motion_t *
         }
     }
     if (before == R3_CALIBRATING && now - s->started >= MAZE_CALIBRATION_TIMEOUT_MS) {
-        (void)r3_input_failed(&s->game, s->game.s.run);
+        roll3_session_fail_input(s, ROLL3_INPUT_FAULT_CAL_TIMEOUT);
         return;
     }
     consume(s, m, now);
     if (before != R3_RUNNING || s->game.s.state != R3_RUNNING) return;
     if (!fresh(s, now)) {
-        (void)r3_input_failed(&s->game, s->game.s.run);
+        roll3_session_fail_input(s, ROLL3_INPUT_FAULT_SAMPLE_TIMEOUT);
         return;
     }
     s->remainder += gap;
     while (s->remainder >= R3_STEP_MS && s->game.s.state == R3_RUNNING) {
-        if (r3_step(&s->game, &s->input, R3_STEP_MS) != R3_OK) break;
+        if (r3_step(&s->game, &s->input, R3_STEP_MS) != R3_OK) {
+            if (s->game.s.state == R3_ERROR) s->input_fault = ROLL3_INPUT_FAULT_PHYSICS;
+            break;
+        }
         s->remainder -= R3_STEP_MS;
     }
 }

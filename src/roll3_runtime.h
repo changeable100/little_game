@@ -8,7 +8,12 @@ bool roll3_runtime_init(bool selftests_passed);
 bool roll3_runtime_busy(void);
 bool roll3_runtime_open(void);
 void roll3_runtime_close(void);
-bool roll3_runtime_read(r3_snapshot_t *snapshot, bool *pending, r3_result_t *result);
+/* Age is measured at snapshot read, UINT32_MAX if no sample is available. */
+bool roll3_runtime_read(r3_snapshot_t *snapshot, bool *pending, r3_result_t *result,
+                        uint32_t *sample_age_ms);
+void roll3_runtime_report_frame(uint32_t frames, uint32_t sample_age_ms,
+                                uint32_t draw_ms, uint32_t frame_gap_ms);
+void roll3_runtime_report_open(int result, unsigned depth_rows);
 bool roll3_runtime_submit(r3_action_kind_t kind, uint32_t expected_run);
 
 #endif

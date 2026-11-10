@@ -7,6 +7,8 @@
 #include <string.h>
 #include <stdio.h>
 
+enum { LAB_IO_PRIORITY = 22 };
+
 static struct rt_mutex state_lock;
 static lab_motion_t motion;
 /* 采样线程发布一份完整运动数据，避免界面读到更新一半的三轴值。 */
@@ -220,6 +222,27 @@ void lab_error(lab_id_t id, const char *operation, int error)
     lab_publish(id, LAB_FAIL, "Could not complete", detail);
 }
 
+/* Keep 3D IMU publication runnable while the main thread rasterizes a frame.
+ * Change priority outside all mutexes, and restore the general I/O worker afterward. */
+static void run_maze_motion(unsigned session)
+{
+    if (!(session & LAB_ROLL3_SESSION_BIT)) {
+        lab_maze_motion_run(session);
+        return;
+    }
+    rt_thread_t self = rt_thread_self();
+    rt_uint8_t priority = RT_MAIN_THREAD_PRIORITY - 2;
+    rt_err_t result = rt_thread_control(self, RT_THREAD_CTRL_CHANGE_PRIORITY, &priority);
+    rt_kprintf("[maze:imu] run=%u boost_priority=%u result=%d\n", session, priority, result);
+    lab_maze_motion_run(session);
+    if (result == RT_EOK) {
+        priority = LAB_IO_PRIORITY;
+        result = rt_thread_control(self, RT_THREAD_CTRL_CHANGE_PRIORITY, &priority);
+        if (result != RT_EOK)
+            rt_kprintf("[maze:imu] restore_priority=%u result=%d\n", priority, result);
+    }
+}
+
 /* 等待动作请求并串行执行；连续测试反复采样，停止或失败后释放 busy。 */
 static void worker(void *parameter)
 {
@@ -233,7 +256,7 @@ static void worker(void *parameter)
                 results[pending_id].samples++;
                 rt_mutex_release(&state_lock);
             }
-            if (maze_motion_job) lab_maze_motion_run(maze_motion_session);
+            if (maze_motion_job) run_maze_motion(maze_motion_session);
             else lab_modules[pending_id].run(pending_action);
             lab_result_t result;
             lab_snapshot(pending_id, &result);
@@ -268,7 +291,7 @@ int lab_init(void)
         rt_snprintf(results[i].detail, sizeof(results[i].detail), "Choose an action below to begin.");
     }
     lab_game_sound_init();
-    thread = rt_thread_create("lab_io", worker, RT_NULL, 4096, 22, 10);
+    thread = rt_thread_create("lab_io", worker, RT_NULL, 4096, LAB_IO_PRIORITY, 10);
     if (!thread) return -1;
     return rt_thread_startup(thread);
 }

@@ -11,10 +11,10 @@ ALIGN(RT_ALIGN_SIZE) static uint8_t physics_stack[4096];
 /* Shared only under lock. The model and IMU ownership belong to the worker. */
 static struct {
     r3_snapshot_t snapshot;
-    uint32_t heartbeat, action_run;
+    uint32_t heartbeat, action_run, sample_stamp;
     r3_action_kind_t action;
     r3_result_t result;
-    bool occupied, page, pending, failed;
+    bool occupied, page, pending, failed, have_sample;
 } mailbox;
 static bool ready;
 static uint32_t motion_token;
@@ -44,11 +44,24 @@ static void sync_motion(bool desired)
     if (motion_token) {
         if (!owned) {
             motion_token = 0;
-            (void)r3_input_failed(&session.game, run);
+            roll3_session_fail_input(&session, ROLL3_INPUT_FAULT_OWNER_LOST);
         }
         return;
     }
     if (!busy && lab_roll3_motion_start(run)) motion_token = wanted;
+}
+
+static const char *input_fault_name(roll3_input_fault_t fault)
+{
+    switch (fault) {
+    case ROLL3_INPUT_FAULT_CAL_TIMEOUT: return "cal_timeout";
+    case ROLL3_INPUT_FAULT_SAMPLE_TIMEOUT: return "sample_timeout";
+    case ROLL3_INPUT_FAULT_INVALID_SAMPLE: return "invalid_sample";
+    case ROLL3_INPUT_FAULT_SEQUENCE: return "sequence";
+    case ROLL3_INPUT_FAULT_OWNER_LOST: return "owner_lost";
+    case ROLL3_INPUT_FAULT_PHYSICS: return "physics";
+    default: return "unknown";
+    }
 }
 
 static void run_cycle(void)
@@ -67,9 +80,10 @@ static void run_cycle(void)
     r3_state_t previous_state = session.game.s.state;
     uint32_t previous_run = session.game.s.run;
     r3_result_t result = R3_OK;
+    lab_motion_t sample;
+    bool received = false;
     if (page) {
-        lab_motion_t sample;
-        bool received = motion_token && lab_motion_try_snapshot(&sample);
+        received = motion_token && lab_motion_try_snapshot(&sample);
         now = now_ms();
         /* A UI heartbeat may be newer than a previous worker iteration. */
         roll3_session_update(&session, now, received ? &sample : NULL,
@@ -84,8 +98,17 @@ static void run_cycle(void)
                    session.game.s.run, (int)session.game.s.state, session.stable,
                    session.game.s.elapsed_ms, (int)session.recovery);
 
+    if (previous_state != R3_ERROR && session.game.s.state == R3_ERROR)
+        rt_kprintf("[roll3:input] run=%u reason=%s accepted_seq=%u age_ms=%u received=%u sample_run=%u sample_seq=%u valid=%u\n",
+                   session.game.s.run, input_fault_name(session.input_fault), session.sequence,
+                   session.sequence ? now - session.stamp : UINT32_MAX, (unsigned)received,
+                   received ? sample.session : 0, received ? sample.sequence : 0,
+                   received ? (unsigned)sample.valid : 0);
+
     acquire();
     mailbox.snapshot = session.game.s;
+    mailbox.have_sample = session.sequence != 0;
+    mailbox.sample_stamp = session.stamp;
     if (pending && mailbox.page) {
         mailbox.result = result;
         mailbox.pending = false;
@@ -112,6 +135,8 @@ bool roll3_runtime_init(bool selftests_passed)
     if (!selftests_passed || roll3_session_init(&session, r3_demo_world()) != R3_OK)
         return false;
     mailbox.snapshot = session.game.s;
+    mailbox.have_sample = session.sequence != 0;
+    mailbox.sample_stamp = session.stamp;
     if (rt_mutex_init(&lock, "r3_lock", RT_IPC_FLAG_PRIO) != RT_EOK) return false;
     if (rt_thread_init(&physics_thread, "roll3", worker, RT_NULL, physics_stack,
                        sizeof(physics_stack), RT_MAIN_THREAD_PRIORITY - 1, 5) != RT_EOK) {
@@ -159,7 +184,8 @@ void roll3_runtime_close(void)
     release();
 }
 
-bool roll3_runtime_read(r3_snapshot_t *snapshot, bool *pending, r3_result_t *result)
+bool roll3_runtime_read(r3_snapshot_t *snapshot, bool *pending, r3_result_t *result,
+                        uint32_t *sample_age_ms)
 {
     if (!ready || !snapshot || !pending || !result) return false;
     acquire();
@@ -169,9 +195,23 @@ bool roll3_runtime_read(r3_snapshot_t *snapshot, bool *pending, r3_result_t *res
         *snapshot = mailbox.snapshot;
         *pending = mailbox.pending;
         *result = mailbox.result;
+        if (sample_age_ms) *sample_age_ms = mailbox.have_sample ?
+            mailbox.heartbeat - mailbox.sample_stamp : UINT32_MAX;
     }
     release();
     return open;
+}
+
+void roll3_runtime_report_frame(uint32_t frames, uint32_t sample_age_ms,
+                                uint32_t draw_ms, uint32_t frame_gap_ms)
+{
+    rt_kprintf("[roll3:frame] frames=%u sample_age_max_ms=%u draw_max_ms=%u gap_max_ms=%u\n",
+               frames, sample_age_ms, draw_ms, frame_gap_ms);
+}
+
+void roll3_runtime_report_open(int result,unsigned depth_rows)
+{
+    rt_kprintf("[roll3:open] result=%d depth_rows=%u\n",result,depth_rows);
 }
 
 bool roll3_runtime_submit(r3_action_kind_t kind, uint32_t run)

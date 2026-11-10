@@ -2,6 +2,7 @@
  * Never steps/calibrates a model or reads a device. */
 #include "roll3_view.h"
 #include "roll3_renderer.h"
+#include "roll3_camera_basis.h"
 #include "roll3_scene.h"
 #include "roll3_font.h"
 #include "roll3_page.h"
@@ -16,19 +17,44 @@
 #include <stdio.h>
 #include <string.h>
 
-static uint16_t color[R3_VIEW_PIXELS+2],depth[R3_VIEW_PIXELS+2],saved[R3_VIEW_PIXELS];
+static uint16_t color[R3_VIEW_PIXELS+2],depth[R3_VIEW_PIXELS+2],saved[R3_VIEW_PIXELS],aa[R3_VIEW_PIXELS+2];
 static uint8_t frame[390*450*4],display_buffer[390*450*4];
 static unsigned buffer_live,buffer_attempts,draw_attempts;
 static size_t largest_draw;
-static bool fail_buffer;
-static void *owned_buffer;
+static bool fail_buffer,fail_timer;
+static size_t buffer_budget=R3_VIEW_COLOR_BYTES+R3_VIEW_WORKSPACE_BYTES(R3_VIEW_DEFAULT_DEPTH_ROWS);
+static size_t buffer_bytes;
+static struct { void *ptr; size_t bytes; } owned[2];
 void *roll3_test_malloc(size_t n)
 {
-    if(n==R3_VIEW_PIXELS*4){++buffer_attempts;if(fail_buffer)return NULL;
-        void *p=lv_malloc(n);assert(!owned_buffer);owned_buffer=p;if(p)++buffer_live;return p;}
-    return lv_malloc(n);
+    ++buffer_attempts;
+    if(fail_buffer||n>R3_VIEW_COLOR_BYTES||n>buffer_budget-buffer_bytes)return NULL;
+    void *p=lv_malloc(n);
+    if(p){
+        unsigned slot=owned[0].ptr?1:0;
+        assert(!owned[slot].ptr);
+        owned[slot].ptr=p;
+        owned[slot].bytes=n;
+        ++buffer_live;
+        buffer_bytes+=n;
+    }
+    return p;
 }
-void roll3_test_free(void *p){if(p&&p==owned_buffer){owned_buffer=NULL;--buffer_live;}lv_free(p);}
+void roll3_test_free(void *p)
+{
+    for(unsigned i=0;i<2;++i){
+        if(p&&p==owned[i].ptr){
+            owned[i].ptr=NULL;
+            --buffer_live;
+            buffer_bytes-=owned[i].bytes;
+        }
+    }
+    lv_free(p);
+}
+lv_timer_t *roll3_test_timer_create(lv_timer_cb_t cb,uint32_t period,void *data)
+{
+    return fail_timer?NULL:lv_timer_create(cb,period,data);
+}
 
 static r3_snapshot_t live_snapshot;
 static bool live_open, live_pending;
@@ -49,14 +75,23 @@ void roll3_runtime_close(void)
     live_open = false;
     ++closes;
 }
-bool roll3_runtime_read(r3_snapshot_t *out, bool *pending, r3_result_t *result)
+bool roll3_runtime_read(r3_snapshot_t *out, bool *pending, r3_result_t *result, uint32_t *sample_age_ms)
 {
     if (!live_open) return false;
     *out = live_snapshot;
+    if (sample_age_ms) *sample_age_ms = 0;
     *pending = live_pending;
     *result = R3_OK;
     return true;
 }
+void roll3_runtime_report_frame(uint32_t frames, uint32_t age, uint32_t draw, uint32_t gap)
+{ (void)frames; (void)age; (void)draw; (void)gap; }
+
+static int last_open_result;
+static unsigned last_depth_rows;
+void roll3_runtime_report_open(int result,unsigned depth_rows)
+{ last_open_result=result;last_depth_rows=depth_rows; }
+
 bool roll3_runtime_submit(r3_action_kind_t action, uint32_t run)
 {
     assert(live_open && run == live_snapshot.run && !live_pending);
@@ -102,7 +137,7 @@ static void publish(r3_state_t state)
     live_snapshot.state = state;
     ++live_snapshot.revision;
     live_pending = false;
-    lv_tick_inc(67);
+    lv_tick_inc(ROLL3_PAGE_REFRESH_MS);
     lv_timer_handler();
 }
 static void math_report(const char *name,bool ok){printf("%s %s\n",name,ok?"PASS":"FAIL");}
@@ -122,16 +157,16 @@ int main(void)
     render(&s,&lone);unsigned near_count=coverage();memcpy(saved,color+1,sizeof(saved));
     s.position.y=3;render(&s,&lone);assert(coverage()==near_count);
     float px,py,pz,qx,qy,qz;
-    assert(roll3_renderer_project_focus((r3_vec_t){.2f,0,.2f},(r3_vec_t){0,0,.2f},&px,&py,&pz));
-    assert(roll3_renderer_project_focus((r3_vec_t){.2f,3,.2f},(r3_vec_t){0,0,.2f},&qx,&qy,&qz));
-    assert(qz>pz&&fabsf(qx-90)<fabsf(px-90));
+    assert(roll3_renderer_project_focus((r3_vec_t){.2f*R3_CAM_COS,-.2f*R3_CAM_SIN,.2f},(r3_vec_t){0,0,.2f},&px,&py,&pz));
+    assert(roll3_renderer_project_focus((r3_vec_t){.2f*R3_CAM_COS+3*R3_CAM_SIN,-.2f*R3_CAM_SIN+3*R3_CAM_COS,.2f},(r3_vec_t){0,0,.2f},&qx,&qy,&qz));
+    assert(qz>pz&&fabsf(qx-R3_VIEW_W*.5f)<fabsf(px-R3_VIEW_W*.5f));
     s.position.y=0;s.orientation=(r3_quat_t){.92387953f,.38268343f,0,0};render(&s,&lone);
     assert(memcmp(saved,color+1,sizeof(saved))!=0);
     s.orientation=(r3_quat_t){1,0,0,0};render(&s,world);float x,y,z;
     assert(roll3_renderer_project_focus(s.position,roll3_renderer_focus(&s,world),&x,&y,&z));unsigned center=(unsigned)y*R3_VIEW_W+(unsigned)x;
     uint16_t ball_pixel=color[1+center];
     r3_box_t boxes[R3_MAX_BOXES];memcpy(boxes,world->boxes,world->box_count*sizeof(*boxes));
-    boxes[world->box_count]=distant;boxes[world->box_count].center=(r3_vec_t){3,-1.5f,1.2f};
+    boxes[world->box_count]=distant;boxes[world->box_count].center=(r3_vec_t){2.36f,-1.1085f,2.04f};
     boxes[world->box_count].half=(r3_vec_t){.7f,.1f,1};boxes[world->box_count].color=0xff0000;
     r3_world_t occluded=*world;occluded.boxes=boxes;occluded.box_count++;
     render(&s,&occluded);assert(color[1+center]!=ball_pixel);assert((color[1+center]&31)==0);
@@ -165,12 +200,42 @@ int main(void)
 
     r3_camera_follow_t follow={0};
     s=(r3_snapshot_t){.version=1,.radius=R3_RADIUS,.orientation={1,0,0,0},.position=world->spawn};
-    assert(roll3_renderer_render_follow(color+1,depth+1,&s,world,&follow)==0);
+    assert(roll3_renderer_render_follow(color+1,depth+1,&s,world,&follow,aa+1)==0);
     r3_camera_follow_t before_follow=follow;
     s.orientation.w=0;
-    assert(roll3_renderer_render_follow(color+1,depth+1,&s,world,&follow)<0);
+    assert(roll3_renderer_render_follow(color+1,depth+1,&s,world,&follow,aa+1)<0);
     assert(memcmp(&follow,&before_follow,sizeof(follow))==0);
     puts("TC-506 invalid snapshot preserves camera PASS");
+
+    r3_box_t cube=world->boxes[0];
+    cube.center=(r3_vec_t){0,0,-.5f};cube.half=(r3_vec_t){.5f,.5f,.5f};
+    lone.boxes=&cube;
+    s=(r3_snapshot_t){.version=1,.radius=R3_RADIUS,.orientation={1,0,0,0},
+        .position={99,99,-3},.state=R3_FALLEN};
+    aa[0]=aa[R3_VIEW_PIXELS+1]=0xabcd;
+    assert(roll3_renderer_render_follow(color+1,depth+1,&s,&lone,NULL,aa+1)==0);
+    assert(aa[0]==0xabcd&&aa[R3_VIEW_PIXELS+1]==0xabcd);
+    r3_vec_t face_centers[]={{.1f,.1f,0},{-.5f,0,-.5f},{0,-.5f,-.5f}};
+    uint16_t face_colors[3];
+    for(unsigned i=0;i<3;++i){
+        assert(roll3_renderer_project_focus(face_centers[i],lone.spawn,&x,&y,&z));
+        unsigned pixel=(unsigned)y*R3_VIEW_W+(unsigned)x;
+        assert(depth[1+pixel]!=65535);
+        face_colors[i]=color[1+pixel];
+    }
+    assert(face_colors[0]!=face_colors[1]&&face_colors[0]!=face_colors[2]&&face_colors[1]!=face_colors[2]);
+    uint16_t background=color[1];
+    unsigned edge_blends=0;
+    for(unsigned i=1;i<=R3_VIEW_PIXELS;++i)
+        edge_blends+=depth[i]==65535&&aa[i]==background&&color[i]!=background;
+    assert(edge_blends>0);
+    cube.center.x+=.0075f;
+    assert(roll3_renderer_render_follow(color+1,depth+1,&s,&lone,NULL,aa+1)==0);
+    edge_blends=0;
+    for(unsigned i=1;i<=R3_VIEW_PIXELS;++i)
+        edge_blends+=depth[i]==65535&&aa[i]==background&&color[i]!=background;
+    assert(edge_blends>0);
+    puts("TC-507 three cube faces and subpixel edge coverage PASS");
 
     lv_init();lv_display_t *d=lv_display_create(390,450);lv_display_set_color_format(d,LV_COLOR_FORMAT_XRGB8888);
     lv_display_set_buffers(d,display_buffer,NULL,sizeof(display_buffer),LV_DISPLAY_RENDER_MODE_FULL);lv_display_set_flush_cb(d,flush);
@@ -178,6 +243,37 @@ int main(void)
     unsigned base=objects(lv_layer_top()),clock_base=timers();fail_buffer=true;
     assert(roll3_view_create()==-103);assert(strstr(roll3_view_error_text(),"内存不足"));
     assert(buffer_live==0&&objects(lv_layer_top())==base);fail_buffer=false;
+    buffer_budget=R3_VIEW_COLOR_BYTES;
+    assert(roll3_view_create()==-103&&buffer_live==0&&buffer_bytes==0);
+    assert(objects(lv_layer_top())==base&&timers()==clock_base);
+    buffer_budget=R3_VIEW_COLOR_BYTES+R3_VIEW_WORKSPACE_BYTES(R3_VIEW_LOW_DEPTH_ROWS);
+    assert(roll3_view_create()==0&&roll3_view_depth_rows()==R3_VIEW_LOW_DEPTH_ROWS);
+    s=(r3_snapshot_t){.version=1,.radius=R3_RADIUS,.orientation={1,0,0,0},
+        .position=world->spawn,.state=R3_RUNNING};
+    roll3_view_render(&s,world);
+    screenshot("roll3-LOW-MEMORY.ppm");
+    roll3_view_destroy();
+    assert(buffer_live==0&&buffer_bytes==0&&objects(lv_layer_top())==base);
+    buffer_budget=R3_VIEW_COLOR_BYTES+R3_VIEW_WORKSPACE_BYTES(R3_VIEW_DEFAULT_DEPTH_ROWS);
+    /* Inspect the actual image plane owned by LVGL for the two quality paths. */
+    static r3_edge_aa_t expected_edges;
+    assert(roll3_view_create()==0);
+    s=(r3_snapshot_t){.version=1,.radius=R3_RADIUS,.orientation={1,0,0,0},
+        .position={3.5f,0,.7f},.state=R3_RUNNING};
+    roll3_view_render(&s,world);
+    lv_obj_t *quality_page=lv_obj_get_child(lv_layer_top(),-1);
+    lv_obj_t *quality_image=lv_obj_get_child(quality_page,0);
+    const lv_image_dsc_t *quality=lv_image_get_src(quality_image);
+    assert(roll3_renderer_render_edges(color+1,depth+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&s,world,NULL,NULL)==0);
+    assert(memcmp(quality->data,color+1,R3_VIEW_COLOR_BYTES)==0);
+    s.state=R3_PAUSED;
+    roll3_view_render(&s,world);
+    assert(roll3_renderer_render_edges(saved,depth+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&s,world,NULL,&expected_edges)==0);
+    assert(memcmp(quality->data,saved,R3_VIEW_COLOR_BYTES)==0);
+    assert(memcmp(color+1,saved,R3_VIEW_COLOR_BYTES)!=0);
+    roll3_view_destroy();
+    assert(buffer_live==0&&objects(lv_layer_top())==base&&timers()==clock_base);
+    puts("TC-512 actual play center and pause edge coverage PASS");
     const char *names[]={"READY","CALIBRATING","RUNNING","PAUSED","FALLEN","WON","ERROR"};
     for(unsigned round=0;round<20;++round){assert(roll3_view_create()==0);assert(roll3_view_create()==-100);
         unsigned count=objects(lv_layer_top()),allocations=buffer_attempts;
@@ -193,18 +289,19 @@ int main(void)
             lv_obj_t *root=lv_obj_get_child(lv_layer_top(),-1);
             for(int i=4;i<=5;++i)assert(lv_obj_has_state(lv_obj_get_child(root,i),LV_STATE_DISABLED));
             if(round==0){char file[80];snprintf(file,sizeof(file),"roll3-%s.ppm",names[st]);screenshot(file);}
-            assert(buffer_live==1&&buffer_attempts==allocations&&objects(lv_layer_top())==count&&timers()==clock_base);
+            assert(buffer_live==2&&buffer_bytes==buffer_budget&&buffer_attempts==allocations&&objects(lv_layer_top())==count&&timers()==clock_base);
         }
         s.orientation=(r3_quat_t){0,0,0,0};roll3_view_render(&s,world);assert(find(lv_layer_top(),"三维数据无效"));
         if(round%2)lv_obj_delete(lv_obj_get_child(lv_layer_top(),-1));else
             lv_obj_send_event(lv_obj_get_parent(find(lv_layer_top(),"返回")),LV_EVENT_CLICKED,NULL);
         roll3_view_destroy();roll3_view_destroy();assert(buffer_live==0&&objects(lv_layer_top())==base&&timers()==clock_base);
     }
-    printf("TC-501 seven Chinese states/glyphs, controls, allocation failure, 20 cycles PASS; persistent buffers=%u bytes\n",R3_VIEW_PIXELS*4);
+    printf("TC-501 seven Chinese states/glyphs, controls, allocation failure, 20 cycles PASS; persistent buffers=%lu bytes\n",(unsigned long)buffer_budget);
     fail_buffer = true;
     assert(roll3_page_open() == -103 && !live_open && closes == 1);
     fail_buffer = false;
     assert(roll3_page_open() == 0 && roll3_page_open() == -104);
+    assert(last_open_result==0&&last_depth_rows==R3_VIEW_DEFAULT_DEPTH_ROWS);
     lv_obj_update_layout(lv_layer_top());
     lv_obj_t *live_root = lv_obj_get_child(lv_layer_top(), -1);
     lv_obj_t *live_image = lv_obj_get_child(live_root, 0);
@@ -212,8 +309,8 @@ int main(void)
     int32_t image_bottom = lv_obj_get_y(live_image) +
         (R3_VIEW_H * lv_image_get_scale(live_image) + 255) / 256;
     assert(image_bottom <= lv_obj_get_y(live_detail));
-    assert(lv_obj_get_x(live_image)>=0&&lv_obj_get_x(live_image)+R3_VIEW_W*2<=390);
-    assert(lv_obj_get_y(live_image)>=35&&lv_image_get_scale(live_image)==512);
+    assert(lv_obj_get_x(live_image)>=0&&lv_obj_get_x(live_image)+R3_VIEW_W*3/2<=390);
+    assert(lv_obj_get_y(live_image)>=35&&lv_image_get_scale(live_image)==384&&lv_image_get_antialias(live_image));
     click("开始"); assert(requests == 1 && last_action == R3_START);
     click("开始"); assert(requests == 1);
     live_snapshot.run = 1;
@@ -234,6 +331,12 @@ int main(void)
     roll3_page_close();
     assert(!live_open && closes == 3 && !buffer_live &&
            objects(lv_layer_top()) == base && timers() == clock_base);
+    fail_timer=true;
+    assert(roll3_page_open()==-105&&last_open_result==-105&&last_depth_rows==0);
+    assert(!live_open&&closes==4&&buffer_live==0&&buffer_bytes==0);
+    assert(objects(lv_layer_top())==base&&timers()==clock_base);
+    fail_timer=false;
+    puts("TC-510 split budget, compact fallback, partial cleanup and timer error PASS");
     puts("TC-504 live layout, buttons, duplicate guard, return, external delete PASS");
     printf("LVGL draw-buffer malloc attempts=%u largest=%lu bytes (in addition to caller buffers)\n",draw_attempts,(unsigned long)largest_draw);
     return 0;

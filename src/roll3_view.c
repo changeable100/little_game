@@ -13,13 +13,22 @@ static void (*send_action)(r3_action_kind_t);
 static void (*on_closed)(void);
 static bool valid_frame, action_pending;
 static r3_state_t view_state;
-static uint16_t *buffers;
+static uint32_t shown_seconds, shown_falls, shown_checkpoint;
+typedef struct {
+    r3_edge_aa_t edges;
+    uint16_t depth[];
+} roll3_workspace_t;
+_Static_assert(offsetof(roll3_workspace_t,depth)==sizeof(r3_edge_aa_t),"Unexpected workspace padding.");
+static uint16_t *frame_color;
+static roll3_workspace_t *workspace;
+static unsigned depth_rows;
 static r3_camera_follow_t camera_follow;
 static lv_image_dsc_t image;
 static const char *error_text="";
 static char status_text[80],detail_text[240];
 
 const char *roll3_view_error_text(void){return error_text;}
+unsigned roll3_view_depth_rows(void){return depth_rows;}
 static lv_obj_t *label(lv_obj_t *p,const char *s,int x,int y,int width,const lv_font_t *font)
 {
     lv_obj_t *o=lv_label_create(p);lv_label_set_text_static(o,s);lv_obj_set_pos(o,x,y);
@@ -32,8 +41,12 @@ static void deleted(lv_event_t *event)
     /* Drop image decoder/cache references before releasing pixel memory. */
     lv_image_cache_drop(&image);
     if(image_obj)lv_image_set_src(image_obj,NULL);
-    if(buffers)lv_free(buffers);
-    buffers=NULL;page=image_obj=status=detail=primary=secondary=NULL;
+    lv_free(workspace);
+    lv_free(frame_color);
+    workspace=NULL;
+    frame_color=NULL;
+    depth_rows=0;
+    page=image_obj=status=detail=primary=secondary=NULL;
     image.data=NULL;
     void (*closed)(void) = on_closed;
     footer = actions[0] = actions[1] = NULL;
@@ -77,8 +90,21 @@ static int create(void (*action)(r3_action_kind_t), void (*closed)(void))
     if(page){error_text="三维预览已经打开";return -100;}
     if(!lv_display_get_default()||lv_display_get_horizontal_resolution(NULL)!=390||
        lv_display_get_vertical_resolution(NULL)!=450){error_text="屏幕尺寸不支持";return -102;}
-    buffers=lv_malloc(R3_VIEW_PIXELS*sizeof(uint16_t)*2);
-    if(!buffers){error_text="三维画面内存不足，请返回";return -103;}
+    frame_color=lv_malloc(R3_VIEW_COLOR_BYTES);
+    if(!frame_color){error_text="三维画面内存不足，请返回";return -103;}
+    depth_rows=R3_VIEW_DEFAULT_DEPTH_ROWS;
+    workspace=lv_malloc(R3_VIEW_WORKSPACE_BYTES(depth_rows));
+    if(!workspace){
+        depth_rows=R3_VIEW_LOW_DEPTH_ROWS;
+        workspace=lv_malloc(R3_VIEW_WORKSPACE_BYTES(depth_rows));
+    }
+    if(!workspace){
+        lv_free(frame_color);
+        frame_color=NULL;
+        depth_rows=0;
+        error_text="三维画面内存不足，请返回";
+        return -103;
+    }
     send_action = action;
     on_closed = closed;
     valid_frame = action_pending = false;
@@ -88,11 +114,11 @@ static int create(void (*action)(r3_action_kind_t), void (*closed)(void))
     lv_obj_set_style_bg_opa(page,LV_OPA_COVER,0);lv_obj_remove_flag(page,LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_event_cb(page,deleted,LV_EVENT_DELETE,NULL);
     image=(lv_image_dsc_t){.header={.magic=LV_IMAGE_HEADER_MAGIC,.cf=LV_COLOR_FORMAT_RGB565,
-        .w=R3_VIEW_W,.h=R3_VIEW_H,.stride=R3_VIEW_W*2},.data_size=R3_VIEW_PIXELS*2,.data=(const uint8_t *)buffers};
+        .w=R3_VIEW_W,.h=R3_VIEW_H,.stride=R3_VIEW_W*2},.data_size=R3_VIEW_PIXELS*2,.data=(const uint8_t *)frame_color};
     /* Empty frame is safe even before the first valid snapshot. */
-    roll3_renderer_render(buffers,buffers+R3_VIEW_PIXELS,NULL,NULL);
+    roll3_renderer_render_edges(frame_color,workspace->depth,depth_rows,NULL,NULL,NULL,&workspace->edges);
     image_obj=lv_image_create(page);lv_image_set_src(image_obj,&image);
-    lv_image_set_pivot(image_obj,0,0);lv_image_set_scale(image_obj,512);lv_obj_set_pos(image_obj,15,35);
+    lv_image_set_pivot(image_obj,0,0);lv_image_set_scale(image_obj,384);lv_image_set_antialias(image_obj,true);lv_obj_set_pos(image_obj,15,35);
     status=label(page,action ? "准备开始" : "三维预览",40,10,310,&roll3_font_20);
     detail=label(page,"等待完整快照",40,335,310,&roll3_font_16);
     footer=label(page,action ? "" : "主机预览：操作尚未接入",40,378,310,&roll3_font_16);
@@ -127,26 +153,42 @@ void roll3_view_action_status(bool pending, r3_result_t result)
     const char *message = pending ? "等待完整快照" : result != R3_OK ? "操作无效" : "";
     if (strcmp(lv_label_get_text(footer), message) != 0)
         lv_label_set_text_static(footer, message);
-    action_pending = pending;
-    controls();
+    if (action_pending != pending) {
+        action_pending = pending;
+        controls();
+    }
 }
 
 void roll3_view_render(const r3_snapshot_t *s,const r3_world_t *world)
 {
     if(!page)return;
-    int result=roll3_renderer_render_follow(buffers,buffers+R3_VIEW_PIXELS,s,world,&camera_follow);
+    /* Keep expensive geometric coverage on quiet states, off the play loop. */
+    r3_edge_aa_t *edges=s&&s->state==R3_RUNNING?NULL:&workspace->edges;
+    int result=roll3_renderer_render_edges(frame_color,workspace->depth,depth_rows,s,world,&camera_follow,edges);
     lv_image_cache_drop(&image);lv_obj_invalidate(image_obj);
+    bool state_changed=!valid_frame||!s||view_state!=s->state;
     valid_frame = result == 0;
     if(result){lv_label_set_text_static(status,"三维数据无效");lv_label_set_text_static(detail,"请检查快照版本、姿态与关卡");controls();return;}
     view_state = s->state;
     static const char *states[]={"准备开始","请放平校准","游玩中","已暂停","小球掉落","通关","输入异常"};
     static const char *messages[]={"点击开始后，保持板子平放","等待真实校准完成","倾斜板子，沿坡道前进",
         "暂停期间不累计时间","返回当前检查点，保留本局时间","用时已冻结，可重开或返回","输入无效，请重开或返回"};
-    snprintf(status_text,sizeof(status_text),"%s  %lu秒",states[s->state],(unsigned long)(s->elapsed_ms/1000));
-    snprintf(detail_text,sizeof(detail_text),"%s\n掉落%lu次  检查点%lu",messages[s->state],(unsigned long)s->falls,(unsigned long)s->checkpoint);
-    lv_label_set_text_static(status,status_text);
-    lv_label_set_text_static(detail,detail_text);
-    lv_label_set_text_static(primary,s->state==R3_PAUSED?"继续":s->state==R3_RUNNING?"暂停":s->state==R3_FALLEN?"回检查点":"开始");
-    lv_label_set_text_static(secondary,"重开");
-    controls();
+    uint32_t seconds=s->elapsed_ms/1000u;
+    if(state_changed||seconds!=shown_seconds){
+        shown_seconds=seconds;
+        snprintf(status_text,sizeof(status_text),"%s  %lu秒",states[s->state],(unsigned long)seconds);
+        lv_label_set_text_static(status,status_text);
+    }
+    if(state_changed||s->falls!=shown_falls||s->checkpoint!=shown_checkpoint){
+        shown_falls=s->falls;
+        shown_checkpoint=s->checkpoint;
+        snprintf(detail_text,sizeof(detail_text),"%s\n掉落%lu次  检查点%lu",messages[s->state],
+                 (unsigned long)s->falls,(unsigned long)s->checkpoint);
+        lv_label_set_text_static(detail,detail_text);
+    }
+    if(state_changed){
+        lv_label_set_text_static(primary,s->state==R3_PAUSED?"继续":s->state==R3_RUNNING?"暂停":s->state==R3_FALLEN?"回检查点":"开始");
+        lv_label_set_text_static(secondary,"重开");
+        controls();
+    }
 }

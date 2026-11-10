@@ -1,0 +1,22 @@
+3D host view and production page adapter with fake runtime
+TC-505 camera-center PASS
+TC-505 screen-right PASS
+TC-505 screen-forward PASS
+TC-505 near-guard PASS
+TC-505 follow-translation PASS
+TC-505 ball-diameter-24px PASS
+TC-507 camera-sees-three-cube-faces PASS
+TC-507 antialias-rgb565-resolve PASS
+TC-509 edge-threshold-and-word-boundary PASS
+TC-509 four-sample-resolve PASS
+TC-506 camera-jitter-deadband PASS
+TC-506 camera-monotonic-follow PASS
+TC-506 camera-respawn-new-run PASS
+TC-501 perspective size, quaternion stripes, OBB slope axes, occlusion, clipping/canaries PASS
+TC-505 fallen checkpoint framing and immediate respawn focus PASS
+TC-506 invalid snapshot preserves camera PASS
+TC-507 three cube faces and subpixel edge coverage PASS
+TC-501 seven Chinese states/glyphs, controls, allocation failure, 20 cycles PASS; persistent buffers=201600 bytes
+TC-504 live layout, buttons, duplicate guard, return, external delete PASS
+LVGL draw-buffer malloc attempts=0 largest=0 bytes (in addition to caller buffers)
+Host UI previews (simulated): D:\course_starter\build\maze-integration\build\roll3-live-view

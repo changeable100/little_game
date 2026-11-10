@@ -247,6 +247,20 @@ static bool tuned_coast(void) {
     CHECK(g.s.velocity.x<.08f&&g.s.position.x<1.5f&&g.s.state==R3_RUNNING);
     return true;
 }
+static bool ramp_deck_seam(void)
+{
+    const r3_box_t *b=r3_demo_world()->boxes;
+    const r3_box_t *ramp=&b[1];
+    float top_x=ramp->center.x+ramp->half.z*ramp->axis[2].x;
+    float top_z=ramp->center.z+ramp->half.z*ramp->axis[2].z;
+    float half_x=ramp->half.x*ramp->axis[0].x;
+    float half_z=ramp->half.x*ramp->axis[0].z;
+    return near(top_x-half_x,b[0].center.x+b[0].half.x,.0001f) &&
+           near(top_z-half_z,b[0].center.z+b[0].half.z,.0001f) &&
+           near(top_x+half_x,b[2].center.x-b[2].half.x,.0001f) &&
+           near(top_z+half_z,b[2].center.z+b[2].half.z,.0001f) &&
+           near(ramp->half.y,b[2].half.y,.0001f);
+}
 static bool demo_route(void) {
     r3_game_t g;CHECK(start(&g,r3_demo_world()));
     const r3_vec_t route[]={{3.5f,0,0},{6,0,0},{6,4.2f,0},{10,4.2f,0}};
@@ -291,6 +305,7 @@ int r3_selftest_run(maze_test_report_t report) {
     RUN("TC-502 rounded-box-near-miss",near_miss());
     RUN("TC-502 bounded-deep-contact",iteration_budget());
     RUN("TC-502 linear-angular-speed-budget",speed_budget());
+    RUN("TC-508 ramp-and-platform-share-top-edge",ramp_deck_seam());
     RUN("TC-505 continuous-ramp-two-turn-route",demo_route());
     RUN("TC-506 level-coast-stops-without-energy-gain",tuned_coast());
 #undef RUN
