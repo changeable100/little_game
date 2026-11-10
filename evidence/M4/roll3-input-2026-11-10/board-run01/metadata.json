@@ -1,0 +1,34 @@
+{
+  "received_date": "2026-11-10",
+  "file": "d11c7c14b4d01381465705f02b8c940a.mp4",
+  "sha256": "8c0e127e9351c58028704aa48289e9cae50e5faa363952777e5e44c5eb1fc781",
+  "bytes": 831038,
+  "local_archive": "D:\\course_starter\\build\\maze-integration\\build\\video-latency-2026-11-10\\original.mp4",
+  "firmware_hash": "unknown",
+  "duration_s": 17.24,
+  "width": 720,
+  "height": 1280,
+  "codec": "HEVC",
+  "frames": [
+    {
+      "time_s": 4,
+      "file": "frame-4s.jpg",
+      "sha256": "9980fc04b1d92e56ca27e4b8c9059d6c6d358b7a0823a659b577c96affb9078c"
+    },
+    {
+      "time_s": 8,
+      "file": "frame-8s.jpg",
+      "sha256": "da375ca6d076d8cd57ef12f279a07c46f8c6914e8ca96cf81b23c9489dda7188"
+    },
+    {
+      "time_s": 12,
+      "file": "frame-12s.jpg",
+      "sha256": "c2d4563ab42338adbb491c6c4f9519ef20cf1b818da80990ff3f833ea25b9559"
+    },
+    {
+      "time_s": 16,
+      "file": "frame-16s.jpg",
+      "sha256": "059b5ccdf9cc53671a9cb65b34b91290027e7250c5c95476244879cafe6bfc8d"
+    }
+  ]
+}

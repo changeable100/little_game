@@ -65,6 +65,26 @@ code:
   commit_range: A阶段二f4610d7与B已发布main e6bd646合并；本次合并版本未上板，HEAD见git log
   a_model_source: origin/feat/req-301-maze-model@9595000；模型实现源提交 77b15d3
 physical_verification:
+- item: TC-512 提速版可玩及通关画面
+  required_action: 真机游玩并回传视频与手感
+  executed_at: 2026-11-10收到视频
+  evidence_path: evidence/M4/roll3-responsive-play-2026-11-10/board-run01/analysis.md
+  agent_conclusion: 可见通关52秒画面和新一局游玩及掉落，学生确认可玩，仍反馈加速度偏大与难回正。可玩与通关画面子项获支持，缺定量帧时、完整过程和独立固件指纹。
+- item: TC-511 三维游玩视频和响应失败反馈
+  required_action: 三维真机运行并回传体验与画面
+  executed_at: 2026-11-10收到视频
+  evidence_path: evidence/M4/roll3-input-2026-11-10/board-run01/analysis.md
+  agent_conclusion: 视频支持约6秒及14秒的游玩画面和球位变化，学生报告卡顿及轻倾迟滞，未测定量帧时和独立固件指纹。
+- item: TC-509 局部抗锯齿板测入口失败
+  required_action: 真机进入3D挑战并回传画面
+  executed_at: 2026-11-10收到照片
+  evidence_path: evidence/M4/local-aa-2026-11-10/board-run01/analysis.md
+  agent_conclusion: 首页显示游戏界面打开失败（-103），未进入三维；缺串口和独立固件指纹，无法区分缓冲申请或定时器创建。画质及帧时未测。
+- item: TC-504 / TC-506三维动态视频
+  required_action: 真机游玩，回传视频与像素边缘反馈
+  executed_at: 2026-11-09收到视频
+  evidence_path: evidence/M4/p3-tuning-2026-11-09/board-run01/analysis.md
+  agent_conclusion: 可见运行、掉落与复活画面，学生确认像素跳动和锯齿仍有，运动画面稳定性子项未通过。缺串口和独立固件指纹，整机仍待验证。
 - item: TC-504三维掉落页面实物照片子项
   required_action: 用户回传三维运行画面与体验反馈
   executed_at: 2026-11-09收到照片，实际拍摄时刻未知

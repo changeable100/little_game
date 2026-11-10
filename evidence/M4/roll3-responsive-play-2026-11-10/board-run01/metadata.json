@@ -1,0 +1,34 @@
+{
+  "received_date": "2026-11-10",
+  "file": "80f634d20c01510a399cd0a93d2d507f.mp4",
+  "sha256": "cb5db939baa97f7112391a3912b2a5f30516c65a18617d959b2ab86887399192",
+  "bytes": 1476277,
+  "duration_s": 21.8,
+  "width": 720,
+  "height": 1280,
+  "codec": "HEVC",
+  "local_archive": "D:\\course_starter\\build\\maze-integration\\build\\video-playable-2026-11-10\\original.mp4",
+  "firmware_hash": "unknown",
+  "frames": [
+    {
+      "time_s": 0,
+      "file": "frame-0s.jpg",
+      "sha256": "93eb0a5be75239d6e61c1c468835fe126f37e9f52cb41c1fb1659757d870e291"
+    },
+    {
+      "time_s": 8,
+      "file": "frame-8s.jpg",
+      "sha256": "62133e3fec66158da6b6f41e4dd1575c82019f6a7ee93b8b5cb405054d615a9b"
+    },
+    {
+      "time_s": 20,
+      "file": "frame-20s.jpg",
+      "sha256": "2fa8e232a0afce9ae6afe00842158f0ae40e6620cd99f2eaee73b82e7b3cd207"
+    },
+    {
+      "time_s": 21.5,
+      "file": "frame-21.5s.jpg",
+      "sha256": "335828ae89974355fa8ed3863141b3e51ea3e3c1266b8590e65760f194839bfa"
+    }
+  ]
+}

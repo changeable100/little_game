@@ -1,0 +1,39 @@
+{
+  "received_date": "2026-11-09",
+  "file": "VID_20261109_154710.mp4",
+  "bytes": 54278011,
+  "sha256": "749acf2702e7221ef617427bb9e7766b606c1ee993817955b6e06d710022d9ef",
+  "original_path": "D:\\QQ\\download\\VID_20261109_154710.mp4",
+  "local_archive": "D:\\course_starter\\build\\maze-integration\\build\\video-154710\\VID_20261109_154710.mp4",
+  "duration_s": 17,
+  "width": 1080,
+  "height": 1920,
+  "firmware_hash": "unknown",
+  "frames": [
+    {
+      "time_s": 1,
+      "file": "frame-1.jpg",
+      "sha256": "8d41f44b377fae6b88ba012efa45d4ec5d20768e956e5deb3d8df6f3f1d707ef"
+    },
+    {
+      "time_s": 5,
+      "file": "frame-5.jpg",
+      "sha256": "a4464cd1c5d4f9e06286320438fb96146a9ce7e465f572a762d6ec2d18de7589"
+    },
+    {
+      "time_s": 9,
+      "file": "frame-9.jpg",
+      "sha256": "49f70ff0078a321c997a02e00e56126dbfd9067cfdcd5f743739d7c5d1b67543"
+    },
+    {
+      "time_s": 12,
+      "file": "frame-12.jpg",
+      "sha256": "8c9ebd722aa4abc6690f50c293091eb28bc303de89ef59f66e6ebe058ff35aed"
+    },
+    {
+      "time_s": 15,
+      "file": "frame-15.jpg",
+      "sha256": "e67db2ac9864126c0cbaf1c547f1d344d03ef3e0431a1e8bde6628f0592ba192"
+    }
+  ]
+}
