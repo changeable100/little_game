@@ -83,8 +83,8 @@ static const r3_box_t m3_boxes[] = {
     DECK(4.35f,10.30f,2.55f,1.28f,.70f,0xc48bce),
     SLOPE(4.35f,13.15f,2.05f,0,1,2.207374005f,1.28f,0.974008027f,0.226513495f,0xe399b7),
     DECK(4.35f,16.50f,1.55f,1.28f,1.20f,0xc48bce),
-    SLOPE(4.35f,18.40f,1.40f,0,1,0.715891053f,1.28f,0.977802414f,0.209529089f,0xe399b7),
-    SLOPE(.10f,18.40f,.97f,0,1,0.708590150f,1.28f,0.987877125f,0.155237834f,0xe399b7),
+    SLOPE(4.35f,18.40f,1.40f,0,1,0.715891053f,.96f,0.977802414f,0.209529089f,0xe399b7),
+    SLOPE(.10f,18.40f,.97f,0,1,0.708590150f,.96f,0.987877125f,0.155237834f,0xe399b7),
     DECK(.10f,16.60f,1.08f,1.28f,1.10f,0x8ac879),
     DECK(.65f,7.24f,3.35f,1.96f,.06f,0xb964d1),
     DECK(2.22f,5.76f,3.29f,1.03f,.07f,0xb964d1),
@@ -94,8 +94,8 @@ _Static_assert(sizeof(m3_boxes)/sizeof(*m3_boxes)<=R3_MAX_BOXES,"M3 exceeds OBB 
 static const r3_bend_t m3_bend = {
     .origin=LOCAL(2.225f,19.10f,1.25f),
     .radial_start=LOCAL(1,0,0),.sweep_axis=LOCAL(0,1,0),
-    .radius=2.125f,.half_width=1.28f,.exit_z=.86f,
-    .trough_depth=.50f,.color=0xe399b7
+    .radius=2.125f,.half_width=.96f,.exit_z=.86f,
+    .trough_depth=.26f,.longitudinal_scale=1.55f,.color=0xe399b7
 };
 
 #include "roll3_stage_art.h"

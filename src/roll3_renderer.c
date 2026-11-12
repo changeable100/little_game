@@ -246,6 +246,8 @@ static void draw_bend(r3_raster_t *target, const r3_bend_t *bend, r3_vec_t focus
     const unsigned lanes=bend->trough_depth>0?max_lanes:tile_lanes;
     const unsigned strips_per_tile=lanes/tile_lanes;
     const bool has_rail=bend->rail_height>0;
+    const unsigned segments_per_tile=bend->longitudinal_scale>1?2u:1u;
+    const float scale=r3_bend_longitudinal_scale(bend);
     const uint32_t rail=style?0xb964d1:0xa071bc;
     const uint32_t light_tile=style?style->light_tile:0xf2e6d5;
     r3_vec_t eye=add(focus,eye_offset);
@@ -259,7 +261,7 @@ static void draw_bend(r3_raster_t *target, const r3_bend_t *bend, r3_vec_t focus
             }
             for(unsigned edge=0;edge<2;++edge)
                 bottom[end][edge]=sub(floor[end][edge*lanes],(r3_vec_t){0,0,R3_BEND_DEPTH});
-            if(style)
+            if(style&&has_rail)
                 for(unsigned edge=0;edge<2;++edge)bottom[end][edge].z=fminf(bottom[end][edge].z,style->skirt_z);
             if(has_rail){
                 lip[end]=add(floor[end][lanes],(r3_vec_t){0,0,bend->rail_height*s*s});
@@ -270,9 +272,9 @@ static void draw_bend(r3_raster_t *target, const r3_bend_t *bend, r3_vec_t focus
         }
         for(unsigned j=0;j<lanes;++j)
             bend_quad(target,floor[0][j],floor[0][j+1],floor[1][j+1],floor[1][j],
-                      (i+j/strips_per_tile)%2?bend->color:light_tile,focus);
+                      (i/segments_per_tile+j/strips_per_tile)%2?bend->color:light_tile,focus);
         r3_vec_t radial=add(mul(bend->radial_start,ring[i][0]+ring[i+1][0]),
-                            mul(bend->sweep_axis,ring[i][1]+ring[i+1][1]));
+                            mul(bend->sweep_axis,(ring[i][1]+ring[i+1][1])/scale));
         if(!style||dot(sub(eye,floor[0][0]),radial)<0)
             bend_quad(target,floor[0][0],floor[1][0],bottom[1][0],bottom[0][0],bend->color,focus);
         if(has_rail){
@@ -299,7 +301,7 @@ static void draw_scene(r3_raster_t *target,const r3_snapshot_t *s,
         bool solid=style&&i>=style->solid_boxes_from;
         for(unsigned j=0;j<8;++j){v[j]=b->center;for(unsigned k=0;k<3;++k){float h=k==0?b->half.x:k==1?b->half.y:b->half.z;
             v[j]=add(v[j],mul(b->axis[k],(j&(1u<<k))?h:-h));}}
-        if(style&&!solid)
+        if(style&&!solid&&!(style->thin_road_mask&(1u<<i)))
             for(unsigned j=0;j<4;++j)v[j].z=fminf(v[j].z,style->skirt_z);
         /* Road tops use checker cells; rails are drawn as solid boxes. */
         for(unsigned j=0;j<12;j+=2){

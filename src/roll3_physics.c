@@ -65,6 +65,8 @@ static bool bend_valid(const r3_bend_t *b)
         b->radius-b->half_width>2*R3_RADIUS&&isfinite(b->bank)&&b->bank>=0&&b->bank<=.5f&&
         isfinite(b->rail_height)&&b->rail_height>=0&&b->rail_height<=1&&b->color<=0xffffffu&&
         isfinite(b->trough_depth)&&b->trough_depth>=0&&b->trough_depth<=.75f&&
+        (b->longitudinal_scale==0||(b->longitudinal_scale>=1&&b->longitudinal_scale<=2))&&
+        (b->rail_height==0||r3_bend_longitudinal_scale(b)==1)&&
         finite_vec(b->radial_start)&&finite_vec(b->sweep_axis)&&
         fabsf(b->radial_start.z)<.0001f&&fabsf(b->sweep_axis.z)<.0001f&&
         fabsf(dot(b->radial_start,b->radial_start)-1)<.0001f&&
@@ -80,15 +82,18 @@ static float bend_gap(const r3_bend_t *b, bend_surface_t surface, r3_vec_t p, r3
     r3_vec_t offset=sub(p,b->origin);
     float outer=b->radius+b->half_width;
     float bound=outer+R3_BEND_RAIL_WIDTH+R3_RADIUS;
-    if(fabsf(offset.x)>bound||fabsf(offset.y)>bound)return FLT_MAX;
-    float u=dot(offset,b->radial_start),v=dot(offset,b->sweep_axis);
+    float scale=r3_bend_longitudinal_scale(b);
+    if(fabsf(offset.x)>bound*scale||fabsf(offset.y)>bound*scale)return FLT_MAX;
+    float u=dot(offset,b->radial_start),v=dot(offset,b->sweep_axis)/scale;
     float inner=b->radius-b->half_width;
     float radius_squared=u*u+v*v;
     if(v < -SKIN || radius_squared<(inner-R3_RADIUS)*(inner-R3_RADIUS) ||
         radius_squared>bound*bound)return FLT_MAX;
 
-    float radius=sqrtf(radius_squared),cosine=u/radius,sine=fmaxf(v,0)/radius;
-    r3_vec_t radial=add(mul(b->radial_start,cosine),mul(b->sweep_axis,sine));
+    float plan_radius=sqrtf(radius_squared),cosine=u/plan_radius,sine=fmaxf(v,0)/plan_radius;
+    float radial_scale=r3_bend_radial_scale(scale,sine);
+    float radius=b->radius+(plan_radius-b->radius)*radial_scale;
+    r3_vec_t radial=mul(add(mul(b->radial_start,cosine),mul(b->sweep_axis,sine*scale)),1/radial_scale);
     if(surface==BEND_RAIL){
         float bottom=r3_bend_height(b,cosine,sine,outer)-R3_BEND_DEPTH;
         float top=bottom+R3_BEND_DEPTH+b->rail_height*sine*sine;
@@ -113,13 +118,19 @@ static float bend_gap(const r3_bend_t *b, bend_surface_t surface, r3_vec_t p, r3
     float dr=radius-floor_radius;
     if(dr!=0){
         float dz=fmaxf(0,p.z-height);
-        float distance=sqrtf(dr*dr+dz*dz);
-        *normal=mul(add(mul(radial,dr),(r3_vec_t){0,0,dz}),1/distance);
+        r3_vec_t delta=add(mul(radial,dr),(r3_vec_t){0,0,dz});
+        float distance=length(delta);
+        *normal=mul(delta,1/distance);
         return distance-R3_RADIUS;
     }
-    r3_vec_t tangent=add(mul(b->radial_start,-sine),mul(b->sweep_axis,cosine));
-    r3_vec_t n=sub(sub((r3_vec_t){0,0,1},mul(radial,profile.radial_grade)),
-                   mul(tangent,profile.angular_rise/radius));
+    /* Derivative through the width-preserving ellipse map. */
+    float width_rise=(plan_radius-b->radius)*(scale*scale-1)*sine*cosine/radial_scale;
+    float angular_grade=(profile.angular_rise+profile.radial_grade*width_rise)/plan_radius;
+    float radial_grade=profile.radial_grade*radial_scale;
+    float du=cosine*radial_grade-sine*angular_grade;
+    float dv=(sine*radial_grade+cosine*angular_grade)/scale;
+    r3_vec_t grade=add(mul(b->radial_start,du),mul(b->sweep_axis,dv));
+    r3_vec_t n=sub((r3_vec_t){0,0,1},grade);
     *normal=mul(n,1/length(n));
     return (p.z-height)*normal->z-R3_RADIUS;
 }

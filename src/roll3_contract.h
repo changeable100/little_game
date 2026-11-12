@@ -25,6 +25,7 @@ typedef struct {
     r3_vec_t origin, radial_start, sweep_axis;
     float radius, half_width, exit_z, bank, rail_height;
     float trough_depth; /* Edge rise in metres at the middle of the bend. */
+    float longitudinal_scale; /* Zero selects the original circular plan. */
     uint32_t color;
 } r3_bend_t; /* Half-annulus; radial_start points to the entry. */
 
@@ -38,6 +39,7 @@ typedef struct {
     unsigned face_count, solid_boxes_from;
     uint32_t background, light_tile;
     float skirt_z;
+    uint32_t thin_road_mask;
 } r3_course_style_t; /* Immutable scenery and palette, independent of collision. */
 
 typedef struct {

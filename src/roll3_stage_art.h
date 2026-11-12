@@ -123,7 +123,8 @@ static const r3_art_face_t m3_faces[] = {
 _Static_assert(sizeof(m3_faces)/sizeof(*m3_faces)<=R3_MAX_ART_FACES,"M3 scenery exceeds face budget");
 static const r3_course_style_t m3_style = {
     .faces=m3_faces,.face_count=sizeof(m3_faces)/sizeof(*m3_faces),.solid_boxes_from=10,
-    .background=0x512078,.light_tile=0xffece5,.skirt_z=-.80f
+    .background=0x512078,.light_tile=0xffece5,.skirt_z=-.80f,
+    .thin_road_mask=(1u<<7)|(1u<<8) /* Narrow approach and exit. */
 };
 
 #endif

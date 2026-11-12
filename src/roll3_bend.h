@@ -2,6 +2,7 @@
 #define ROLL3_BEND_H
 
 #include "roll3_contract.h"
+#include <math.h>
 
 #define R3_BEND_RAIL_WIDTH .12f
 #define R3_BEND_DEPTH .34f
@@ -34,12 +35,26 @@ static inline float r3_bend_height(const r3_bend_t *bend, float cosine, float si
     return r3_bend_profile(bend,cosine,sine,radius).height;
 }
 
+static inline float r3_bend_longitudinal_scale(const r3_bend_t *bend)
+{
+    return bend->longitudinal_scale>0?bend->longitudinal_scale:1;
+}
+
+/* Keep each cross section the same width in world space when stretched. */
+static inline float r3_bend_radial_scale(float scale, float sine)
+{
+    return sqrtf(1+(scale*scale-1)*sine*sine);
+}
+
 static inline r3_vec_t r3_bend_point(const r3_bend_t *bend, float cosine, float sine,
     float radius, float height)
 {
+    float scale=r3_bend_longitudinal_scale(bend);
+    float along=sine*scale;
+    float plan_radius=bend->radius+(radius-bend->radius)/r3_bend_radial_scale(scale,sine);
     return (r3_vec_t){
-        bend->origin.x + radius*(cosine*bend->radial_start.x + sine*bend->sweep_axis.x),
-        bend->origin.y + radius*(cosine*bend->radial_start.y + sine*bend->sweep_axis.y),
+        bend->origin.x + plan_radius*(cosine*bend->radial_start.x + along*bend->sweep_axis.x),
+        bend->origin.y + plan_radius*(cosine*bend->radial_start.y + along*bend->sweep_axis.y),
         height
     };
 }
