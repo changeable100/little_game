@@ -1,0 +1,57 @@
+[
+  {
+    "number": 1,
+    "path": "evidence/M4/git-publish-2026-11-12/messages/01.txt",
+    "sha256": "484fb1a676c28fae203ce2ed924a38d6924c4c2f07e7f5569767b65a154a0e89"
+  },
+  {
+    "number": 2,
+    "path": "evidence/M4/git-publish-2026-11-12/messages/02.txt",
+    "sha256": "3b7c8760c4566a431f3391b0224b12628c1b86ebb57e5491eabf7bb764e176c2"
+  },
+  {
+    "number": 3,
+    "path": "evidence/M4/git-publish-2026-11-12/messages/03.txt",
+    "sha256": "12ad85311164ada8eaff300142078c0575adc63be8b1c68e4f70bb30ef8a1b42"
+  },
+  {
+    "number": 4,
+    "path": "evidence/M4/git-publish-2026-11-12/messages/04.txt",
+    "sha256": "90e262e568aea43920d1ee661d9047d8dfb477ac1040d826b8f127d0667ba763"
+  },
+  {
+    "number": 5,
+    "path": "evidence/M4/git-publish-2026-11-12/messages/05.txt",
+    "sha256": "da888ed9c4655a911791a676206b9f1745bced04707a860bf08352f028c320cb"
+  },
+  {
+    "number": 6,
+    "path": "evidence/M4/git-publish-2026-11-12/messages/06.txt",
+    "sha256": "c903c0cb3355f5d99dd727b5f57be556dccd290c450bd7fbb18ac9484718475a"
+  },
+  {
+    "number": 7,
+    "path": "evidence/M4/git-publish-2026-11-12/messages/07.txt",
+    "sha256": "02b601182a1e52d500423fc6c249acb16b87bf1109022036e3df50717533bb35"
+  },
+  {
+    "number": 8,
+    "path": "evidence/M4/git-publish-2026-11-12/messages/08.txt",
+    "sha256": "6f1ab6b3b825b59caf6fa23b30870ebb0855ab2c3ead14a91cfa2a279a76908e"
+  },
+  {
+    "number": 9,
+    "path": "evidence/M4/git-publish-2026-11-12/messages/09.txt",
+    "sha256": "8badbbbd4be8e5feaaf7b010ebb0711eed800e3ad5f78240250499c5a902c8ec"
+  },
+  {
+    "number": 10,
+    "path": "evidence/M4/git-publish-2026-11-12/messages/10.txt",
+    "sha256": "b5b3cade564c8098470c2d9d43ebf58173a8fbae63a0bf4ff891fe44fa145574"
+  },
+  {
+    "number": 11,
+    "path": "evidence/M4/git-publish-2026-11-12/messages/11.txt",
+    "sha256": "86d3c7e896a274b18f999017b89606babee2826f00b165505f574c43afee856d"
+  }
+]

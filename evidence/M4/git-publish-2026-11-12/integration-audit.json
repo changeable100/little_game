@@ -1,0 +1,30 @@
+{
+  "sdk_build_exit_code": 0,
+  "core_cases": 162,
+  "view_exit_code": 0,
+  "candidate_source_comparisons": 179,
+  "source_mismatch": [],
+  "images": [
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/main.bin",
+      "bytes": 1244176,
+      "sha256": "aefb41ff3731fc25f60191a69d7ab99a17eb81a1ebb0ae1129beb1fee32fc56d",
+      "matches_candidate": true
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/bootloader/bootloader.bin",
+      "bytes": 58496,
+      "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21",
+      "matches_candidate": true
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/ftab/ftab.bin",
+      "bytes": 11288,
+      "sha256": "542de72899eafa190d44addf1b487f3794e0b04d9f8127a0dd6b5ce5eed8b570",
+      "matches_candidate": true
+    }
+  ],
+  "physical_verified": false,
+  "branch": "codex/roll3-release-20261112",
+  "publication_state": "SOURCE_VALIDATED_AND_MESSAGES_APPROVED"
+}

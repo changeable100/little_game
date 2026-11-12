@@ -909,7 +909,7 @@ publication_20261112:
   worktree: D:/course_starter/build/roll3-publish-20261112
   previous_worktree: D:/course_starter/build/maze-integration，原改动保持
   backup: D:/course_starter/build/git-publish-backup-20261112，292个原改动文件及binary diff
-  status: 集成核心/SDK LVGL/SDK整机编译通过，三镜像同试玩指纹，11条提交正文待实际阅读确认，尚未提交或推送
+  status: 集成核心/SDK LVGL/SDK整机编译通过，三镜像同试玩指纹，11条提交正文已实际阅读确认，源码快照与证据按本分支提交记录保存，远端状态见GitHub
   evidence: evidence/M4/git-publish-2026-11-12/README.md
 
 map_creation_handoff_20261112:

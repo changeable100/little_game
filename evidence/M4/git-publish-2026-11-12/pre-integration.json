@@ -1,0 +1,113 @@
+{
+  "backup": "D:\\course_starter\\build\\git-publish-backup-20261112",
+  "original_worktree": "D:\\course_starter\\build\\maze-integration",
+  "preserved_files": 292,
+  "preserved_bytes": 20372332,
+  "course_originals_restored": [
+    {
+      "path": "scripts/build_firmware.py",
+      "sha256": "5b1d1f791d1806b1e40ad6b95dd6dcaef3bcb3eee8098efd0122cfbd653f3777"
+    },
+    {
+      "path": "scripts/check_all.py",
+      "sha256": "3f5ca24667ce5838dc47939835382c1f81312a60ed2e3691e3d1625a1591c7de"
+    },
+    {
+      "path": "scripts/check_commit_msg.py",
+      "sha256": "840b0ad59f989aec722f6f0877c71a9383d2b411a10029e256e4907bb59be286"
+    },
+    {
+      "path": "scripts/check_devlog.py",
+      "sha256": "e33fc478b20252eefc0e31f2d628f80f2ec633aaf44a43c2b1b11290b9ca717f"
+    },
+    {
+      "path": "scripts/check_env.py",
+      "sha256": "fa146dff0700629a71a6fd9e8b2e677fa5f68f40cde6d2390d74b5a62718b072"
+    },
+    {
+      "path": "scripts/check_manifest.py",
+      "sha256": "f514d67cd404a9716f9772bf89ef867fad5c186f935bbfe8bd5fb73a97fca140"
+    },
+    {
+      "path": "scripts/check_trace.py",
+      "sha256": "6c5fba067f1dfde3d0538a18dd17469e0b798ecf95becca0decf6c0b0e7d8968"
+    },
+    {
+      "path": "scripts/new_devlog.py",
+      "sha256": "e930e1c0a03e8556c77008b5a7cfac700ffcfb1955da0d714c9fd60bc93db963"
+    },
+    {
+      "path": "scripts/setup_course.py",
+      "sha256": "654850f276129a82a76ddc8ea2aedc2047ff974bdc80cfaa4a34befe055e7df6"
+    },
+    {
+      "path": "scripts/_common.py",
+      "sha256": "1c196fb44a987c7504dafc6ffb8e5a2fd258535b5e82aa567607b9866557e01d"
+    },
+    {
+      "path": ".githooks/commit-msg",
+      "sha256": "040520168bd60be1a1e65e77132cf03faa48c853888db8b6c2266f19eb61a218"
+    },
+    {
+      "path": ".githooks/pre-commit",
+      "sha256": "4718769e232036cdf57b36a3ca485970c986abbf080745c170a9088620e94c60"
+    },
+    {
+      "path": ".githooks/pre-push",
+      "sha256": "397ad3aaa83ae88387a22a24b46fb1b883e2d395b1576514f524c50d93e2000f"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "76de745df5c23b1135eef3698d9218794ca09ef3f0e1f708db0440d2beb8375a"
+    },
+    {
+      "path": "CLAUDE.md",
+      "sha256": "1fb790ff4a77de37814c529f3c54cc46812d68589fbcc1ea8097e832d4c2622b"
+    },
+    {
+      "path": "course.config.json",
+      "sha256": "4bbbb1f6b939cf6351848841be18a43cea548db02fd0c2a2772832b14edcb874"
+    }
+  ],
+  "integrated_source_files": [
+    "src/roll3_bend.h",
+    "src/roll3_contract.h",
+    "src/roll3_font.h",
+    "src/roll3_font_16.c",
+    "src/roll3_font_20.c",
+    "src/roll3_font_28.c",
+    "src/roll3_page.c",
+    "src/roll3_page.h",
+    "src/roll3_physics.c",
+    "src/roll3_physics.h",
+    "src/roll3_renderer.c",
+    "src/roll3_renderer.h",
+    "src/roll3_runtime.c",
+    "src/roll3_scene.c",
+    "src/roll3_scene.h",
+    "src/roll3_selftest.c",
+    "src/roll3_session.c",
+    "src/roll3_stage_art.h",
+    "src/roll3_view.c",
+    "src/roll3_view.h",
+    "tests/render.py",
+    "tests/roll3_camera_host.c",
+    "tests/roll3_edge_compare.c",
+    "tests/roll3_edge_probe.c",
+    "tests/roll3_perf_compare.c",
+    "tests/roll3_physics_compare.c",
+    "tests/roll3_runtime_host.c",
+    "tests/roll3_view_test.c",
+    "tests/run_roll3_sdk_view.py",
+    "tools/generate_maze_font.py",
+    "assets/roll3-font/provenance.json"
+  ],
+  "extra_files_kept": [
+    "tools/generate_game_audio.py",
+    "tools/generate_wav.py",
+    "assets/speaker.wav",
+    "assets/maze-font/OFL.txt",
+    "assets/maze-font/provenance.json",
+    "assets/maze-font/README.md"
+  ]
+}

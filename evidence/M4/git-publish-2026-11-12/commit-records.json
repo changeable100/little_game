@@ -1,0 +1,58 @@
+{
+  "recorded_before_delivery_commit": true,
+  "commits": [
+    {
+      "number": 1,
+      "commit": "2796df0ab6d616eb1179c3d1544ef7afe3a0434f",
+      "title": "chore(course): 补齐集成分支缺失的原版课程工具"
+    },
+    {
+      "number": 2,
+      "commit": "75a7d3e5afe1b9da037aed2d63a6ce3ebfa3d413",
+      "title": "docs(roll3): 记录关卡与界面迭代需求及验收边界"
+    },
+    {
+      "number": 3,
+      "commit": "e6c4de0493f3c340c211a1bd632866d5d2606932",
+      "title": "feat(roll3): 集成M3下坡关卡与粉紫高台场景"
+    },
+    {
+      "number": 4,
+      "commit": "2fa52b51ea4d377190bf06276bf26327c217cf59",
+      "title": "feat(roll3): 将回旋弯改为双侧连续U槽"
+    },
+    {
+      "number": 5,
+      "commit": "3902ea7b5b91f85410730545fda425df49470718",
+      "title": "feat(roll3): 收窄并拉长M3双侧回旋槽"
+    },
+    {
+      "number": 6,
+      "commit": "752b64657ae842d5d4f4b9b7f55c89324f02b247",
+      "title": "fix(roll3): 修复曲面微接触导致的速度清零"
+    },
+    {
+      "number": 7,
+      "commit": "12be1fb1b189926bdae70b2d33db853afc525cb4",
+      "title": "feat(roll3): 加深弧槽并完善整块绿色终点"
+    },
+    {
+      "number": 8,
+      "commit": "560eac026d03eff8dd8bf56c950ab44f2dfe8d02",
+      "title": "feat(roll3): 提供满屏暂停菜单与自然滚动结算"
+    },
+    {
+      "number": 9,
+      "commit": "f1d5ecdab274d375c930634751b3b05cdfdbd45c",
+      "title": "feat(roll3): 缩小满屏构图并统一粉紫像素界面"
+    },
+    {
+      "number": 10,
+      "commit": "71bc4760c07d4819df9bbd1118c1ea35ff2e7acd",
+      "title": "hw(roll3): 归档试玩实拍与软件失败重测证据"
+    }
+  ],
+  "delivery_commit": "See Git log for docs(delivery): 保存发布验证与本地提交清单",
+  "remote_branch": "codex/roll3-release-20261112",
+  "physical_verified": false
+}
