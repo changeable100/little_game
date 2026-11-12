@@ -1,0 +1,30 @@
+Traceback (most recent call last):
+  File "D:\course_starter\build\roll3-publish-20261112\tests\run_roll3_sdk_view.py", line 25, in <module>
+    runpy.run_path(str(driver), run_name="__main__")
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\course_starter\build\roll3-publish-20261112\tests\render.py", line 69, in <module>
+    objects = list(pool.map(compile_one, enumerate(sources)))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\10436\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py", line 619, in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\10436\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py", line 317, in _result_or_cancel
+    return fut.result(timeout)
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\10436\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py", line 456, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\10436\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "C:\Users\10436\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\course_starter\build\roll3-publish-20261112\tests\render.py", line 65, in compile_one
+    raise RuntimeError(result.stderr)
+RuntimeError: D:\course_starter\build\roll3-publish-20261112\tests\roll3_view_test.c:123:27: error: call to undeclared function 'lv_text_get_width'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+  123 |         if(visible)assert(lv_text_get_width(lv_label_get_text(o),strlen(lv_label_get_text(o)),f,lv_obj_get_style_text_letter_space(o,0))<=lv_obj_get_width(o));
+      |                           ^
+1 error generated.
+

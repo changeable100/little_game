@@ -1,0 +1,1 @@
+Font check PASS: 96 glyphs x 3 sizes, complete source coverage

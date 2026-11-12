@@ -1,0 +1,16 @@
+{
+  "firmware_sources_and_course_originals_match": true,
+  "mismatches": [],
+  "patch_forward_exit_code": 0,
+  "patch_reverse_exit_code": 0,
+  "view_exit_code": 0,
+  "strict_view_exit_code": 0,
+  "sdk_exit_code": 0,
+  "font_glyphs_per_size": 96,
+  "requirements": 46,
+  "trace_exit_code": 0,
+  "baseline_core_cases": 162,
+  "physical_verified": false,
+  "first_release_remote_head": "56c95716f28eb83de3565cc1e5af6ce658f3e2c7",
+  "English_publication_state": "SOURCE_VALIDATED_AND_MESSAGES_APPROVED"
+}

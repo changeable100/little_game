@@ -1,0 +1,61 @@
+{
+  "board": "sf32lb52-lchspi-ulp",
+  "sdk": "2.5.1",
+  "build_tag": "m3-english-20261112",
+  "source_base": "56c95716f28eb83de3565cc1e5af6ce658f3e2c7",
+  "complete_source": "D:\\course_starter\\build\\roll3-publish-20261112",
+  "physical_verified": false,
+  "images": [
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/main.bin",
+      "bytes": 1222392,
+      "sha256": "8ae4cceb48d6a7508c3a14f012e7d266f000a3698b974aef44b43361980d03bd"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/bootloader/bootloader.bin",
+      "bytes": 58496,
+      "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/ftab/ftab.bin",
+      "bytes": 11288,
+      "sha256": "1407ad93c0633bcabf90d30d1a92d6212688c8b4c383d68fdee9d42befe204cb"
+    }
+  ],
+  "changed_sources": [
+    {
+      "path": "src/roll3_view.c",
+      "sha256": "addf03d01aa1e084dc9e0baf2a80d0bd793f2c44f94b94715e0a481e9fcdc2e0"
+    },
+    {
+      "path": "src/roll3_runtime.c",
+      "sha256": "c88ebab0ce4075346d4d1a8a503cc6e7ac3f0158bf813aed103178d716fecad0"
+    },
+    {
+      "path": "src/roll3_font_16.c",
+      "sha256": "2f253883361fdfb1adddb3a62edae4f19b12c5c4214da06aa5407aa8b833e9f4"
+    },
+    {
+      "path": "src/roll3_font_20.c",
+      "sha256": "945617df90a10add6a7c7096bb56ed8f073477f60e57d9f7389fa944deb93077"
+    },
+    {
+      "path": "src/roll3_font_28.c",
+      "sha256": "d54172ef51d97b54df46a8e61ea803bd6fd04ee89aa9902c8b908b4804ae2ac0"
+    },
+    {
+      "path": "tests/roll3_view_test.c",
+      "sha256": "ec9242fe43a8f4c8e30cee8ec3676835776ef14549d09e9f96c50e6b78499cb3"
+    },
+    {
+      "path": "assets/roll3-font/provenance.json",
+      "sha256": "0990a112417077989968b4de4f2dee8ee76f6416529960de772f7bdfde48f72d"
+    }
+  ],
+  "patch_sha256": "8e5378f679f5ebebc69f35371920b722e40f09feb260702e083b60a6d669a855",
+  "unchanged_logic": [
+    "src/roll3_physics.c",
+    "src/roll3_session.c",
+    "src/roll3_renderer.c"
+  ]
+}

@@ -113,12 +113,17 @@ static lv_obj_t *find(lv_obj_t *o,const char *s)
  for(unsigned i=0;i<lv_obj_get_child_count(o);++i){lv_obj_t *v=find(lv_obj_get_child(o,i),s);if(v)return v;}return NULL;}
 static void glyphs(lv_obj_t *o)
 {
+    if(o==lv_layer_top())lv_obj_update_layout(o);
     if(lv_obj_check_type(o,&lv_label_class)){
         const char *t=lv_label_get_text(o);const lv_font_t *f=lv_obj_get_style_text_font(o,LV_PART_MAIN);
         while(*t){unsigned char c=(unsigned char)*t++;uint32_t cp=c;
             if(c>=0xe0){cp=(c&15)<<12;cp|=((unsigned char)*t++&63)<<6;cp|=(unsigned char)*t++&63;}
             else if(c>=0xc0){cp=(c&31)<<6;cp|=(unsigned char)*t++&63;}
-            if(cp>=32){lv_font_glyph_dsc_t d;assert(lv_font_get_glyph_dsc(f,&d,cp,0));assert(!d.is_placeholder);}}
+            if(cp>=32){assert(cp<=126||cp==0x2605);lv_font_glyph_dsc_t d;assert(lv_font_get_glyph_dsc(f,&d,cp,0));assert(!d.is_placeholder);}}
+        bool visible=true;for(lv_obj_t *p=o;p;p=lv_obj_get_parent(p))visible=visible&&!lv_obj_has_flag(p,LV_OBJ_FLAG_HIDDEN);
+        if(visible){lv_point_t extent;lv_text_get_size(&extent,lv_label_get_text(o),f,
+            lv_obj_get_style_text_letter_space(o,0),0,LV_COORD_MAX,LV_TEXT_FLAG_EXPAND);
+            assert(extent.x<=lv_obj_get_width(o));}
     }
     for(unsigned i=0;i<lv_obj_get_child_count(o);++i)glyphs(lv_obj_get_child(o,i));
 }
@@ -296,8 +301,8 @@ int main(void)
     unsigned bottom_pixel=frame[(447*390+195)*4]|frame[(447*390+195)*4+1]<<8|frame[(447*390+195)*4+2]<<16;
     assert(top_pixel!=0x0c1220&&bottom_pixel!=0x0c1220);
     assert(!find(lv_layer_top(),"游玩中")&&!find(lv_layer_top(),"主机预览：操作尚未接入"));
-    assert(find(lv_layer_top(),"菜单")&&find(lv_layer_top(),"00:00"));
-    lv_obj_t *menu=lv_obj_get_parent(find(lv_layer_top(),"菜单"));
+    assert(find(lv_layer_top(),"MENU")&&find(lv_layer_top(),"00:00"));
+    lv_obj_t *menu=lv_obj_get_parent(find(lv_layer_top(),"MENU"));
     lv_obj_t *clock_panel=lv_obj_get_parent(find(lv_layer_top(),"00:00"));
     assert(lv_obj_get_width(menu)>=56&&lv_obj_get_height(menu)>=56);
     assert(lv_obj_get_style_radius(menu,0)==0&&lv_obj_get_style_radius(clock_panel,0)==0);
@@ -331,48 +336,49 @@ int main(void)
             if(round==0){char file[80];snprintf(file,sizeof(file),"IMMERSIVE-%s.ppm",names[state]);screenshot(file);}
             assert(objects(lv_layer_top())==count&&buffer_live==2&&buffer_bytes==buffer_budget&&buffer_attempts==allocations&&timers()==clock_base);
         }
-        s.orientation=(r3_quat_t){0,0,0,0};roll3_view_render(&s,m3);assert(find(lv_layer_top(),"三维数据无效"));
-        if(round%2)lv_obj_delete(lv_obj_get_child(lv_layer_top(),-1));else click("退出");
+        s.orientation=(r3_quat_t){0,0,0,0};roll3_view_render(&s,m3);assert(find(lv_layer_top(),"DATA ERROR"));
+        if(round%2)lv_obj_delete(lv_obj_get_child(lv_layer_top(),-1));else click("EXIT");
         roll3_view_destroy();
         assert(!buffer_live&&!buffer_bytes&&objects(lv_layer_top())==base&&timers()==clock_base);
     }
-    puts("TC-525 seven modal states, all Chinese glyphs, 20 exits/external deletes and resource baseline PASS");
+    puts("TC-525 seven modal states, all product glyphs, 20 exits/external deletes and resource baseline PASS");
+    puts("TC-527 English-only labels, printable glyph coverage, visible text widths and MENU hit area PASS");
 
     fail_buffer=true;assert(roll3_page_open()==-103&&!live_open);fail_buffer=false;
     fail_timer=true;assert(roll3_page_open()==-105&&!live_open);fail_timer=false;
     assert(!buffer_live&&objects(lv_layer_top())==base&&timers()==clock_base);
     assert(roll3_page_open()==0&&live_open);
-    assert(find(lv_layer_top(),"准备出发"));
+    assert(find(lv_layer_top(),"READY?"));
     unsigned sent=requests;
-    click("开始校准");click("开始校准");assert(requests==sent+1&&last_action==R3_START);
-    publish(R3_CALIBRATING);assert(find(lv_layer_top(),"放平校准"));
+    click("CALIBRATE");click("CALIBRATE");assert(requests==sent+1&&last_action==R3_START);
+    publish(R3_CALIBRATING);assert(find(lv_layer_top(),"CALIBRATING"));
     screenshot("IMMERSIVE-CALIBRATION.ppm");
-    live_snapshot.elapsed_ms=12345;publish(R3_RUNNING);assert(find(lv_layer_top(),"准备好了"));
+    live_snapshot.elapsed_ms=12345;publish(R3_RUNNING);assert(find(lv_layer_top(),"READY!"));
     screenshot("IMMERSIVE-GO.ppm");
     lv_tick_inc(600);lv_timer_handler();
-    click("菜单");assert(last_action==R3_PAUSE&&live_pending);sent=requests;
-    click("继续");assert(requests==sent);
-    publish(R3_PAUSED);assert(find(lv_layer_top(),"小球和时间已暂停"));
+    click("MENU");assert(last_action==R3_PAUSE&&live_pending);sent=requests;
+    click("RESUME");assert(requests==sent);
+    publish(R3_PAUSED);assert(find(lv_layer_top(),"BALL AND TIMER PAUSED"));
     screenshot("IMMERSIVE-MENU.ppm");
-    lv_obj_t *pause_card=lv_obj_get_parent(find(lv_layer_top(),"游戏菜单"));
+    lv_obj_t *pause_card=lv_obj_get_parent(find(lv_layer_top(),"PAUSED"));
     assert(lv_obj_get_style_radius(pause_card,0)==0);
-    const char *actions[]={"继续","回到存档点","退出"};
+    const char *actions[]={"RESUME","CHECKPOINT","EXIT"};
     for(unsigned i=0;i<3;++i){lv_obj_t *b=lv_obj_get_parent(find(pause_card,actions[i]));
         assert(lv_obj_get_height(b)>=44&&lv_obj_get_style_radius(b,0)==0);}
-    lv_obj_t *old_checkpoint_button=lv_obj_get_parent(find(lv_layer_top(),"回到存档点"));
-    click("继续");assert(last_action==R3_RESUME);publish(R3_RUNNING);
+    lv_obj_t *old_checkpoint_button=lv_obj_get_parent(find(lv_layer_top(),"CHECKPOINT"));
+    click("RESUME");assert(last_action==R3_RESUME);publish(R3_RUNNING);
     sent=requests;lv_obj_send_event(old_checkpoint_button,LV_EVENT_CLICKED,NULL);
     assert(live_open&&requests==sent);
-    click("菜单");publish(R3_PAUSED);click("回到存档点");assert(last_action==R3_RESPAWN);
+    click("MENU");publish(R3_PAUSED);click("CHECKPOINT");assert(last_action==R3_RESPAWN);
     live_snapshot.position=m3->checkpoint_spawn;publish(R3_RUNNING);
     assert(find(lv_layer_top(),"00:12"));
-    publish(R3_ERROR);click("重新校准");assert(last_action==R3_RESTART);
+    publish(R3_ERROR);click("RECALIBRATE");assert(last_action==R3_RESTART);
     ++live_snapshot.run;live_snapshot.elapsed_ms=0;publish(R3_CALIBRATING);publish(R3_RUNNING);
     lv_tick_inc(600);lv_timer_handler();
     puts("TC-525 real action sink: pause waits for acknowledgement, duplicate guard, resume, checkpoint and recalibrate PASS");
 
     live_snapshot.elapsed_ms=12345;live_snapshot.position=from_uv(.1f,16.6f,1.08f+R3_RADIUS);publish(R3_WON);
-    lv_obj_t *result_title=find(lv_layer_top(),"通关啦！");assert(result_title);
+    lv_obj_t *result_title=find(lv_layer_top(),"LEVEL CLEAR!");assert(result_title);
     lv_obj_t *result_card=lv_obj_get_parent(result_title);
     lv_obj_update_layout(lv_layer_top());int start_y=lv_obj_get_y(result_card),start_width=lv_obj_get_width(result_card);
     assert(lv_obj_get_style_text_opa(result_title,LV_PART_MAIN)==0);
@@ -390,22 +396,22 @@ int main(void)
         char file[80];snprintf(file,sizeof(file),"IMMERSIVE-RESULT-%03u.ppm",times[i]);screenshot(file);
     }
     assert(lv_obj_get_y(result_card)<start_y&&old_opacity==255);
-    assert(find(lv_layer_top(),"00:12.34")&&find(lv_layer_top(),"下一关敬请期待"));
-    sent=requests;click("下一关");assert(requests==sent);
+    assert(find(lv_layer_top(),"00:12.34")&&find(lv_layer_top(),"MORE LEVELS SOON"));
+    sent=requests;click("NEXT LEVEL");assert(requests==sent);
     lv_tick_inc(1000);lv_timer_handler();assert(lv_obj_get_style_text_opa(result_title,LV_PART_MAIN)==255);
     assert(find(lv_layer_top(),"00:12.34"));
-    click("退出");assert(!live_open&&!buffer_live);
+    click("EXIT");assert(!live_open&&!buffer_live);
     puts("TC-524 settlement reveal at 0/200/400/800ms, frozen score, no replay and disabled next-level PASS");
 
     assert(roll3_page_open()==0);publish(R3_RUNNING);live_snapshot.elapsed_ms=7000;publish(R3_WON);
     lv_tick_inc(200);roll3_view_tick();lv_obj_delete(lv_obj_get_child(lv_layer_top(),-1));
     assert(!live_open&&!buffer_live);
-    assert(roll3_page_open()==0);assert(find(lv_layer_top(),"准备出发"));
-    lv_tick_inc(1000);lv_timer_handler();assert(!find(lv_layer_top(),"通关啦！"));
+    assert(roll3_page_open()==0);assert(find(lv_layer_top(),"READY?"));
+    lv_tick_inc(1000);lv_timer_handler();assert(!find(lv_layer_top(),"LEVEL CLEAR!"));
     lv_tick_inc((UINT32_MAX-300u)-lv_tick_get());publish(R3_WON);
-    result_title=find(lv_layer_top(),"通关啦！");assert(result_title);
+    result_title=find(lv_layer_top(),"LEVEL CLEAR!");assert(result_title);
     lv_tick_inc(800);roll3_view_tick();assert(lv_obj_get_style_text_opa(result_title,LV_PART_MAIN)==255);
-    click("退出");roll3_page_close();
+    click("EXIT");roll3_page_close();
     assert(!live_open&&!buffer_live&&objects(lv_layer_top())==base&&timers()==clock_base);
     puts("TC-524 close during animation, clean reentry and millisecond wrap PASS");
     printf("LVGL draw-buffer malloc attempts=%u largest=%lu bytes (caller planes excluded)\n",draw_attempts,(unsigned long)largest_draw);

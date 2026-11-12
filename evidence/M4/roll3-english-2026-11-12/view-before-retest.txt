@@ -1,0 +1,38 @@
+3D host view and production page adapter with fake runtime
+TC-526 monochrome 2x2 block glyphs/metrics, three sizes PASS
+TC-505 camera-center PASS
+TC-505 screen-right PASS
+TC-505 screen-forward PASS
+TC-505 near-guard PASS
+TC-526 framing-75pct PASS
+TC-526 vertical-75pct PASS
+TC-505 follow-translation PASS
+TC-505 ball-diameter-24px PASS
+TC-507 camera-sees-three-cube-faces PASS
+TC-507 antialias-rgb565-resolve PASS
+TC-509 edge-threshold-and-word-boundary PASS
+TC-516 play-edge-weight PASS
+TC-509 four-sample-resolve PASS
+TC-510 bounded-depth-rows PASS
+TC-506 camera-jitter-deadband PASS
+TC-506 camera-monotonic-follow PASS
+TC-506 camera-respawn-new-run PASS
+TC-501 perspective size, quaternion stripes, OBB slope axes, occlusion, clipping/canaries PASS
+TC-505 fallen checkpoint framing and immediate respawn focus PASS
+TC-506 invalid snapshot preserves camera PASS
+TC-507 three cube faces and subpixel edge coverage PASS
+Assertion failed: cp<=126||cp==0x2605, file D:\course_starter\build\roll3-publish-20261112\tests\roll3_view_test.c, line 122
+Traceback (most recent call last):
+  File "D:\course_starter\build\roll3-publish-20261112\tests\run_roll3_sdk_view.py", line 25, in <module>
+    runpy.run_path(str(driver), run_name="__main__")
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\course_starter\build\roll3-publish-20261112\tests\render.py", line 77, in <module>
+    subprocess.run([str(exe)], cwd=out, check=True, timeout=30)
+  File "D:\course_starter\build\roll3-publish-20261112\tests\run_roll3_sdk_view.py", line 17, in run
+    return original_run(command, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\10436\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['D:\\course_starter\\build\\roll3-publish-20261112\\build\\roll3-live-view\\ui-test']' returned non-zero exit status 3221226505.

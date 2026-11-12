@@ -147,23 +147,23 @@ static void set_mode(modal_t wanted) {
     for(unsigned i=0;i<3;++i){visible(buttons[i],true);lv_obj_set_y(buttons[i],128+(int)i*56);}
     visible(score,false);visible(hint,false);visible(badge,false);
     lv_obj_set_y(title,24);lv_obj_set_y(info,72);lv_obj_set_height(info,48);
-    text(captions[0],"开始校准");text(captions[1],"退出");text(captions[2],"退出");
+    text(captions[0],"CALIBRATE");text(captions[1],"EXIT");text(captions[2],"EXIT");
     visible(buttons[2],wanted==MODAL_MENU);
-    if(wanted==MODAL_READY){text(title,"准备出发");text(info,"请将板子平放，再开始校准");}
-    else if(wanted==MODAL_CAL){text(title,"放平校准");text(info,"保持板子静止，马上就好");text(captions[0],"正在校准");}
+    if(wanted==MODAL_READY){text(title,"READY?");text(info,"PLACE BOARD FLAT");}
+    else if(wanted==MODAL_CAL){text(title,"CALIBRATING");text(info,"KEEP STILL");text(captions[0],"PLEASE WAIT");}
     else if(wanted==MODAL_GO){
-        text(title,"准备好了");text(info,"倾斜板子，出发吧！");
+        text(title,"READY!");text(info,"TILT TO ROLL");
         for(unsigned i=0;i<3;++i)visible(buttons[i],false);
         lv_obj_set_size(card,302,160);lv_obj_set_pos(card,44,146);lv_obj_set_style_bg_opa(shade,40,0);
     } else if(wanted==MODAL_MENU){
-        text(title,"游戏菜单");text(info,"小球和时间已暂停");text(captions[0],"继续");text(captions[1],"回到存档点");
-    } else if(wanted==MODAL_FALL){text(title,"掉下去啦");text(info,"正在回到存档点");text(captions[0],"回到存档点");}
-    else if(wanted==MODAL_ERROR){text(title,"输入异常");text(info,"放平板子后，重新校准");text(captions[0],"重新校准");}
-    else if(wanted==MODAL_INVALID){text(title,"三维数据无效");text(info,"请退出后重新进入");visible(buttons[0],false);}
+        text(title,"PAUSED");text(info,"BALL AND TIMER PAUSED");text(captions[0],"RESUME");text(captions[1],"CHECKPOINT");
+    } else if(wanted==MODAL_FALL){text(title,"OOPS!");text(info,"BACK TO CHECKPOINT");text(captions[0],"CHECKPOINT");}
+    else if(wanted==MODAL_ERROR){text(title,"INPUT ERROR");text(info,"PLACE BOARD FLAT");text(captions[0],"RECALIBRATE");}
+    else if(wanted==MODAL_INVALID){text(title,"DATA ERROR");text(info,"EXIT AND TRY AGAIN");visible(buttons[0],false);}
     else if(wanted==MODAL_RESULT){
-        text(title,"通关啦！");lv_obj_set_y(title,36);text(info,"本关耗时");lv_obj_set_y(info,80);lv_obj_set_height(info,26);
+        text(title,"LEVEL CLEAR!");lv_obj_set_y(title,36);text(info,"YOUR TIME");lv_obj_set_y(info,80);lv_obj_set_height(info,26);
         visible(score,true);visible(hint,true);visible(badge,true);
-        text(hint,"下一关敬请期待");text(captions[0],"下一关");text(captions[1],"退出");
+        text(hint,"MORE LEVELS SOON");text(captions[0],"NEXT LEVEL");text(captions[1],"EXIT");
         lv_obj_set_y(buttons[0],168);lv_obj_set_y(buttons[1],222);result_progress=257;
     }
     controls();
@@ -181,7 +181,7 @@ void roll3_view_tick(void) {
     else if(view_state==R3_PAUSED||menu_requested)wanted=MODAL_MENU;
     else if(ready_toast)wanted=MODAL_GO;
     set_mode(wanted);visible(menu_button,wanted==MODAL_NONE&&view_state==R3_RUNNING);
-    if(wanted==MODAL_MENU)text(info,view_state!=R3_PAUSED||action_pending?"请稍候":last_result!=R3_OK?"操作未完成，请再试一次":"小球和时间已暂停");
+    if(wanted==MODAL_MENU)text(info,view_state!=R3_PAUSED||action_pending?"PLEASE WAIT":last_result!=R3_OK?"TRY AGAIN":"BALL AND TIMER PAUSED");
     if(wanted==MODAL_RESULT){
         uint32_t elapsed=lv_tick_elaps(result_started);unsigned progress=256;
         if(elapsed<800u){float u=(float)elapsed/800.f,q=1-u;progress=(unsigned)((1-q*q*q)*256.f+.5f);}
@@ -219,14 +219,14 @@ static void clicked(lv_event_t *event) {
     else if(modal==MODAL_FALL&&o==buttons[0])send_action(R3_RESPAWN);
 }
 static int create(void (*action)(r3_action_kind_t),void (*closed)(void)) {
-    if(page){error_text="三维预览已经打开";return -100;}
+    if(page){error_text="GAME ALREADY OPEN";return -100;}
     if(!lv_display_get_default()||lv_display_get_horizontal_resolution(NULL)!=390||lv_display_get_vertical_resolution(NULL)!=450){
-        error_text="屏幕尺寸不支持";return -102;
+        error_text="UNSUPPORTED DISPLAY";return -102;
     }
-    frame_color=lv_malloc(R3_VIEW_COLOR_BYTES);if(!frame_color){error_text="三维画面内存不足，请返回";return -103;}
+    frame_color=lv_malloc(R3_VIEW_COLOR_BYTES);if(!frame_color){error_text="NOT ENOUGH MEMORY";return -103;}
     depth_rows=R3_VIEW_DEFAULT_DEPTH_ROWS;workspace=lv_malloc(R3_VIEW_WORKSPACE_BYTES(depth_rows));
     if(!workspace){depth_rows=R3_VIEW_LOW_DEPTH_ROWS;workspace=lv_malloc(R3_VIEW_WORKSPACE_BYTES(depth_rows));}
-    if(!workspace){lv_free(frame_color);frame_color=NULL;depth_rows=0;error_text="三维画面内存不足，请返回";return -103;}
+    if(!workspace){lv_free(frame_color);frame_color=NULL;depth_rows=0;error_text="NOT ENOUGH MEMORY";return -103;}
     send_action=action;on_closed=closed;valid_frame=have_snapshot=action_pending=false;
     ready_toast=result_active=menu_requested=false;view_state=R3_READY;last_result=R3_OK;
     shown_seconds=UINT32_MAX;shown_run=0;modal=MODAL_NONE;result_progress=257;memset(&camera_follow,0,sizeof(camera_follow));
@@ -245,7 +245,7 @@ static int create(void (*action)(r3_action_kind_t),void (*closed)(void)) {
     menu_button=lv_button_create(page);lv_obj_remove_style_all(menu_button);lv_obj_set_pos(menu_button,310,25);lv_obj_set_size(menu_button,56,56);
     lv_obj_set_y(menu_button,26);pixel_style(menu_button,PAPER);
     for(unsigned i=0;i<3;++i)box(menu_button,14,10+(int)i*6,24,2,INK,0);
-    label(menu_button,"菜单",0,26,56,&roll3_font_20);
+    label(menu_button,"MENU",0,28,56,&roll3_font_16);
     lv_obj_add_event_cb(menu_button,pressed,LV_EVENT_PRESSED,NULL);lv_obj_add_event_cb(menu_button,clicked,LV_EVENT_CLICKED,NULL);
     shade=box(page,0,0,390,450,0x281b42,0);lv_obj_set_style_bg_opa(shade,80,0);
     card=pixel_box(shade,44,102,302,300,PAPER);
