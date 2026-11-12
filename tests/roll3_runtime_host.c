@@ -49,6 +49,34 @@ static r3_snapshot_t read_page(bool expected_pending)
     return snapshot;
 }
 
+static void advance_sample(uint32_t ms)
+{
+    clock_ms+=ms;
+    publication=(lab_motion_t){.a={0,0,1},.sequence=publication.sequence+1,
+        .sampled_ms=clock_ms,.session=held_token,.valid=true};
+    run_cycle();
+}
+
+static void start_calibrated_page(void)
+{
+    assert(roll3_runtime_open());
+    assert(roll3_runtime_submit(R3_START,read_page(false).run));
+    run_cycle();
+    assert(held_token);
+    publication.sequence=0;
+    for(unsigned i=0;i<32;++i)advance_sample(20);
+    assert(read_page(false).state==R3_RUNNING);
+}
+
+static r3_snapshot_t drop_ball(void)
+{
+    session.game.s.position.z=session.game.world->fall_z-.1f;
+    advance_sample(R3_STEP_MS);
+    r3_snapshot_t fallen=read_page(false);
+    assert(fallen.state==R3_FALLEN);
+    return fallen;
+}
+
 int main(void)
 {
     assert(!roll3_runtime_init(false) && !roll3_runtime_open());
@@ -95,5 +123,37 @@ int main(void)
     run_cycle();
     assert(read_page(false).state == R3_ERROR && session.input_fault == ROLL3_INPUT_FAULT_OWNER_LOST);
     puts("TC-511 runtime owner loss diagnosed PASS");
+    roll3_runtime_close();
+    run_cycle();
+    start_calibrated_page();
+    r3_snapshot_t fallen=drop_ball();
+    advance_sample(ROLL3_UI_TIMEOUT_MS+1);
+    assert(read_page(false).state==R3_FALLEN); /* Unresponsive page: wait. */
+    run_cycle();
+    snapshot=read_page(false);
+    assert(snapshot.state==R3_RUNNING&&snapshot.run==fallen.run&&snapshot.falls==fallen.falls);
+    assert(snapshot.elapsed_ms==fallen.elapsed_ms);
+
+    fallen=drop_ball();
+    clock_ms+=ROLL3_AUTO_RESPAWN_MS;
+    publication.sampled_ms=clock_ms;
+    ++publication.sequence;
+    assert(roll3_runtime_submit(R3_RESTART,fallen.run));
+    run_cycle();
+    assert(read_page(false).state==R3_CALIBRATING); /* User command wins. */
+    roll3_runtime_close();
+    run_cycle();
+    held_token=0;
+    run_cycle();
+
+    start_calibrated_page();
+    drop_ball();
+    roll3_runtime_close();
+    advance_sample(ROLL3_AUTO_RESPAWN_MS);
+    assert(session.game.s.state==R3_READY); /* Closing page wins. */
+    held_token=0;
+    run_cycle();
+    assert(!roll3_runtime_busy());
+    puts("TC-515 auto respawn requires live page and yields to restart/close PASS");
     return 0;
 }

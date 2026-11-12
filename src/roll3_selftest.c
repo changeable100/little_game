@@ -1,6 +1,8 @@
 #include "roll3_selftest.h"
 #include "roll3_physics.h"
 #include "roll3_scene.h"
+#include "roll3_bend.h"
+#include "roll3_session.h"
 #include <math.h>
 #include <stddef.h>
 #include <string.h>
@@ -11,7 +13,7 @@ static const r3_input_t gravity={{0,0,-9.81f},true}, zero={{0,0,0},true};
 static const r3_box_t floor_box={{0,0,-0.2f},{20,20,0.2f},BASIS,0,0.6f,0,0x123456};
 static r3_world_t test_world(const r3_box_t *b,unsigned count) {
     r3_world_t w={b,count,{0,0,R3_RADIUS},{-3,-3,R3_RADIUS},
-        {{-4,-4,0},{-2,-2,2}},{{9,9,0},{10,10,2}},-3};
+        {{-4,-4,0},{-2,-2,2}},{{9,9,0},{10,10,2}},-3,NULL,NULL};
     return w;
 }
 static r3_result_t act(r3_game_t *g,r3_action_kind_t kind) {
@@ -27,12 +29,40 @@ static bool steps(r3_game_t *g,const r3_input_t *in,unsigned n) {
 static float norm2(r3_vec_t v) {return v.x*v.x+v.y*v.y+v.z*v.z;}
 static float energy(const r3_game_t *g) {return 0.5f*norm2(g->s.velocity)+0.2f*R3_RADIUS*R3_RADIUS*norm2(g->s.omega);}
 static bool near(float a,float b,float eps) {return fabsf(a-b)<=eps;}
+static r3_vec_t from_uv(float u,float v,float z) {
+    return (r3_vec_t){u*R3_M1_COS-v*R3_M1_SIN,-u*R3_M1_SIN-v*R3_M1_COS,z};
+}
+static r3_vec_t to_uv(r3_vec_t p) {
+    return (r3_vec_t){p.x*R3_M1_COS-p.y*R3_M1_SIN,-p.x*R3_M1_SIN-p.y*R3_M1_COS,p.z};
+}
+static float projection(r3_vec_t v,r3_vec_t axis) {
+    return v.x*axis.x+v.y*axis.y+v.z*axis.z;
+}
+static bool top_point(const r3_box_t *b,r3_vec_t p,unsigned boundaries) {
+    p=(r3_vec_t){p.x-b->center.x,p.y-b->center.y,p.z-b->center.z};
+    float x=fabsf(projection(p,b->axis[0])),y=fabsf(projection(p,b->axis[1]));
+    float dx=fmaxf(0,x-b->half.x),dy=fmaxf(0,y-b->half.y);
+    float ex=fabsf(x-b->half.x),ey=fabsf(y-b->half.y);
+    if(boundaries==2){dx=ex;dy=ey;}
+    if(boundaries==1){if(ex<=ey)dx=ex;else dy=ey;}
+    float dz=projection(p,b->axis[2])-b->half.z;
+    /* Each side is within 0.05mm of the same seam endpoint, hence the
+     * two actual edges differ by at most 0.10mm. */
+    float eps=boundaries==1?.00005f:.0001f;
+    return dx*dx+dy*dy+dz*dz<=eps*eps;
+}
 static bool scene(void) {
     r3_game_t g;r3_snapshot_t s;
-    CHECK(r3_world_validate(r3_demo_world())==R3_OK&&start(&g,r3_demo_world()));
+    CHECK(r3_world_validate(r3_m1_world())==R3_OK&&start(&g,r3_m1_world()));
     CHECK(r3_snapshot(&g,&s)==R3_OK&&s.version==1&&s.radius==R3_RADIUS);
-    CHECK(r3_demo_world()->box_count==10&&r3_demo_world()->boxes[1].axis[0].z>0);
-    CHECK(s.orientation.w==1&&s.position.z==R3_RADIUS);
+    const r3_world_t *w=g.world;
+    CHECK(w->box_count==7&&w->fall_z==-3);
+    CHECK(s.orientation.w==1&&near(s.position.z,1.50f+R3_RADIUS,.0001f));
+    CHECK(near(w->checkpoint_spawn.z,1.05f+R3_RADIUS,.0001f));
+    CHECK(top_point(&w->boxes[0],(r3_vec_t){s.position.x,s.position.y,s.position.z-R3_RADIUS},0));
+    CHECK(top_point(&w->boxes[2],(r3_vec_t){w->checkpoint_spawn.x,w->checkpoint_spawn.y,
+                                         w->checkpoint_spawn.z-R3_RADIUS},0));
+    for(unsigned i=1;i<6;i+=2)CHECK(w->boxes[i].axis[0].z<0);
     return true;
 }
 static bool invalid_world(void) {
@@ -53,7 +83,7 @@ static bool invalid_world(void) {
     return true;
 }
 static bool guards(void) {
-    r3_game_t g,before;CHECK(start(&g,r3_demo_world()));before=g;
+    r3_game_t g,before;CHECK(start(&g,r3_m1_world()));before=g;
     r3_action_t a={R3_RESTART,g.s.run-1,g.last_request+1};
     CHECK(r3_action(&g,&a)==R3_STALE&&memcmp(&g,&before,sizeof(g))==0);
     a.expected_run=g.s.run;a.request=g.last_request;CHECK(r3_action(&g,&a)==R3_STALE);
@@ -65,7 +95,7 @@ static bool guards(void) {
     return true;
 }
 static bool lifecycle(void) {
-    r3_game_t g;CHECK(r3_init(&g,r3_demo_world())==R3_OK);
+    r3_game_t g;CHECK(r3_init(&g,r3_m1_world())==R3_OK);
     CHECK(r3_step(&g,&zero,5)==R3_WRONG_STATE);
     CHECK(act(&g,R3_START)==R3_OK&&g.s.state==R3_CALIBRATING);
     CHECK(r3_step(&g,&zero,5)==R3_WRONG_STATE&&r3_calibrated(&g,g.s.run)==R3_OK);
@@ -85,7 +115,7 @@ static bool stationary(void) {
     return true;
 }
 static bool flight(void) {
-    r3_game_t g;CHECK(start(&g,r3_demo_world()));
+    r3_game_t g;CHECK(start(&g,r3_m1_world()));
     g.s.position=(r3_vec_t){0,0,2};g.s.velocity=(r3_vec_t){1,2,3};g.s.omega=(r3_vec_t){0,4,0};
     CHECK(steps(&g,&zero,1));
     CHECK(near(g.s.position.x,0.005f,1e-6f)&&near(g.s.position.y,0.01f,1e-6f)&&near(g.s.position.z,2.015f,1e-5f));
@@ -93,7 +123,7 @@ static bool flight(void) {
     return true;
 }
 static bool freefall(void) {
-    r3_game_t g;CHECK(start(&g,r3_demo_world()));g.s.position.z=2;
+    r3_game_t g;CHECK(start(&g,r3_m1_world()));g.s.position.z=2;
     CHECK(steps(&g,&gravity,10));
     CHECK(near(g.s.velocity.z,-0.4905f,1e-5f)&&near(g.s.position.z,2-9.81f*0.000025f*55,1e-5f));
     return true;
@@ -172,25 +202,28 @@ static bool corner_stability(void) {
     return true;
 }
 static bool respawn(void) {
-    r3_game_t g;CHECK(start(&g,r3_demo_world()));
+    r3_game_t g;CHECK(start(&g,r3_m1_world()));
     g.s.position=g.world->checkpoint_spawn;CHECK(steps(&g,&gravity,1)&&g.s.checkpoint==1);
-    uint32_t run=g.s.run;g.s.position=(r3_vec_t){4.8f,1,-2.999f};g.s.velocity.z=-2;
+    uint32_t run=g.s.run;g.s.position=from_uv(-2,5.5f,g.world->fall_z+.001f);g.s.velocity.z=-2;
     CHECK(steps(&g,&gravity,1)&&g.s.state==R3_FALLEN&&g.s.falls==1);
     uint32_t elapsed=g.s.elapsed_ms;
     CHECK(act(&g,R3_RESPAWN)==R3_OK&&g.s.run==run&&g.s.elapsed_ms==elapsed&&g.s.falls==1);
-    CHECK(near(g.s.position.x,g.world->checkpoint_spawn.x,1e-6f)&&norm2(g.s.velocity)==0);
+    CHECK(near(g.s.position.x,g.world->checkpoint_spawn.x,1e-6f)&&
+          near(g.s.position.y,g.world->checkpoint_spawn.y,1e-6f)&&
+          near(g.s.position.z,g.world->checkpoint_spawn.z,1e-6f)&&norm2(g.s.velocity)==0);
     CHECK(act(&g,R3_RESTART)==R3_OK&&g.s.checkpoint==0&&g.s.falls==0);
     return true;
 }
 static bool win(void) {
-    r3_game_t g;CHECK(start(&g,r3_demo_world()));g.s.position=(r3_vec_t){10,4.2f,0.7f};
-    CHECK(steps(&g,&gravity,1)&&g.s.state==R3_WON);
+    /* Single transition only; demo_route exercises the continuous run. */
+    r3_game_t g;CHECK(start(&g,r3_m1_world()));g.s.position=from_uv(5.5f,11,.10f+R3_RADIUS);
+    CHECK(steps(&g,&gravity,1)&&g.s.state==R3_WON&&g.s.checkpoint==0);
     r3_snapshot_t before=g.s;CHECK(r3_step(&g,&gravity,5)==R3_WRONG_STATE&&memcmp(&before,&g.s,sizeof(before))==0);
     CHECK(act(&g,R3_RESTART)==R3_OK&&g.s.elapsed_ms==0);return true;
 }
 static bool invalid_input(void) {
     for(unsigned i=0;i<4;i++) {
-        r3_game_t g;CHECK(start(&g,r3_demo_world()));r3_input_t input=gravity;
+        r3_game_t g;CHECK(start(&g,r3_m1_world()));r3_input_t input=gravity;
         if(i==0)input.valid=false;if(i==1)input.acceleration.x=NAN;
         if(i==2)input.acceleration.z=INFINITY;if(i==3)input.acceleration.x=21;
         CHECK(r3_step(&g,&input,5)==R3_INVALID&&g.s.state==R3_ERROR&&g.s.error==R3_INPUT_ERROR&&g.s.elapsed_ms==0);
@@ -198,18 +231,18 @@ static bool invalid_input(void) {
     return true;
 }
 static bool counters(void) {
-    r3_game_t g;CHECK(start(&g,r3_demo_world()));g.s.elapsed_ms=UINT32_MAX-3;
+    r3_game_t g;CHECK(start(&g,r3_m1_world()));g.s.elapsed_ms=UINT32_MAX-3;
     CHECK(steps(&g,&gravity,1)&&g.s.elapsed_ms==UINT32_MAX);
     g.s.revision=UINT32_MAX;r3_game_t before=g;
     CHECK(r3_step(&g,&gravity,5)==R3_EXHAUSTED&&memcmp(&before,&g,sizeof(g))==0);
     CHECK(act(&g,R3_RESTART)==R3_EXHAUSTED);
     g.s.revision=10;g.s.run=UINT32_MAX;CHECK(act(&g,R3_RESTART)==R3_EXHAUSTED);
-    CHECK(start(&g,r3_demo_world()));g.s.falls=UINT32_MAX;g.s.position=(r3_vec_t){10,0,-3};g.s.velocity.z=-2;
+    CHECK(start(&g,r3_m1_world()));g.s.falls=UINT32_MAX;g.s.position=(r3_vec_t){10,0,-3};g.s.velocity.z=-2;
     CHECK(steps(&g,&gravity,1)&&g.s.falls==UINT32_MAX&&g.s.state==R3_FALLEN);
     return true;
 }
 static bool quaternion(void) {
-    r3_game_t g;CHECK(start(&g,r3_demo_world()));g.s.omega.z=40;
+    r3_game_t g;CHECK(start(&g,r3_m1_world()));g.s.omega.z=40;
     CHECK(steps(&g,&zero,2000));r3_quat_t q=g.s.orientation;
     CHECK(near(q.w*q.w+q.x*q.x+q.y*q.y+q.z*q.z,1,0.00001f)&&near(g.s.omega.z,40,0.00001f));
     return true;
@@ -230,14 +263,14 @@ static bool iteration_budget(void) {
     return true;
 }
 static bool speed_budget(void) {
-    r3_game_t g;CHECK(start(&g,r3_demo_world()));
+    r3_game_t g;CHECK(start(&g,r3_m1_world()));
     g.s.position.z=2;g.s.velocity.x=100;g.s.omega.z=100;
     CHECK(steps(&g,&zero,1)&&g.s.speed_limited&&!g.s.limited);
     CHECK(near(g.s.velocity.x,8,1e-6f)&&near(g.s.omega.z,80,1e-6f));
     CHECK(near(g.s.position.x,0.04f,1e-6f));return true;
 }
 static bool tuned_coast(void) {
-    r3_box_t b=floor_box;b.rolling_friction=r3_demo_world()->boxes[0].rolling_friction;
+    r3_box_t b=floor_box;b.rolling_friction=r3_m1_world()->boxes[0].rolling_friction;
     r3_world_t w=test_world(&b,1);r3_game_t g;CHECK(start(&g,&w));
     g.s.velocity.x=1;g.s.omega.y=1/R3_RADIUS;
     float previous=energy(&g);
@@ -247,35 +280,287 @@ static bool tuned_coast(void) {
     CHECK(g.s.velocity.x<.08f&&g.s.position.x<1.5f&&g.s.state==R3_RUNNING);
     return true;
 }
-static bool ramp_deck_seam(void)
+static bool deck_geometry(void)
 {
-    const r3_box_t *b=r3_demo_world()->boxes;
-    const r3_box_t *ramp=&b[1];
-    float top_x=ramp->center.x+ramp->half.z*ramp->axis[2].x;
-    float top_z=ramp->center.z+ramp->half.z*ramp->axis[2].z;
-    float half_x=ramp->half.x*ramp->axis[0].x;
-    float half_z=ramp->half.x*ramp->axis[0].z;
-    return near(top_x-half_x,b[0].center.x+b[0].half.x,.0001f) &&
-           near(top_z-half_z,b[0].center.z+b[0].half.z,.0001f) &&
-           near(top_x+half_x,b[2].center.x-b[2].half.x,.0001f) &&
-           near(top_z+half_z,b[2].center.z+b[2].half.z,.0001f) &&
-           near(ramp->half.y,b[2].half.y,.0001f);
-}
-static bool demo_route(void) {
-    r3_game_t g;CHECK(start(&g,r3_demo_world()));
-    const r3_vec_t route[]={{3.5f,0,0},{6,0,0},{6,4.2f,0},{10,4.2f,0}};
-    unsigned next=0;
-    for(unsigned i=0;i<16000&&g.s.state==R3_RUNNING;i++) {
-        r3_vec_t target=route[next];
-        float dx=target.x-g.s.position.x,dy=target.y-g.s.position.y;
-        if(next<3&&dx*dx+dy*dy<.04f&&norm2(g.s.velocity)<.16f)++next;
-        r3_input_t input={{fmaxf(-4,fminf(4,3*dx-4*g.s.velocity.x+((g.s.position.x>1&&g.s.position.x<3)?2.4525f:0))),
-                           fmaxf(-4,fminf(4,3*dy-4*g.s.velocity.y)),-9.81f},true};
-        CHECK(steps(&g,&input,1)&&!g.s.limited);
+    const r3_box_t *b=r3_m1_world()->boxes;
+    /* u edges, v edges and high/low z, independent of the production box math. */
+    static const float limits[7][6]={
+        {-1.1f,1.1f,-1,1,1.50f,1.50f},{-1.1f,1.1f,1,4.5f,1.50f,1.05f},
+        {-1.1f,1.1f,4.5f,6.5f,1.05f,1.05f},{1.1f,4.3f,4.5f,6.5f,1.05f,.60f},
+        {4.3f,6.7f,4.5f,6.5f,.60f,.60f},{4.4f,6.6f,6.5f,10,.60f,.10f},
+        {4.4f,6.6f,10,12,.10f,.10f}
+    };
+    for(unsigned i=0;i<7;++i)for(unsigned u=0;u<2;++u)for(unsigned v=0;v<2;++v){
+        const float *a=limits[i];
+        CHECK(top_point(&b[i],from_uv(a[u],a[2+v],a[4+(i==3?u:v)]),2));
     }
-    CHECK(g.s.state==R3_WON&&g.s.checkpoint==1&&g.s.falls==0);
     return true;
 }
+
+static bool deck_seam(unsigned i)
+{
+    const r3_box_t *b=r3_m1_world()->boxes;
+    static const float edges[6][5]={
+        {-1.1f,1,1.1f,1,1.50f},{-1.1f,4.5f,1.1f,4.5f,1.05f},
+        {1.1f,4.5f,1.1f,6.5f,1.05f},{4.3f,4.5f,4.3f,6.5f,.60f},
+        {4.4f,6.5f,6.6f,6.5f,.60f},{4.4f,10,6.6f,10,.10f}
+    };
+    const float *e=edges[i];
+    for(unsigned j=0;j<4;j+=2){
+        r3_vec_t p=from_uv(e[j],e[j+1],e[4]);
+        CHECK(top_point(&b[i],p,1)&&top_point(&b[i+1],p,1));
+    }
+    return true;
+}
+
+static bool safe_zones(void)
+{
+    const r3_world_t *w=r3_m1_world();
+    for(unsigned i=0;i<2;++i){
+        r3_zone_t z=i?w->goal:w->checkpoint;
+        const r3_box_t *b=&w->boxes[i?6:2];
+        for(unsigned x=0;x<2;++x)for(unsigned y=0;y<2;++y){
+            r3_vec_t p={(x?z.max.x:z.min.x)-b->center.x,(y?z.max.y:z.min.y)-b->center.y,0};
+            CHECK(fabsf(projection(p,b->axis[0]))+R3_RADIUS<=b->half.x);
+            CHECK(fabsf(projection(p,b->axis[1]))+R3_RADIUS<=b->half.y);
+        }
+    }
+    CHECK(w->goal.max.z<w->checkpoint.min.z);
+    return true;
+}
+
+static float clamp_input(float x){return fmaxf(-4,fminf(4,x));}
+static bool demo_route(void) {
+    r3_game_t g;CHECK(start(&g,r3_m1_world()));
+    /* Synthetic feedback only: no writes to model pose after spawning. Stop
+     * near each turn center before steering along the next segment. */
+    static const r3_vec_t route[]={{0,5.5f,0},{5.5f,5.5f,0},{5.5f,11,0}};
+    unsigned next=0,seams=0;
+    for(unsigned i=0;i<16000&&g.s.state==R3_RUNNING;i++) {
+        r3_vec_t p=to_uv(g.s.position),v=to_uv(g.s.velocity);
+        float du=route[next].x-p.x,dv=route[next].y-p.y;
+        if(next<2&&du*du+dv*dv<.04f&&norm2(v)<.16f){
+            CHECK(next?seams==4:(seams==2&&g.s.checkpoint==1));
+            ++next;du=route[next].x-p.x;dv=route[next].y-p.y;
+        }
+        float cu=0,cv=0;
+        if(next==0&&p.y>1&&p.y<4.5f)cv=9.81f*.45f/3.5f;
+        if(next==1&&p.x>1.1f&&p.x<4.3f)cu=9.81f*.45f/3.2f;
+        if(next==2&&p.y>6.5f&&p.y<10)cv=9.81f*.50f/3.5f;
+        r3_input_t input={from_uv(clamp_input(3*du-4*v.x-cu),clamp_input(3*dv-4*v.y-cv),-9.81f),true};
+        CHECK(steps(&g,&input,1)&&!g.s.limited&&!g.s.speed_limited);
+        p=to_uv(g.s.position);
+        if(seams==0&&p.y>=1){CHECK(fabsf(p.x)<.9f);++seams;}
+        if(seams==1&&p.y>=4.5f){CHECK(fabsf(p.x)<.9f);++seams;}
+        if(seams==2&&p.x>=1.1f){CHECK(next==1&&fabsf(p.y-5.5f)<.8f);++seams;}
+        if(seams==3&&p.x>=4.3f){CHECK(fabsf(p.y-5.5f)<.8f);++seams;}
+        if(seams==4&&p.y>=6.5f){CHECK(next==2&&fabsf(p.x-5.5f)<.9f);++seams;}
+        if(seams==5&&p.y>=10){CHECK(fabsf(p.x-5.5f)<.9f);++seams;}
+    }
+    CHECK(seams==6&&next==2&&g.s.state==R3_WON&&g.s.checkpoint==1&&g.s.falls==0);
+    return true;
+}
+static bool m2_bend_geometry(void)
+{
+    const r3_world_t *w=r3_m2_world();
+    CHECK(r3_world_validate(w)==R3_OK&&w->bend);
+    const r3_bend_t *b=w->bend;
+    for(unsigned end=0;end<2;++end){
+        float c=end?-1.f:1.f,z=end?b->exit_z:b->origin.z;
+        for(int side=-1;side<=1;++side){
+            float r=b->radius+side*b->half_width;
+            CHECK(near(r3_bend_height(b,c,0,r),z,.001f));
+            r3_vec_t point=r3_bend_point(b,c,0,r,z);
+            CHECK(top_point(&w->boxes[5+end],point,1));
+        }
+    }
+    CHECK(r3_bend_height(b,0,1,b->radius+b->half_width)>
+          r3_bend_height(b,0,1,b->radius-b->half_width)+.5f);
+    r3_bend_t invalid=*b;
+    r3_world_t invalid_world=*w;
+    invalid_world.bend=&invalid;
+    invalid.sweep_axis=invalid.radial_start;
+    CHECK(r3_world_validate(&invalid_world)==R3_INVALID);
+    return true;
+}
+
+static bool m2_rail(void)
+{
+    r3_game_t g;CHECK(start(&g,r3_m2_world()));
+    const r3_bend_t *b=g.world->bend;
+    float outer=b->radius+b->half_width,r=outer-.34f;
+    g.s.position=r3_bend_point(b,0,1,r,r3_bend_height(b,0,1,r)+R3_RADIUS+.02f);
+    g.s.velocity=from_uv(0,2,0);
+    bool stopped=false;
+    for(unsigned i=0;i<100;++i){
+        CHECK(steps(&g,&gravity,1)&&g.s.state==R3_RUNNING&&!g.s.limited);
+        r3_vec_t local=to_uv(g.s.position),origin=to_uv(b->origin);
+        float radius=hypotf(local.x-origin.x,local.y-origin.y);
+        CHECK(radius<=outer-R3_RADIUS+.025f);
+        stopped=stopped||to_uv(g.s.velocity).y<=0;
+    }
+    CHECK(stopped);
+    return true;
+}
+
+static bool m2_crossings(void)
+{
+    const r3_world_t *w=r3_m2_world();
+    const r3_bend_t *b=w->bend;
+    r3_vec_t origin=to_uv(b->origin);
+    for(unsigned end=0;end<2;++end){
+        float u=origin.x+(end?-b->radius:b->radius),z=end?b->exit_z:b->origin.z;
+        for(int direction=-1;direction<=1;direction+=2){
+            r3_game_t g;CHECK(start(&g,w));
+            float offset=-.25f*direction;
+            float rise=end?.22f:.30f;
+            g.s.position=from_uv(u,origin.y+offset,z-fminf(0,offset)*rise/1.4f+R3_RADIUS+.005f);
+            g.s.velocity=from_uv(0,1.35f*direction,0);
+            for(unsigned i=0;i<90;++i){
+                r3_vec_t v=to_uv(g.s.velocity),p=to_uv(g.s.position);
+                /* Target the same approach speed against either straight slope. */
+                float grade=p.y<origin.y?9.81f*rise/1.4f:0;
+                r3_input_t input={from_uv(-3*v.x,3*(1.40f*direction-v.y)-grade,-9.81f),true};
+                CHECK(steps(&g,&input,1)&&g.s.state==R3_RUNNING&&!g.s.limited);
+            }
+            CHECK(direction*(to_uv(g.s.position).y-origin.y)>.18f&&g.s.grounded);
+        }
+    }
+    return true;
+}
+
+static bool m2_route(bool respawn_first)
+{
+    const r3_world_t *w=r3_m2_world();
+    const r3_bend_t *b=w->bend;
+    roll3_session_t session={0};
+    r3_game_t *g=&session.game;
+    CHECK(start(g,w));
+    unsigned next=0,arc=0,grounded_arc=0;
+    if(respawn_first){
+        g->s.position=w->checkpoint_spawn;
+        CHECK(steps(g,&gravity,4)&&g->s.checkpoint==1);
+        g->s.position.z=w->fall_z-.1f;
+        CHECK(steps(g,&gravity,1)&&g->s.state==R3_FALLEN);
+        uint32_t elapsed=g->s.elapsed_ms;
+        session.fallen_at=100;
+        session.stamp=700;
+        session.sequence=1;
+        CHECK(roll3_session_try_auto_respawn(&session,700)&&g->s.elapsed_ms==elapsed&&
+              g->s.falls==1&&g->s.checkpoint==1&&near(g->s.position.z,w->checkpoint_spawn.z,.001f));
+        next=3;
+    }
+    const r3_vec_t turns[]={{0,5.60f,0},{4.35f,5.60f,0},{4.35f,12.80f,0},{4.35f,15.42f,0}};
+    r3_vec_t center=to_uv(b->origin);
+    for(unsigned i=0;i<18000&&g->s.state==R3_RUNNING;++i){
+        r3_vec_t p=to_uv(g->s.position),v=to_uv(g->s.velocity);
+        r3_vec_t target={.10f,12.90f,0};
+        if(next<4){
+            target=turns[next];
+            float du=target.x-p.x,dv=target.y-p.y;
+            if(du*du+dv*dv<.055f&&(next>=2||norm2(v)<.16f)){
+                ++next;
+                if(next<4)target=turns[next];
+            }
+        }
+        if(next==4&&arc<12){
+            float angle=(arc+1)*.2617993878f;
+            target=(r3_vec_t){center.x+b->radius*cosf(angle),center.y+b->radius*sinf(angle),0};
+            float du=target.x-p.x,dv=target.y-p.y;
+            if(du*du+dv*dv<.073f)++arc;
+        }
+        float gu=0,gv=0;
+        if(p.y>=center.y&&next==4){
+            float u=p.x-center.x,vv=p.y-center.y,r=hypotf(u,vv);
+            if(r>.6f){
+                float c=u/r,s=vv/r,dr=b->bank*s*s;
+                float da=((b->exit_z-b->origin.z)*.5f*s+
+                    2*b->bank*s*c*(r-b->radius))/r;
+                gu=9.81f*(dr*c-da*s);gv=9.81f*(dr*s+da*c);
+                if(g->s.grounded)++grounded_arc;
+            }
+        }else if(p.y>1&&p.y<4.4f)gv=-9.81f*.5f/3.4f;
+        else if(next>=2&&p.x>3.1f&&p.y>6.8f&&p.y<11.6f)gv=-9.81f*1.15f/4.8f;
+        else if(p.y>14&&p.y<center.y)gv=-9.81f*(p.x>center.x?.30f:.22f)/1.4f;
+        r3_input_t input={from_uv(clamp_input(3.6f*(target.x-p.x)-3.5f*v.x+gu),
+            clamp_input(3.6f*(target.y-p.y)-3.5f*v.y+gv),-9.81f),true};
+        CHECK(steps(g,&input,1)&&!g->s.limited&&!g->s.speed_limited);
+    }
+    CHECK(arc==12&&grounded_arc>100&&g->s.state==R3_WON&&g->s.checkpoint==1&&
+          g->s.falls==(respawn_first?1u:0u));
+    return true;
+}
+
+static bool m3_guide_rails(void)
+{
+    const r3_world_t *w=r3_demo_world();
+    CHECK(r3_world_validate(w)==R3_OK&&w->style&&w->style->face_count>0);
+    r3_course_style_t style=*w->style;
+    r3_world_t invalid=*w;
+    invalid.style=&style;
+    style.face_count=R3_MAX_ART_FACES+1;
+    CHECK(r3_world_validate(&invalid)==R3_INVALID);
+    for(unsigned i=0;i<2;++i){
+        r3_game_t g;CHECK(start(&g,w));
+        const r3_box_t *rail=&w->boxes[w->style->solid_boxes_from+i];
+        r3_vec_t p=to_uv(rail->center);
+        g.s.position=from_uv(p.x,p.y-.46f,3.05f+R3_RADIUS);
+        g.s.velocity=from_uv(0,1.9f,0);
+        bool turned=false;
+        for(unsigned step=0;step<100;++step){
+            CHECK(steps(&g,&gravity,1)&&!g.s.limited&&g.s.state==R3_RUNNING);
+            CHECK(to_uv(g.s.position).y<=p.y-rail->half.y-R3_RADIUS+.003f);
+            turned=turned||to_uv(g.s.velocity).y<=0;
+        }
+        CHECK(turned);
+    }
+    return true;
+}
+
+static bool m3_replay(void)
+{
+    r3_game_t g;CHECK(start(&g,r3_demo_world()));
+    const r3_bend_t *b=g.world->bend;
+    const r3_vec_t route[]={{0,5.10f,0},{3.90f,5.10f,0},{4.35f,7.80f,0},
+        {4.35f,10.30f,0},{4.35f,16.50f,0},{4.35f,19.13f,0}};
+    const unsigned count=sizeof(route)/sizeof(*route);
+    r3_vec_t center=to_uv(b->origin);
+    unsigned next=0,arc=0,grounded_arc=0;
+    for(unsigned i=0;i<22000&&g.s.state==R3_RUNNING;++i){
+        r3_vec_t p=to_uv(g.s.position),v=to_uv(g.s.velocity);
+        r3_vec_t target={.10f,16.60f,0};
+        if(next<count){
+            target=route[next];
+            float du=target.x-p.x,dv=target.y-p.y;
+            bool need_stop=next<2||next==3;
+            if(du*du+dv*dv<.053f&&(!need_stop||norm2(v)<.16f)){
+                if(next==3)CHECK(g.s.grounded&&near(p.z,2.55f+R3_RADIUS,.025f));
+                if(next==4)CHECK(g.s.checkpoint==1);
+                ++next;
+                if(next<count)target=route[next];
+            }
+        }
+        if(next==count&&arc<12){
+            float theta=(arc+1)*.2617993878f;
+            target=(r3_vec_t){center.x+b->radius*cosf(theta),center.y+b->radius*sinf(theta),0};
+            float du=target.x-p.x,dv=target.y-p.y;
+            if(du*du+dv*dv<.073f)++arc;
+            if(g.s.grounded&&p.y>center.y+.15f)++grounded_arc;
+        }
+        float gu=0,gv=0;
+        if(g.s.grounded&&g.s.contact_normal.z>.65f){
+            r3_vec_t normal=to_uv(g.s.contact_normal);
+            gu=-9.81f*normal.x/normal.z;
+            gv=-9.81f*normal.y/normal.z;
+        }
+        r3_input_t input={from_uv(clamp_input(3.6f*(target.x-p.x)-3.5f*v.x+gu),
+            clamp_input(3.6f*(target.y-p.y)-3.5f*v.y+gv),-9.81f),true};
+        CHECK(steps(&g,&input,1)&&!g.s.limited&&!g.s.speed_limited);
+    }
+    CHECK(arc==12&&grounded_arc>100&&g.s.state==R3_WON&&g.s.checkpoint==1&&g.s.falls==0);
+    return true;
+}
+
 int r3_selftest_run(maze_test_report_t report) {
     int failures=0;
 #define RUN(name,expr) do {bool passed=(expr);if(!passed)++failures;if(report)report(name,passed);}while(0)
@@ -305,9 +590,23 @@ int r3_selftest_run(maze_test_report_t report) {
     RUN("TC-502 rounded-box-near-miss",near_miss());
     RUN("TC-502 bounded-deep-contact",iteration_budget());
     RUN("TC-502 linear-angular-speed-budget",speed_budget());
-    RUN("TC-508 ramp-and-platform-share-top-edge",ramp_deck_seam());
-    RUN("TC-505 continuous-ramp-two-turn-route",demo_route());
+    RUN("TC-513 seven-deck-top-corners",deck_geometry());
+    RUN("TC-513 seam S-R1",deck_seam(0));
+    RUN("TC-513 seam R1-C1",deck_seam(1));
+    RUN("TC-513 seam C1-R2",deck_seam(2));
+    RUN("TC-513 seam R2-C2",deck_seam(3));
+    RUN("TC-513 seam C2-R3",deck_seam(4));
+    RUN("TC-513 seam R3-G",deck_seam(5));
+    RUN("TC-513 checkpoint-goal-clearance",safe_zones());
+    RUN("TC-513 continuous-six-seam-checkpoint-route",demo_route());
     RUN("TC-506 level-coast-stops-without-energy-gain",tuned_coast());
+    RUN("TC-517 smooth banked bend geometry and flush ends",m2_bend_geometry());
+    RUN("TC-517 curved outside rail contains the ball",m2_rail());
+    RUN("TC-517 both bend joins cross in both directions",m2_crossings());
+    RUN("TC-517 continuous M2 checkpoint bend and goal",m2_route(false));
+    RUN("TC-517 auto respawn continues from checkpoint to M2 goal",m2_route(true));
+    RUN("TC-518 both M3 guide rails stop the ball",m3_guide_rails());
+    RUN("TC-518 M3 two turns landing checkpoint U bend and goal",m3_replay());
 #undef RUN
     return failures;
 }

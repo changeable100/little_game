@@ -2,6 +2,8 @@
  * Never steps/calibrates a model or reads a device. */
 #include "roll3_view.h"
 #include "roll3_renderer.h"
+#include "roll3_bend.h"
+#include "roll3_physics.h"
 #include "roll3_camera_basis.h"
 #include "roll3_scene.h"
 #include "roll3_font.h"
@@ -141,6 +143,8 @@ static void publish(r3_state_t state)
     lv_timer_handler();
 }
 static void math_report(const char *name,bool ok){printf("%s %s\n",name,ok?"PASS":"FAIL");}
+static r3_vec_t from_uv(float u,float v,float z)
+{return (r3_vec_t){u*R3_M1_COS-v*R3_M1_SIN,-u*R3_M1_SIN-v*R3_M1_COS,z};}
 static void render(const r3_snapshot_t *s,const r3_world_t *w)
 {assert(roll3_renderer_render(color+1,depth+1,s,w)==0);assert(color[0]==0xabcd&&color[R3_VIEW_PIXELS+1]==0xabcd);
  assert(depth[0]==0xabcd&&depth[R3_VIEW_PIXELS+1]==0xabcd);}
@@ -150,10 +154,11 @@ int main(void)
     puts("3D host view and production page adapter with fake runtime");
     color[0]=color[R3_VIEW_PIXELS+1]=depth[0]=depth[R3_VIEW_PIXELS+1]=0xabcd;
     assert(roll3_renderer_selftest(math_report)==0);
-    const r3_world_t *world=r3_demo_world();
+    const r3_world_t *world=r3_m1_world();
     r3_snapshot_t s={.version=ROLL3_CONTRACT_VERSION,.radius=.2f,.orientation={1,0,0,0},.position={3,0,1}};
     r3_box_t distant=world->boxes[0];distant.center=(r3_vec_t){30,20,0};
     r3_world_t lone=*world;lone.boxes=&distant;lone.box_count=1;
+    lone.spawn=(r3_vec_t){0,0,R3_RADIUS}; /* Independent cube/ball fixture. */
     render(&s,&lone);unsigned near_count=coverage();memcpy(saved,color+1,sizeof(saved));
     s.position.y=3;render(&s,&lone);assert(coverage()==near_count);
     float px,py,pz,qx,qy,qz;
@@ -162,17 +167,20 @@ int main(void)
     assert(qz>pz&&fabsf(qx-R3_VIEW_W*.5f)<fabsf(px-R3_VIEW_W*.5f));
     s.position.y=0;s.orientation=(r3_quat_t){.92387953f,.38268343f,0,0};render(&s,&lone);
     assert(memcmp(saved,color+1,sizeof(saved))!=0);
-    s.orientation=(r3_quat_t){1,0,0,0};render(&s,world);float x,y,z;
+    s.orientation=(r3_quat_t){1,0,0,0};s.position=world->checkpoint_spawn;
+    render(&s,world);float x,y,z;
     assert(roll3_renderer_project_focus(s.position,roll3_renderer_focus(&s,world),&x,&y,&z));unsigned center=(unsigned)y*R3_VIEW_W+(unsigned)x;
     uint16_t ball_pixel=color[1+center];
     r3_box_t boxes[R3_MAX_BOXES];memcpy(boxes,world->boxes,world->box_count*sizeof(*boxes));
-    boxes[world->box_count]=distant;boxes[world->box_count].center=(r3_vec_t){2.36f,-1.1085f,2.04f};
+    boxes[world->box_count]=distant;
+    boxes[world->box_count].center=(r3_vec_t){s.position.x-1.28f*R3_CAM_SIN,
+        s.position.y-1.28f*R3_CAM_COS,s.position.z+1.04f};
     boxes[world->box_count].half=(r3_vec_t){.7f,.1f,1};boxes[world->box_count].color=0xff0000;
     r3_world_t occluded=*world;occluded.boxes=boxes;occluded.box_count++;
     render(&s,&occluded);assert(color[1+center]!=ball_pixel);assert((color[1+center]&31)==0);
-    render(&s,world);memcpy(saved,color+1,sizeof(saved));
+    s.position=from_uv(0,2.75f,1.475f);render(&s,world);memcpy(saved,color+1,sizeof(saved));
     memcpy(boxes,world->boxes,world->box_count*sizeof(*boxes));
-    boxes[1].axis[0]=(r3_vec_t){1,0,0};boxes[1].axis[2]=(r3_vec_t){0,0,1};
+    boxes[1].axis[0]=from_uv(0,1,0);boxes[1].axis[2]=(r3_vec_t){0,0,1};
     r3_world_t flat=*world;flat.boxes=boxes;render(&s,&flat);assert(memcmp(saved,color+1,sizeof(saved))!=0);
     r3_vec_t extremes[]={{3,-8,6},{3,-7.9f,6},{99,99,99},{3,-30,20},{-99,0,0}};
     for(unsigned i=0;i<sizeof(extremes)/sizeof(*extremes);++i){s.position=extremes[i];render(&s,world);}
@@ -209,6 +217,7 @@ int main(void)
 
     r3_box_t cube=world->boxes[0];
     cube.center=(r3_vec_t){0,0,-.5f};cube.half=(r3_vec_t){.5f,.5f,.5f};
+    cube.axis[0]=(r3_vec_t){1,0,0};cube.axis[1]=(r3_vec_t){0,1,0};
     lone.boxes=&cube;
     s=(r3_snapshot_t){.version=1,.radius=R3_RADIUS,.orientation={1,0,0,0},
         .position={99,99,-3},.state=R3_FALLEN};
@@ -259,13 +268,15 @@ int main(void)
     static r3_edge_aa_t expected_edges;
     assert(roll3_view_create()==0);
     s=(r3_snapshot_t){.version=1,.radius=R3_RADIUS,.orientation={1,0,0,0},
-        .position={3.5f,0,.7f},.state=R3_RUNNING};
+        .position=world->checkpoint_spawn,.state=R3_RUNNING};
     roll3_view_render(&s,world);
     lv_obj_t *quality_page=lv_obj_get_child(lv_layer_top(),-1);
     lv_obj_t *quality_image=lv_obj_get_child(quality_page,0);
     const lv_image_dsc_t *quality=lv_image_get_src(quality_image);
-    assert(roll3_renderer_render_edges(color+1,depth+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&s,world,NULL,NULL)==0);
+    assert(roll3_renderer_render_play(color+1,depth+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&s,world,NULL)==0);
     assert(memcmp(quality->data,color+1,R3_VIEW_COLOR_BYTES)==0);
+    assert(roll3_renderer_render_edges(saved,depth+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&s,world,NULL,NULL)==0);
+    assert(memcmp(quality->data,saved,R3_VIEW_COLOR_BYTES)!=0);
     s.state=R3_PAUSED;
     roll3_view_render(&s,world);
     assert(roll3_renderer_render_edges(saved,depth+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&s,world,NULL,&expected_edges)==0);
@@ -273,15 +284,16 @@ int main(void)
     assert(memcmp(color+1,saved,R3_VIEW_COLOR_BYTES)!=0);
     roll3_view_destroy();
     assert(buffer_live==0&&objects(lv_layer_top())==base&&timers()==clock_base);
-    puts("TC-512 actual play center and pause edge coverage PASS");
+    puts("TC-516 actual play smoothing and pause edge coverage PASS");
     const char *names[]={"READY","CALIBRATING","RUNNING","PAUSED","FALLEN","WON","ERROR"};
     for(unsigned round=0;round<20;++round){assert(roll3_view_create()==0);assert(roll3_view_create()==-100);
         unsigned count=objects(lv_layer_top()),allocations=buffer_attempts;
         for(unsigned st=0;st<7;++st){s=(r3_snapshot_t){.version=1,.radius=.2f,.orientation={1,0,0,0},
                 .position=world->spawn,.state=(r3_state_t)st,.run=1,.revision=st,
                 .elapsed_ms=st>=2?12345:0,.falls=st>=2?1:0,.checkpoint=st>=2?1:0};
-            if(st>=2)s.position=(r3_vec_t){3.5f,0,.7f};
-            if(st==R3_FALLEN)s.position.z=-1;if(st==R3_WON)s.position=(r3_vec_t){10,4.2f,.7f};
+            if(st>=2)s.position=world->checkpoint_spawn;
+            if(st==R3_FALLEN)s.position=from_uv(-2,5.5f,-1);
+            if(st==R3_WON)s.position=from_uv(5.5f,11,.10f+R3_RADIUS);
             if(st==R3_ERROR)s.error=R3_INPUT_ERROR;
             s.orientation=(r3_quat_t){.92387953f,.38268343f,0,0};
             roll3_view_render(&s,world);glyphs(lv_layer_top());
@@ -297,6 +309,58 @@ int main(void)
         roll3_view_destroy();roll3_view_destroy();assert(buffer_live==0&&objects(lv_layer_top())==base&&timers()==clock_base);
     }
     printf("TC-501 seven Chinese states/glyphs, controls, allocation failure, 20 cycles PASS; persistent buffers=%lu bytes\n",(unsigned long)buffer_budget);
+    const struct {const char *name;float u,v,z;r3_state_t state;} views[]={
+        {"M1-S.ppm",0,0,1.70f,R3_READY},{"M1-C1.ppm",0,5.5f,1.25f,R3_RUNNING},
+        {"M1-C2.ppm",5.5f,5.5f,.80f,R3_RUNNING},{"M1-G.ppm",5.5f,11,.30f,R3_WON}
+    };
+    for(unsigned i=0;i<sizeof(views)/sizeof(*views);++i){
+        assert(roll3_view_create()==0);
+        s=(r3_snapshot_t){.version=ROLL3_CONTRACT_VERSION,.radius=R3_RADIUS,.orientation={1,0,0,0},
+            .position=from_uv(views[i].u,views[i].v,views[i].z),.state=views[i].state,.checkpoint=i!=0};
+        roll3_view_render(&s,world);screenshot(views[i].name);roll3_view_destroy();
+    }
+    assert(buffer_live==0&&objects(lv_layer_top())==base&&timers()==clock_base);
+    puts("TC-513 four M1 preview poses captured with production camera direction");
+    const r3_world_t *m2=r3_m2_world();
+    const r3_bend_t *bend=m2->bend;
+    assert(bend&&r3_world_validate(m2)==R3_OK);
+    const r3_vec_t m2_positions[]={
+        m2->spawn,from_uv(4.35f,9.20f,2.325f),m2->checkpoint_spawn,
+        r3_bend_point(bend,0,1,bend->radius,r3_bend_height(bend,0,1,bend->radius)+R3_RADIUS),
+        from_uv(.10f,12.90f,1.08f+R3_RADIUS)
+    };
+    const char *m2_views[]={"M2-S.ppm","M2-RAMP.ppm","M2-CP.ppm","M2-BEND.ppm","M2-G.ppm"};
+    for(unsigned i=0;i<sizeof(m2_positions)/sizeof(*m2_positions);++i){
+        assert(roll3_view_create()==0);
+        s=(r3_snapshot_t){.version=ROLL3_CONTRACT_VERSION,.radius=R3_RADIUS,.orientation={1,0,0,0},
+            .position=m2_positions[i],.state=i==0?R3_READY:i==4?R3_WON:R3_RUNNING,.checkpoint=i>=2};
+        roll3_view_render(&s,m2);
+        assert(!find(lv_layer_top(),"三维数据无效"));
+        screenshot(m2_views[i]);roll3_view_destroy();
+    }
+    assert(buffer_live==0&&objects(lv_layer_top())==base&&timers()==clock_base);
+    puts("TC-517 M2 start, long ramp, checkpoint, banked bend and goal captured");
+    const r3_world_t *m3=r3_demo_world();
+    bend=m3->bend;
+    assert(bend&&m3->style&&r3_world_validate(m3)==R3_OK);
+    const r3_vec_t m3_positions[]={
+        m3->spawn,from_uv(1.40f,5.09f,3.05f+R3_RADIUS),
+        from_uv(4.35f,10.3f,2.55f+R3_RADIUS),m3->checkpoint_spawn,
+        r3_bend_point(bend,0,1,bend->radius,r3_bend_height(bend,0,1,bend->radius)+R3_RADIUS),
+        from_uv(.10f,16.60f,1.08f+R3_RADIUS)
+    };
+    const char *m3_views[]={"M3-S.ppm","M3-TURN.ppm","M3-LANDING.ppm","M3-CP.ppm","M3-BEND.ppm","M3-G.ppm"};
+    for(unsigned i=0;i<sizeof(m3_positions)/sizeof(*m3_positions);++i){
+        assert(roll3_view_create()==0);
+        s=(r3_snapshot_t){.version=ROLL3_CONTRACT_VERSION,.radius=R3_RADIUS,.orientation={1,0,0,0},
+            .position=m3_positions[i],.state=i==0?R3_READY:i==5?R3_WON:R3_RUNNING,.checkpoint=i>=3};
+        roll3_view_render(&s,m3);
+        assert(!find(lv_layer_top(),"三维数据无效"));
+        assert(buffer_live==2&&buffer_bytes==buffer_budget);
+        screenshot(m3_views[i]);roll3_view_destroy();
+    }
+    assert(buffer_live==0&&objects(lv_layer_top())==base&&timers()==clock_base);
+    puts("TC-518 M3 six scene poses with standard view allocation PASS");
     fail_buffer = true;
     assert(roll3_page_open() == -103 && !live_open && closes == 1);
     fail_buffer = false;

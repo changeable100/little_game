@@ -2,6 +2,7 @@
  * Build with roll3_scene.c and roll3_physics.c; the include exposes band internals. */
 #include "../src/roll3_renderer.c"
 #include "roll3_scene.h"
+#include "roll3_bend.h"
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
@@ -21,10 +22,18 @@ static r3_edge_aa_t edges;
 
 static r3_snapshot_t pose(unsigned frame)
 {
-    float t=(float)frame/(FRAME_COUNT-1),rotation=.39269908f+t*.32f;
+    /* Twelve synthetic poses per straight leg, including both turns and the
+     * finish. The continuous physics replay is checked in roll3_selftest.c. */
+    unsigned leg=frame/12;
+    float t=(float)(frame%12)/11,rotation=.39269908f+(float)frame*.04f;
+    float u=leg==0?0:leg==1?5.5f*t:5.5f;
+    float v=leg==0?5.5f*t:leg==1?5.5f:5.5f+5.5f*t;
+    float z=leg==0?1.50f-.45f*fminf(1,fmaxf(0,(v-1)/3.5f)):
+            leg==1?1.05f-.45f*fminf(1,fmaxf(0,(u-1.1f)/3.2f)):
+                      .60f-.50f*fminf(1,fmaxf(0,(v-6.5f)/3.5f));
     return (r3_snapshot_t){
         .version=ROLL3_CONTRACT_VERSION,.radius=R3_RADIUS,.state=R3_RUNNING,
-        .position={3.48f+.24f*t,.05f*t,.7f},
+        .position={u*R3_M1_COS-v*R3_M1_SIN,-u*R3_M1_SIN-v*R3_M1_COS,z+R3_RADIUS},
         .orientation={cosf(rotation),sinf(rotation),0,0}
     };
 }
@@ -93,10 +102,150 @@ static double time_ms(void)
     return (double)t.tv_sec*1000.0+(double)t.tv_nsec/1e6;
 }
 
+static uint64_t frame_change(const uint16_t *previous, const uint16_t *current)
+{
+    uint64_t energy=0;
+    for(unsigned i=0;i<R3_VIEW_PIXELS;++i){
+        int delta=(int)((previous[i]>>5)&63u)-(int)((current[i]>>5)&63u);
+        energy+=(unsigned)(delta*delta);
+    }
+    return energy;
+}
+
+static void m1_motion(const r3_world_t *world, bool save)
+{
+    const r3_box_t *deck=&world->boxes[0];
+    r3_vec_t view=sub(add(world->spawn,eye_offset),deck->center);
+    assert(dot(view,deck->axis[2])>deck->half.z);
+    assert(fabsf(dot(view,deck->axis[0]))>deck->half.x);
+    assert(fabsf(dot(view,deck->axis[1]))>deck->half.y);
+    r3_vec_t top=add(deck->center,mul(deck->axis[2],deck->half.z));
+    float x,y,z,x1,y1,z1;
+    assert(roll3_renderer_project_focus(top,world->spawn,&x,&y,&z));
+    for(unsigned axis=0;axis<2;++axis){
+        assert(roll3_renderer_project_focus(add(top,mul(deck->axis[axis],.5f)),
+            world->spawn,&x1,&y1,&z1));
+        assert(fabsf(y-y1)>4.0f);
+    }
+    puts("TC-516 M1 start top and both sides, two oblique top edges PASS");
+
+    uint64_t raw_energy=0,filtered_energy=0;
+    double raw_ms=0,filtered_ms=0;
+    for(unsigned repeat=0;repeat<3;++repeat){
+        r3_camera_follow_t raw={0},filtered={0},low={0};
+        for(unsigned i=0;i<FRAME_COUNT;++i){
+            const float v=1.9f+.0045f*(float)i;
+            r3_snapshot_t s={
+                .version=ROLL3_CONTRACT_VERSION,.radius=R3_RADIUS,.state=R3_RUNNING,.run=1,
+                .elapsed_ms=i*50,.position={-v*R3_M1_SIN,-v*R3_M1_COS,
+                    1.50f-.45f*(v-1.0f)/3.5f+R3_RADIUS},
+                .orientation={1,0,0,0}
+            };
+            double start=time_ms();
+            assert(roll3_renderer_render_edges(baseline,regular+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&s,world,&raw,NULL)==0);
+            raw_ms+=time_ms()-start;
+            start=time_ms();
+            assert(roll3_renderer_render_play(banded,regular+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&s,world,&filtered)==0);
+            filtered_ms+=time_ms()-start;
+            if(repeat==0){
+                assert(roll3_renderer_render_play(local+1,compact+1,R3_VIEW_LOW_DEPTH_ROWS,&s,world,&low)==0);
+                assert(memcmp(banded,local+1,sizeof(banded))==0);
+                if(i){
+                    raw_energy+=frame_change(full_color[0],baseline);
+                    filtered_energy+=frame_change(full_color[1],banded);
+                }
+                memcpy(full_color[0],baseline,sizeof(baseline));
+                memcpy(full_color[1],banded,sizeof(banded));
+                if(save){
+                    save_ppm("motion-raw",i,baseline);
+                    save_ppm("motion-smoothed",i,banded);
+                }
+                check_guards();
+                assert(regular[0]==0xdada&&regular[sizeof(regular)/sizeof(*regular)-1]==0x1cad);
+                assert(compact[0]==0xdada&&compact[sizeof(compact)/sizeof(*compact)-1]==0x1cad);
+            }
+        }
+    }
+    printf("TC-516 slow pan frame energy raw=%llu filtered=%llu reduction=%.1f%%\n",
+           (unsigned long long)raw_energy,(unsigned long long)filtered_energy,
+           100.0*(1.0-(double)filtered_energy/raw_energy));
+    printf("TC-516 slow pan mean host ms raw=%.3f filtered=%.3f ratio=%.2f\n",
+           raw_ms/(3*FRAME_COUNT),filtered_ms/(3*FRAME_COUNT),filtered_ms/raw_ms);
+    assert(raw_energy>0&&filtered_energy*100<=85*raw_energy);
+    assert(raw_ms>0&&filtered_ms<=1.5*raw_ms);
+    puts("TC-516 motion edges, 100/50-row identity and guards PASS");
+}
+
+static void m2_curve_buffers(void)
+{
+    const r3_world_t *world=r3_m2_world();
+    const r3_bend_t *bend=world->bend;
+    double center_ms=0,play_ms=0;
+    for(unsigned i=0;i<FRAME_COUNT;++i){
+        float theta=3.141592654f*i/(FRAME_COUNT-1),c=cosf(theta),s=sinf(theta);
+        r3_snapshot_t pose={
+            .version=ROLL3_CONTRACT_VERSION,.radius=R3_RADIUS,.state=R3_RUNNING,
+            .position=r3_bend_point(bend,c,s,bend->radius,
+                r3_bend_height(bend,c,s,bend->radius)+R3_RADIUS),.orientation={1,0,0,0}
+        };
+        double start=time_ms();
+        assert(roll3_renderer_render_edges(baseline,regular+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&pose,world,NULL,NULL)==0);
+        center_ms+=time_ms()-start;
+        start=time_ms();
+        assert(roll3_renderer_render_play(banded,regular+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&pose,world,NULL)==0);
+        play_ms+=time_ms()-start;
+        assert(roll3_renderer_render_play(local+1,compact+1,R3_VIEW_LOW_DEPTH_ROWS,&pose,world,NULL)==0);
+        assert(memcmp(banded,local+1,sizeof(banded))==0);
+        check_guards();
+        assert(regular[0]==0xdada&&regular[sizeof(regular)/sizeof(*regular)-1]==0x1cad);
+        assert(compact[0]==0xdada&&compact[sizeof(compact)/sizeof(*compact)-1]==0x1cad);
+    }
+    printf("TC-517 %u bend frames mean host ms center=%.3f play=%.3f\n",
+           FRAME_COUNT,center_ms/FRAME_COUNT,play_ms/FRAME_COUNT);
+    puts("TC-517 M2 bend 100/50-row output identity and guards PASS");
+}
+
+static void m3_style_buffers(void)
+{
+    const r3_world_t *world=r3_demo_world();
+    r3_course_style_t bare_style=*world->style;
+    bare_style.faces=NULL;
+    bare_style.face_count=0;
+    r3_world_t bare=*world;
+    bare.style=&bare_style;
+    const r3_bend_t *bend=world->bend;
+    double bare_ms=0,style_ms=0;
+    unsigned changed=0;
+    for(unsigned i=0;i<FRAME_COUNT;++i){
+        float theta=3.141592654f*i/(FRAME_COUNT-1),c=cosf(theta),s=sinf(theta);
+        r3_snapshot_t pose={
+            .version=ROLL3_CONTRACT_VERSION,.radius=R3_RADIUS,.state=R3_RUNNING,
+            .position=r3_bend_point(bend,c,s,bend->radius,
+                r3_bend_height(bend,c,s,bend->radius)+R3_RADIUS),.orientation={1,0,0,0}
+        };
+        double start=time_ms();
+        assert(roll3_renderer_render_play(baseline,regular+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&pose,&bare,NULL)==0);
+        bare_ms+=time_ms()-start;
+        start=time_ms();
+        assert(roll3_renderer_render_play(banded,regular+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&pose,world,NULL)==0);
+        style_ms+=time_ms()-start;
+        assert(roll3_renderer_render_play(local+1,compact+1,R3_VIEW_LOW_DEPTH_ROWS,&pose,world,NULL)==0);
+        assert(memcmp(banded,local+1,sizeof(banded))==0);
+        changed+=memcmp(banded,baseline,sizeof(banded))!=0;
+        check_guards();
+        assert(regular[0]==0xdada&&regular[sizeof(regular)/sizeof(*regular)-1]==0x1cad);
+        assert(compact[0]==0xdada&&compact[sizeof(compact)/sizeof(*compact)-1]==0x1cad);
+    }
+    assert(changed>0);
+    printf("TC-518 %u M3 bend frames mean host ms bare=%.3f scenery=%.3f visibly_changed=%u\n",
+           FRAME_COUNT,bare_ms/FRAME_COUNT,style_ms/FRAME_COUNT,changed);
+    puts("TC-518 M3 scenery 100/50-row output identity and guards PASS");
+}
+
 int main(int argc,char **argv)
 {
     (void)argv;
-    const r3_world_t *world=r3_demo_world();
+    const r3_world_t *world=r3_m1_world();
     local[0]=0x7be1;local[R3_VIEW_PIXELS+1]=0xc473;
     scratch[0]=0x174d;scratch[R3_VIEW_PIXELS+1]=0xfe18;
     unsigned candidates=0,matched=0,modified=0;
@@ -183,5 +332,8 @@ int main(int argc,char **argv)
     puts("TC-512 play center bands match full-depth center output and guards PASS");
     puts("TC-510 100/50-row exact output, dense low-memory bands and scratch guards PASS");
     puts("TC-509 local coverage, unchanged interior, dense bands and guards PASS");
+    m1_motion(world,argc>1);
+    m2_curve_buffers();
+    m3_style_buffers();
     return 0;
 }

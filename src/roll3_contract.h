@@ -6,6 +6,7 @@
 
 #define ROLL3_CONTRACT_VERSION 1u
 #define R3_MAX_BOXES 12u
+#define R3_MAX_ART_FACES 144u
 #define R3_STEP_MS 5u
 #define R3_RADIUS 0.20f
 #define R3_MAX_SPEED 8.0f
@@ -21,11 +22,31 @@ typedef struct {
     uint32_t color; /* RGB888; renderer uses the exact same geometry. */
 } r3_box_t;
 typedef struct {
+    r3_vec_t origin, radial_start, sweep_axis;
+    float radius, half_width, exit_z, bank, rail_height;
+    uint32_t color;
+} r3_bend_t; /* Half-annulus; radial_start points to the entry. */
+
+typedef struct {
+    r3_vec_t vertices[4];
+    uint32_t color;
+} r3_art_face_t;
+
+typedef struct {
+    const r3_art_face_t *faces;
+    unsigned face_count, solid_boxes_from;
+    uint32_t background, light_tile;
+    float skirt_z;
+} r3_course_style_t; /* Immutable scenery and palette, independent of collision. */
+
+typedef struct {
     const r3_box_t *boxes; /* Immutable, borrowed for whole model lifetime. */
     uint32_t box_count;
     r3_vec_t spawn, checkpoint_spawn;
     r3_zone_t checkpoint, goal;
     float fall_z;
+    const r3_bend_t *bend; /* Optional; follows the same immutable lifetime. */
+    const r3_course_style_t *style;
 } r3_world_t;
 typedef enum { R3_OK=0, R3_INVALID=-1, R3_WRONG_STATE=-2,
                R3_STALE=-3, R3_EXHAUSTED=-4 } r3_result_t;

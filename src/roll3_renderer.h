@@ -32,6 +32,9 @@ int roll3_renderer_render_follow(uint16_t *color, uint16_t *depth,
 int roll3_renderer_render_edges(uint16_t *color, uint16_t *depth, unsigned depth_rows,
     const r3_snapshot_t *snapshot, const r3_world_t *world, r3_camera_follow_t *follow,
     r3_edge_aa_t *edge_aa);
+/* One depth pass followed by a bounded RGB565 edge filter for play. */
+int roll3_renderer_render_play(uint16_t *color, uint16_t *depth, unsigned depth_rows,
+    const r3_snapshot_t *snapshot, const r3_world_t *world, r3_camera_follow_t *follow);
 r3_vec_t roll3_renderer_focus(const r3_snapshot_t *snapshot, const r3_world_t *world);
 bool roll3_renderer_project_focus(r3_vec_t p, r3_vec_t focus, float *x, float *y, float *depth);
 int roll3_renderer_render(uint16_t *color, uint16_t *depth,

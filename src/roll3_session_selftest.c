@@ -173,11 +173,147 @@ static bool light_tilt_progression(void)
     return middle>=2.3f&&middle<=2.6f&&hypotf(full.x,full.y)>=4.89f;
 }
 
+static bool h1_tilt_curve_and_diagonal(void)
+{
+    roll3_session_t s;
+    if (!calibrated(&s, 100)) return false;
+    uint32_t now=740,seq=32;
+    if (roll3_session_action(&s,R3_PAUSE,s.game.s.run,now)!=R3_OK) return false;
+    r3_vec_t fine=settled_input(&s,1,.15f,&now,&seq);
+    r3_vec_t middle=settled_input(&s,1,.30f,&now,&seq);
+    float fine_acc=hypotf(fine.x,fine.y),mid_acc=hypotf(middle.x,middle.y);
+    if (fine_acc<.80f||fine_acc>.83f||mid_acc<2.30f||mid_acc>2.40f) return false;
+    for(unsigned i=0;i<64;++i){
+        now+=20;
+        lab_motion_t m=sample(&s,++seq,now);
+        m.a[0]=m.a[1]=.45f;
+        roll3_session_update(&s,now,&m,true);
+    }
+    r3_vec_t a=s.input.acceleration;
+    float right=a.x*R3_CAM_COS-a.y*R3_CAM_SIN;
+    float forward=a.x*R3_CAM_SIN+a.y*R3_CAM_COS;
+    float length=hypotf(a.x,a.y);
+    return length>=4.89f&&length<=4.9001f&&right>0&&fabsf(right-forward)<.001f;
+}
+
+static bool h1_neutral_brake_on_flat(void)
+{
+    roll3_session_t s;
+    if (!calibrated(&s,100)) return false;
+    r3_vec_t start=s.game.s.position;
+    s.game.s.velocity=(r3_vec_t){1,0,0};
+    s.game.s.omega=(r3_vec_t){0,1/R3_RADIUS,0};
+    s.game.s.grounded=true;
+    s.game.s.contact_normal=(r3_vec_t){0,0,1};
+    r3_game_t coast=s.game;
+    for(unsigned step=1;step<=800/R3_STEP_MS;++step){
+        uint32_t now=740+step*R3_STEP_MS;
+        lab_motion_t neutral=sample(&s,32+step/4,now);
+        roll3_session_update(&s,now,step%4==0?&neutral:NULL,true);
+        if(s.game.s.state!=R3_RUNNING||s.game.s.velocity.x<-.0001f||
+           r3_step(&coast,&s.input,R3_STEP_MS)!=R3_OK) return false;
+    }
+    float speed=hypotf(s.game.s.velocity.x,s.game.s.velocity.y);
+    float distance=hypotf(s.game.s.position.x-start.x,s.game.s.position.y-start.y);
+    return speed<=.30f&&distance<=.55f&&s.game.s.velocity.x<coast.s.velocity.x&&
+           s.game.s.position.x<coast.s.position.x;
+}
+
+static bool h1_brake_scope(void)
+{
+    for(unsigned mode=0;mode<3;++mode){
+        roll3_session_t s;
+        if (!calibrated(&s,100)) return false;
+        s.game.s.velocity=(r3_vec_t){.8f,0,0};
+        if(mode==0){
+            s.game.s.position.z+=1; /* Airborne. */
+        }else if(mode==1){
+            const r3_box_t *ramp=&r3_demo_world()->boxes[1];
+            r3_vec_t normal=ramp->axis[2];
+            float clearance=ramp->half.z+R3_RADIUS;
+            s.game.s.position=(r3_vec_t){ramp->center.x+clearance*normal.x,
+                ramp->center.y+clearance*normal.y,ramp->center.z+clearance*normal.z};
+            s.game.s.contact_normal=normal;
+            s.game.s.grounded=true;
+        }else{
+            s.game.s.grounded=true;
+            s.game.s.contact_normal=(r3_vec_t){0,0,1};
+            s.input.acceleration.x=-1; /* Active counter-tilt. */
+        }
+        r3_game_t expected=s.game;
+        if(r3_step(&expected,&s.input,R3_STEP_MS)!=R3_OK)return false;
+        roll3_session_update(&s,740+R3_STEP_MS,NULL,true);
+        r3_vec_t actual=s.game.s.velocity,reference=expected.s.velocity;
+        if(s.game.s.state!=expected.s.state||actual.x!=reference.x||
+           actual.y!=reference.y||actual.z!=reference.z)return false;
+    }
+    return true;
+}
+
+static bool same_position(r3_vec_t a,r3_vec_t b)
+{
+    return a.x==b.x&&a.y==b.y&&a.z==b.z;
+}
+
+static bool auto_respawn_case(bool checkpoint)
+{
+    roll3_session_t s;
+    uint32_t start=checkpoint?UINT32_MAX-652:100;
+    if (!calibrated(&s,start)) return false;
+    uint32_t now=start+640,seq=32;
+    if(checkpoint){
+        s.game.s.position=s.game.world->checkpoint_spawn;
+        now+=R3_STEP_MS;
+        lab_motion_t m=sample(&s,++seq,now);
+        roll3_session_update(&s,now,&m,true);
+        if(s.game.s.checkpoint!=1) return false;
+    }
+    s.game.s.position.z=s.game.world->fall_z-.1f;
+    now+=R3_STEP_MS+2;
+    lab_motion_t dropped=sample(&s,++seq,now);
+    roll3_session_update(&s,now,&dropped,true);
+    if(s.game.s.state!=R3_FALLEN||s.game.s.falls!=1||s.remainder||s.fallen_at!=now)return false;
+    r3_snapshot_t fallen=s.game.s;
+    uint32_t due=now+ROLL3_AUTO_RESPAWN_MS;
+    lab_motion_t early=sample(&s,++seq,due-1);
+    roll3_session_update(&s,due-1,checkpoint?NULL:&early,true);
+    if(roll3_session_try_auto_respawn(&s,due-1)||s.game.s.state!=R3_FALLEN)return false;
+    if(checkpoint){
+        if(roll3_session_try_auto_respawn(&s,due)||s.game.s.state!=R3_FALLEN)return false;
+        due+=20; /* Wait for a fresh publication across the tick wrap. */
+    }
+    lab_motion_t fresh_sample=sample(&s,++seq,due);
+    roll3_session_update(&s,due,&fresh_sample,true);
+    if(!roll3_session_try_auto_respawn(&s,due)||roll3_session_try_auto_respawn(&s,due))return false;
+    const r3_snapshot_t *respawn=&s.game.s;
+    r3_vec_t expected=checkpoint?s.game.world->checkpoint_spawn:s.game.world->spawn;
+    const r3_vec_t zero={0,0,0};
+    return respawn->state==R3_RUNNING&&same_position(respawn->position,expected)&&
+           respawn->run==fallen.run&&respawn->checkpoint==fallen.checkpoint&&
+           respawn->falls==fallen.falls&&respawn->elapsed_ms==fallen.elapsed_ms&&
+           same_position(respawn->velocity,zero)&&same_position(respawn->omega,zero)&&
+           !s.remainder&&s.anchor==due;
+}
+
+static bool manual_respawn_before_timeout(void)
+{
+    roll3_session_t s;
+    if (!calibrated(&s,100)) return false;
+    s.game.s.position.z=s.game.world->fall_z-.1f;
+    roll3_session_update(&s,745,NULL,true);
+    if (s.game.s.state!=R3_FALLEN) return false;
+    return roll3_session_action(&s,R3_RESPAWN,s.game.s.run,760)==R3_OK&&
+           s.game.s.state==R3_RUNNING&&!roll3_session_try_auto_respawn(&s,1345);
+}
+
 int roll3_session_selftest(maze_test_report_t report)
 {
     bool axis = axes(), clock = timing(), life = lifecycle(), gentle=gentle_input(), basis=screen_basis();
     bool response=prompt_tilt_response(),diagnostics=diagnose_running_input();
     bool light=light_tilt_progression();
+    bool curve=h1_tilt_curve_and_diagonal(),brake=h1_neutral_brake_on_flat(),scope=h1_brake_scope();
+    bool auto_start=auto_respawn_case(false),auto_checkpoint=auto_respawn_case(true);
+    bool manual=manual_respawn_before_timeout();
     if (report) {
         report("TC-504 calibration-session-and-axes", axis);
         report("TC-504 clock-wrap-catchup-heartbeat", clock);
@@ -187,6 +323,12 @@ int roll3_session_selftest(maze_test_report_t report)
         report("TC-508 first-sample-tilt-reverse-neutral",response);
         report("TC-511 running-input-faults-and-restart",diagnostics);
         report("TC-512 light-first-sample-medium-full-tilt",light);
+        report("TC-514 midrange-and-diagonal-cap",curve);
+        report("TC-514 flat-neutral-brake",brake);
+        report("TC-514 slope-air-and-counter-tilt",scope);
+        report("TC-515 auto-start-at-600ms",auto_start);
+        report("TC-515 auto-checkpoint-fresh-wrap-and-counters",auto_checkpoint);
+        report("TC-515 manual-respawn-still-available",manual);
     }
-    return !axis + !clock + !life + !gentle + !basis + !response + !diagnostics + !light;
+    return !axis + !clock + !life + !gentle + !basis + !response + !diagnostics + !light + !curve + !brake + !scope + !auto_start + !auto_checkpoint + !manual;
 }

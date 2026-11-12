@@ -162,9 +162,11 @@ void roll3_view_action_status(bool pending, r3_result_t result)
 void roll3_view_render(const r3_snapshot_t *s,const r3_world_t *world)
 {
     if(!page)return;
-    /* Keep expensive geometric coverage on quiet states, off the play loop. */
-    r3_edge_aa_t *edges=s&&s->state==R3_RUNNING?NULL:&workspace->edges;
-    int result=roll3_renderer_render_edges(frame_color,workspace->depth,depth_rows,s,world,&camera_follow,edges);
+    int result;
+    if(s&&s->state==R3_RUNNING)
+        result=roll3_renderer_render_play(frame_color,workspace->depth,depth_rows,s,world,&camera_follow);
+    else
+        result=roll3_renderer_render_edges(frame_color,workspace->depth,depth_rows,s,world,&camera_follow,&workspace->edges);
     lv_image_cache_drop(&image);lv_obj_invalidate(image_obj);
     bool state_changed=!valid_frame||!s||view_state!=s->state;
     valid_frame = result == 0;
@@ -172,7 +174,7 @@ void roll3_view_render(const r3_snapshot_t *s,const r3_world_t *world)
     view_state = s->state;
     static const char *states[]={"准备开始","请放平校准","游玩中","已暂停","小球掉落","通关","输入异常"};
     static const char *messages[]={"点击开始后，保持板子平放","等待真实校准完成","倾斜板子，沿坡道前进",
-        "暂停期间不累计时间","返回当前检查点，保留本局时间","用时已冻结，可重开或返回","输入无效，请重开或返回"};
+        "暂停期间不累计时间","等待返回当前检查点，保留本局时间","用时已冻结，可重开或返回","输入无效，请重开或返回"};
     uint32_t seconds=s->elapsed_ms/1000u;
     if(state_changed||seconds!=shown_seconds){
         shown_seconds=seconds;

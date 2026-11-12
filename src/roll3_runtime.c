@@ -93,19 +93,13 @@ static void run_cycle(void)
         result = roll3_session_action(&session, R3_BACK, previous_run, now);
     }
     sync_motion(page && roll3_session_needs_motion(&session));
-    if (previous_state != session.game.s.state || previous_run != session.game.s.run)
-        rt_kprintf("[roll3] run=%u state=%d cal=%u elapsed=%u recovery=%d\n",
-                   session.game.s.run, (int)session.game.s.state, session.stable,
-                   session.game.s.elapsed_ms, (int)session.recovery);
-
-    if (previous_state != R3_ERROR && session.game.s.state == R3_ERROR)
-        rt_kprintf("[roll3:input] run=%u reason=%s accepted_seq=%u age_ms=%u received=%u sample_run=%u sample_seq=%u valid=%u\n",
-                   session.game.s.run, input_fault_name(session.input_fault), session.sequence,
-                   session.sequence ? now - session.stamp : UINT32_MAX, (unsigned)received,
-                   received ? sample.session : 0, received ? sample.sequence : 0,
-                   received ? (unsigned)sample.valid : 0);
-
+    bool automatically_respawned = false;
     acquire();
+    if (page && mailbox.page && !pending && !mailbox.pending && session.game.s.state == R3_FALLEN) {
+        uint32_t respawn_now = now_ms();
+        if (respawn_now - mailbox.heartbeat <= ROLL3_UI_TIMEOUT_MS)
+            automatically_respawned = roll3_session_try_auto_respawn(&session, respawn_now);
+    }
     mailbox.snapshot = session.game.s;
     mailbox.have_sample = session.sequence != 0;
     mailbox.sample_stamp = session.stamp;
@@ -118,6 +112,20 @@ static void run_cycle(void)
         mailbox.occupied = false;
     }
     release();
+    if (automatically_respawned)
+        rt_kprintf("[roll3:respawn] auto run=%u checkpoint=%u falls=%u\n",
+                   session.game.s.run, session.game.s.checkpoint, session.game.s.falls);
+    if (previous_state != session.game.s.state || previous_run != session.game.s.run)
+        rt_kprintf("[roll3] run=%u state=%d cal=%u elapsed=%u recovery=%d\n",
+                   session.game.s.run, (int)session.game.s.state, session.stable,
+                   session.game.s.elapsed_ms, (int)session.recovery);
+
+    if (previous_state != R3_ERROR && session.game.s.state == R3_ERROR)
+        rt_kprintf("[roll3:input] run=%u reason=%s accepted_seq=%u age_ms=%u received=%u sample_run=%u sample_seq=%u valid=%u\n",
+                   session.game.s.run, input_fault_name(session.input_fault), session.sequence,
+                   session.sequence ? now - session.stamp : UINT32_MAX, (unsigned)received,
+                   received ? sample.session : 0, received ? sample.sequence : 0,
+                   received ? (unsigned)sample.valid : 0);
 }
 
 static void worker(void *unused)

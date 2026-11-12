@@ -1,4 +1,6 @@
 #include "roll3_physics.h"
+#include "roll3_bend.h"
+#include <float.h>
 #include <math.h>
 #include <stddef.h>
 #include <string.h>
@@ -50,6 +52,77 @@ static float separation(const r3_box_t *b,r3_vec_t p,r3_vec_t *normal) {
     *normal=mul(b->axis[axis],pos[axis]<0?-1.0f:1.0f);
     return -(half[axis]-fabsf(pos[axis]))-R3_RADIUS;
 }
+typedef enum { BEND_FLOOR, BEND_RAIL, BEND_SURFACES } bend_surface_t;
+static const r3_box_t bend_materials[BEND_SURFACES] = {
+    [BEND_FLOOR] = {.restitution=.15f,.friction=.6f,.rolling_friction=.08f},
+    [BEND_RAIL] = {.restitution=.18f,.friction=.45f,.rolling_friction=.03f}
+};
+
+static bool bend_valid(const r3_bend_t *b)
+{
+    return bounded(b->origin)&&isfinite(b->exit_z)&&fabsf(b->exit_z)<=100&&b->exit_z<=b->origin.z&&
+        isfinite(b->radius)&&b->radius<=20&&isfinite(b->half_width)&&b->half_width>R3_RADIUS&&
+        b->radius-b->half_width>2*R3_RADIUS&&isfinite(b->bank)&&b->bank>=0&&b->bank<=.5f&&
+        isfinite(b->rail_height)&&b->rail_height>=0&&b->rail_height<=1&&b->color<=0xffffffu&&
+        finite_vec(b->radial_start)&&finite_vec(b->sweep_axis)&&
+        fabsf(b->radial_start.z)<.0001f&&fabsf(b->sweep_axis.z)<.0001f&&
+        fabsf(dot(b->radial_start,b->radial_start)-1)<.0001f&&
+        fabsf(dot(b->sweep_axis,b->sweep_axis)-1)<.0001f&&
+        fabsf(dot(b->radial_start,b->sweep_axis))<.0001f;
+}
+
+/* Signed gap of the sphere to the continuous floor or outer rail. The
+ * straight decks handle the opposite side of the common end line. */
+static float bend_gap(const r3_bend_t *b, bend_surface_t surface, r3_vec_t p, r3_vec_t *normal)
+{
+    r3_vec_t offset=sub(p,b->origin);
+    float outer=b->radius+b->half_width;
+    float bound=outer+R3_BEND_RAIL_WIDTH+R3_RADIUS;
+    if(fabsf(offset.x)>bound||fabsf(offset.y)>bound)return FLT_MAX;
+    float u=dot(offset,b->radial_start),v=dot(offset,b->sweep_axis);
+    float inner=b->radius-b->half_width;
+    float radius_squared=u*u+v*v;
+    if(v < -SKIN || radius_squared<(inner-R3_RADIUS)*(inner-R3_RADIUS) ||
+        radius_squared>bound*bound)return FLT_MAX;
+
+    float radius=sqrtf(radius_squared),cosine=u/radius,sine=fmaxf(v,0)/radius;
+    r3_vec_t radial=add(mul(b->radial_start,cosine),mul(b->sweep_axis,sine));
+    if(surface==BEND_RAIL){
+        float bottom=r3_bend_height(b,cosine,sine,outer)-R3_BEND_DEPTH;
+        float top=bottom+R3_BEND_DEPTH+b->rail_height*sine*sine;
+        float far_edge=outer+R3_BEND_RAIL_WIDTH;
+        float dr=radius-clamp(radius,outer,far_edge),dz=p.z-clamp(p.z,bottom,top);
+        float distance=sqrtf(dr*dr+dz*dz);
+        if(distance>1e-8f){
+            *normal=mul(add(mul(radial,dr),(r3_vec_t){0,0,dz}),1/distance);
+            return distance-R3_RADIUS;
+        }
+        float near=fminf(radius-outer,far_edge-radius);
+        float vertical=fminf(p.z-bottom,top-p.z);
+        if(near<=vertical)*normal=mul(radial,radius-outer<=far_edge-radius?-1.f:1.f);
+        else *normal=(r3_vec_t){0,0,p.z-bottom<=top-p.z?-1.f:1.f};
+        return -fminf(near,vertical)-R3_RADIUS;
+    }
+
+    float floor_radius=clamp(radius,inner,outer);
+    float height=r3_bend_height(b,cosine,sine,floor_radius);
+    if(p.z<height-R3_BEND_DEPTH)return FLT_MAX;
+    float dr=radius-floor_radius;
+    if(dr!=0){
+        float dz=fmaxf(0,p.z-height);
+        float distance=sqrtf(dr*dr+dz*dz);
+        *normal=mul(add(mul(radial,dr),(r3_vec_t){0,0,dz}),1/distance);
+        return distance-R3_RADIUS;
+    }
+    r3_vec_t tangent=add(mul(b->radial_start,-sine),mul(b->sweep_axis,cosine));
+    float slope_r=b->bank*sine*sine;
+    float slope_a=((b->exit_z-b->origin.z)*.5f*sine+
+        2*b->bank*sine*cosine*(radius-b->radius))/radius;
+    r3_vec_t n=sub(sub((r3_vec_t){0,0,1},mul(radial,slope_r)),mul(tangent,slope_a));
+    *normal=mul(n,1/length(n));
+    return (p.z-height)*normal->z-R3_RADIUS;
+}
+
 static bool zone_valid(r3_zone_t z) {
     return bounded(z.min)&&bounded(z.max)&&z.min.x<z.max.x&&z.min.y<z.max.y&&z.min.z<z.max.z;
 }
@@ -62,6 +135,20 @@ r3_result_t r3_world_validate(const r3_world_t *w) {
        !zone_valid(w->goal)||!isfinite(w->fall_z)||fabsf(w->fall_z)>100||
        w->spawn.z<=w->fall_z+R3_RADIUS||w->checkpoint_spawn.z<=w->fall_z+R3_RADIUS||
        !inside(w->checkpoint,w->checkpoint_spawn))return R3_INVALID;
+    if(w->style){
+        const r3_course_style_t *style=w->style;
+        if(style->face_count>R3_MAX_ART_FACES||(style->face_count&&!style->faces)||
+           style->solid_boxes_from>w->box_count||style->background>0xffffffu||
+           style->light_tile>0xffffffu||!isfinite(style->skirt_z)||fabsf(style->skirt_z)>100)
+            return R3_INVALID;
+    }
+    if(w->bend){
+        if(!bend_valid(w->bend))return R3_INVALID;
+        r3_vec_t n;
+        for(bend_surface_t i=BEND_FLOOR;i<BEND_SURFACES;++i)
+            if(bend_gap(w->bend,i,w->spawn,&n)<-SKIN||
+               bend_gap(w->bend,i,w->checkpoint_spawn,&n)<-SKIN)return R3_INVALID;
+    }
     for(unsigned i=0;i<w->box_count;i++) {
         const r3_box_t *b=&w->boxes[i];
         if(!bounded(b->center)||!bounded(b->half)||b->half.x<=0||b->half.y<=0||b->half.z<=0||
@@ -141,7 +228,7 @@ r3_result_t r3_input_failed(r3_game_t *g, uint32_t run)
     return R3_OK;
 }
 
-typedef struct { bool found; float t; r3_vec_t normal; unsigned box; } hit_t;
+typedef struct { bool found; float t; r3_vec_t normal; const r3_box_t *material; } hit_t;
 /* Inflated AABB is only a broad phase; narrow phase is the rounded box. */
 static bool broad(r3_vec_t p,r3_vec_t d,r3_vec_t half) {
     float a[3]={p.x,p.y,p.z},v[3]={d.x,d.y,d.z},h[3]={half.x+R3_RADIUS,half.y+R3_RADIUS,half.z+R3_RADIUS};
@@ -156,7 +243,7 @@ static bool broad(r3_vec_t p,r3_vec_t d,r3_vec_t half) {
     }
     return true;
 }
-static void candidate(hit_t *hit,const r3_box_t *b,unsigned index,r3_vec_t p,r3_vec_t d,float t) {
+static void candidate(hit_t *hit,const r3_box_t *b,r3_vec_t p,r3_vec_t d,float t) {
     if(t < -0.00001f||t>1|| (hit->found&&t>=hit->t))return;
     t=t<0?0:t;
     r3_vec_t delta=closest_delta(add(p,mul(d,t)),b->half);
@@ -164,34 +251,53 @@ static void candidate(hit_t *hit,const r3_box_t *b,unsigned index,r3_vec_t p,r3_
     if(dist<1e-9f||fabsf(dist-R3_RADIUS)>0.0002f)return;
     r3_vec_t n=mul(delta,1/dist);
     if(dot(d,n)>=-1e-8f)return;
-    hit->found=true;hit->t=t;hit->normal=world(b,n);hit->box=index;
+    hit->found=true;hit->t=t;hit->normal=world(b,n);hit->material=b;
 }
-static void root_candidate(hit_t *hit,const r3_box_t *b,unsigned i,r3_vec_t p,r3_vec_t d,float aa,float bb,float cc) {
+static void root_candidate(hit_t *hit,const r3_box_t *b,r3_vec_t p,r3_vec_t d,float aa,float bb,float cc) {
     if(aa<1e-14f)return;
     float discriminant=bb*bb-4*aa*cc;
     if(discriminant<0)return;
-    candidate(hit,b,i,p,d,(-bb-sqrtf(discriminant))/(2*aa));
+    candidate(hit,b,p,d,(-bb-sqrtf(discriminant))/(2*aa));
 }
-static void sweep_box(hit_t *hit,const r3_box_t *b,unsigned index,r3_vec_t start,r3_vec_t delta) {
+static void sweep_box(hit_t *hit,const r3_box_t *b,r3_vec_t start,r3_vec_t delta) {
     r3_vec_t p=local(b,sub(start,b->center)),d=local(b,delta);
     if(!broad(p,d,b->half))return;
     float pos[3]={p.x,p.y,p.z},dir[3]={d.x,d.y,d.z},half[3]={b->half.x,b->half.y,b->half.z};
     for(unsigned i=0;i<3;i++)for(int sign=-1;sign<=1;sign+=2) {
-        if(fabsf(dir[i])>1e-10f)candidate(hit,b,index,p,d,(sign*(half[i]+R3_RADIUS)-pos[i])/dir[i]);
+        if(fabsf(dir[i])>1e-10f)candidate(hit,b,p,d,(sign*(half[i]+R3_RADIUS)-pos[i])/dir[i]);
     }
     for(unsigned free_axis=0;free_axis<3;free_axis++) {
         unsigned a=(free_axis+1)%3,baxis=(free_axis+2)%3;
         for(int sa=-1;sa<=1;sa+=2)for(int sb=-1;sb<=1;sb+=2) {
             float u=pos[a]-sa*half[a],v=pos[baxis]-sb*half[baxis];
-            root_candidate(hit,b,index,p,d,dir[a]*dir[a]+dir[baxis]*dir[baxis],
+            root_candidate(hit,b,p,d,dir[a]*dir[a]+dir[baxis]*dir[baxis],
                 2*(u*dir[a]+v*dir[baxis]),u*u+v*v-R3_RADIUS*R3_RADIUS);
         }
     }
     for(int sx=-1;sx<=1;sx+=2)for(int sy=-1;sy<=1;sy+=2)for(int sz=-1;sz<=1;sz+=2) {
         r3_vec_t offset=sub(p,(r3_vec_t){sx*half[0],sy*half[1],sz*half[2]});
-        root_candidate(hit,b,index,p,d,dot(d,d),2*dot(offset,d),dot(offset,offset)-R3_RADIUS*R3_RADIUS);
+        root_candidate(hit,b,p,d,dot(d,d),2*dot(offset,d),dot(offset,offset)-R3_RADIUS*R3_RADIUS);
     }
 }
+static void sweep_bend(hit_t *hit, const r3_bend_t *bend, bend_surface_t surface,
+    r3_vec_t start, r3_vec_t delta)
+{
+    r3_vec_t normal;
+    float high=hit->found?hit->t:1;
+    if(bend_gap(bend,surface,add(start,mul(delta,high)),&normal)>0)return;
+    float low=0;
+    if(bend_gap(bend,surface,start,&normal)<=0)high=0;
+    for(unsigned step=0;step<12&&high>low;++step){
+        float mid=(low+high)*.5f;
+        if(bend_gap(bend,surface,add(start,mul(delta,mid)),&normal)<=0)high=mid;
+        else low=mid;
+    }
+    if(hit->found&&high>=hit->t)return;
+    if(bend_gap(bend,surface,add(start,mul(delta,high)),&normal)==FLT_MAX||
+        dot(delta,normal)>=-1e-8f)return;
+    *hit=(hit_t){true,high,normal,&bend_materials[surface]};
+}
+
 static void mark_contact(r3_snapshot_t *s,r3_vec_t n) {
     if(s->contacts<UINT8_MAX)++s->contacts;
     if(n.z>0.25f)s->grounded=true;
@@ -236,6 +342,16 @@ static void depenetrate(r3_game_t *g) {
                 impulse(&g->s,&g->world->boxes[i],n);corrected=true;
             } else if(gap<=2*SKIN)mark_contact(&g->s,n);
         }
+        if(g->world->bend){
+            for(bend_surface_t i=BEND_FLOOR;i<BEND_SURFACES;++i){
+                r3_vec_t n;
+                float gap=bend_gap(g->world->bend,i,g->s.position,&n);
+                if(gap < -SKIN){
+                    g->s.position=add(g->s.position,mul(n,SKIN-gap));
+                    impulse(&g->s,&bend_materials[i],n);corrected=true;
+                }else if(gap<=2*SKIN)mark_contact(&g->s,n);
+            }
+        }
         if(!corrected)return;
     }
     limited(&g->s);
@@ -267,10 +383,13 @@ r3_result_t r3_step(r3_game_t *g,const r3_input_t *input,uint32_t dt_ms) {
     for(unsigned impact=0;impact<IMPACTS&&remaining>1e-8f;impact++) {
         r3_vec_t delta=mul(g->s.velocity,remaining);
         hit_t hit={false,1,{0,0,0},0};
-        for(unsigned i=0;i<g->world->box_count;i++)sweep_box(&hit,&g->world->boxes[i],i,g->s.position,delta);
+        for(unsigned i=0;i<g->world->box_count;i++)sweep_box(&hit,&g->world->boxes[i],g->s.position,delta);
+        if(g->world->bend)
+            for(bend_surface_t i=BEND_FLOOR;i<BEND_SURFACES;++i)
+                sweep_bend(&hit,g->world->bend,i,g->s.position,delta);
         if(!hit.found) {g->s.position=add(g->s.position,delta);remaining=0;break;}
         g->s.position=add(add(g->s.position,mul(delta,hit.t)),mul(hit.normal,SKIN));
-        remaining*=1-hit.t;impulse(&g->s,&g->world->boxes[hit.box],hit.normal);
+        remaining*=1-hit.t;impulse(&g->s,hit.material,hit.normal);
     }
     if(remaining>1e-8f)limited(&g->s);
     depenetrate(g);cap_motion(&g->s);orientation(&g->s);

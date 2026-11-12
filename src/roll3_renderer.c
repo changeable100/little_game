@@ -1,4 +1,5 @@
 #include "roll3_renderer.h"
+#include "roll3_bend.h"
 #include "roll3_camera_basis.h"
 #include "roll3_physics.h"
 #include <math.h>
@@ -74,6 +75,7 @@ typedef struct {
     float sample_x, sample_y;
     const r3_edge_aa_t *edges;
     int first_row, end_row;
+    const r3_course_style_t *style;
 } r3_raster_t;
 
 enum { EDGE_SAMPLES = 4 };
@@ -211,11 +213,68 @@ static r3_vec_t sphere_point(unsigned lat,unsigned lon,float r,r3_quat_t q,r3_ve
 }
 static void clear_target(r3_raster_t *target)
 {
-    uint16_t background=rgb(0x0c1220,1);
+    uint16_t background=rgb(target->style?target->style->background:0x0c1220,1);
     unsigned rows=target->end_row?(unsigned)(target->end_row-target->first_row):R3_VIEW_H;
     for(unsigned i=0;i<rows*R3_VIEW_W;++i){
         target->color[i]=background;
         target->depth[i]=65535;
+    }
+}
+
+static void bend_quad(r3_raster_t *target, r3_vec_t a, r3_vec_t b, r3_vec_t c, r3_vec_t d,
+    uint32_t color, r3_vec_t focus)
+{
+    triangle(target,a,b,c,color,focus);
+    triangle(target,a,c,d,color,focus);
+}
+
+static void draw_bend(r3_raster_t *target, const r3_bend_t *bend, r3_vec_t focus,
+    const r3_course_style_t *style)
+{
+    static const float ring[][2]={
+        {1.000000000f,0.000000000f},{0.991444861f,0.130526192f},{0.965925826f,0.258819045f},
+        {0.923879533f,0.382683432f},{0.866025404f,0.500000000f},{0.793353340f,0.608761429f},
+        {0.707106781f,0.707106781f},{0.608761429f,0.793353340f},{0.500000000f,0.866025404f},
+        {0.382683432f,0.923879533f},{0.258819045f,0.965925826f},{0.130526192f,0.991444861f},
+        {0.000000000f,1.000000000f},{-0.130526192f,0.991444861f},{-0.258819045f,0.965925826f},
+        {-0.382683432f,0.923879533f},{-0.500000000f,0.866025404f},{-0.608761429f,0.793353340f},
+        {-0.707106781f,0.707106781f},{-0.793353340f,0.608761429f},{-0.866025404f,0.500000000f},
+        {-0.923879533f,0.382683432f},{-0.965925826f,0.258819045f},{-0.991444861f,0.130526192f},
+        {-1.000000000f,0.000000000f},
+    };
+    enum { lanes=4 };
+    const uint32_t rail=style?0xb964d1:0xa071bc;
+    const uint32_t light_tile=style?style->light_tile:0xf2e6d5;
+    r3_vec_t eye=add(focus,eye_offset);
+    for(unsigned i=0;i+1<sizeof(ring)/sizeof(*ring);++i){
+        r3_vec_t floor[2][lanes+1],bottom[2][2],lip[2],rail_outer[2],rail_base[2];
+        for(unsigned end=0;end<2;++end){
+            float c=ring[i+end][0],s=ring[i+end][1];
+            for(unsigned j=0;j<=lanes;++j){
+                float r=bend->radius+bend->half_width*(2.0f*j/lanes-1.0f);
+                floor[end][j]=r3_bend_point(bend,c,s,r,r3_bend_height(bend,c,s,r));
+            }
+            for(unsigned edge=0;edge<2;++edge)
+                bottom[end][edge]=sub(floor[end][edge*lanes],(r3_vec_t){0,0,R3_BEND_DEPTH});
+            if(style)
+                for(unsigned edge=0;edge<2;++edge)bottom[end][edge].z=fminf(bottom[end][edge].z,style->skirt_z);
+            lip[end]=add(floor[end][lanes],(r3_vec_t){0,0,bend->rail_height*s*s});
+            float outer=bend->radius+bend->half_width+R3_BEND_RAIL_WIDTH;
+            rail_outer[end]=r3_bend_point(bend,c,s,outer,lip[end].z);
+            rail_base[end]=r3_bend_point(bend,c,s,outer,bottom[end][1].z);
+        }
+        for(unsigned j=0;j<lanes;++j)
+            bend_quad(target,floor[0][j],floor[0][j+1],floor[1][j+1],floor[1][j],
+                      (i+j)%2?bend->color:light_tile,focus);
+        r3_vec_t radial=add(mul(bend->radial_start,ring[i][0]+ring[i+1][0]),
+                            mul(bend->sweep_axis,ring[i][1]+ring[i+1][1]));
+        if(!style||dot(sub(eye,floor[0][0]),radial)<0)
+            bend_quad(target,floor[0][0],floor[1][0],bottom[1][0],bottom[0][0],bend->color,focus);
+        if(!style||dot(sub(eye,floor[0][lanes]),radial)<0)
+            bend_quad(target,floor[0][lanes],floor[1][lanes],lip[1],lip[0],rail,focus);
+        bend_quad(target,lip[0],lip[1],rail_outer[1],rail_outer[0],rail,focus);
+        if(!style||dot(sub(eye,rail_outer[0]),radial)>0)
+            bend_quad(target,rail_outer[0],rail_outer[1],rail_base[1],rail_base[0],rail,focus);
     }
 }
 
@@ -224,12 +283,24 @@ static void draw_scene(r3_raster_t *target,const r3_snapshot_t *s,
 {
     static const unsigned faces[12][3]={{0,2,3},{0,3,1},{4,5,7},{4,7,6},{0,1,5},{0,5,4},
         {2,6,7},{2,7,3},{0,4,6},{0,6,2},{1,3,7},{1,7,5}};
+    const r3_course_style_t *style=world->style;
+    uint32_t light_tile=style?style->light_tile:0xf2e6d5;
+    r3_vec_t eye=add(focus,eye_offset);
     for(unsigned i=0;i<world->box_count;++i){const r3_box_t *b=&world->boxes[i];r3_vec_t v[8];
+        bool solid=style&&i>=style->solid_boxes_from;
         for(unsigned j=0;j<8;++j){v[j]=b->center;for(unsigned k=0;k<3;++k){float h=k==0?b->half.x:k==1?b->half.y:b->half.z;
             v[j]=add(v[j],mul(b->axis[k],(j&(1u<<k))?h:-h));}}
-        /* Top faces are replaced by coplanar checker cells; no z-fighting overlay. */
-        for(unsigned j=0;j<12;++j)if(j!=2&&j!=3)
-            triangle(target,v[faces[j][0]],v[faces[j][1]],v[faces[j][2]],b->color,focus);
+        if(style&&!solid)
+            for(unsigned j=0;j<4;++j)v[j].z=fminf(v[j].z,style->skirt_z);
+        /* Road tops use checker cells; rails are drawn as solid boxes. */
+        for(unsigned j=0;j<12;j+=2){
+            if(!solid&&j==2)continue;
+            r3_vec_t a=v[faces[j][0]],q=v[faces[j][1]],c=v[faces[j][2]];
+            if(style&&dot(cross(sub(q,a),sub(c,a)),sub(eye,a))<=0)continue;
+            triangle(target,a,q,c,b->color,focus);
+            triangle(target,v[faces[j+1][0]],v[faces[j+1][1]],v[faces[j+1][2]],b->color,focus);
+        }
+        if(solid)continue;
         unsigned nx=(unsigned)fmaxf(1,fminf(16,ceilf(b->half.x*4)));
         unsigned ny=(unsigned)fmaxf(1,fminf(16,ceilf(b->half.y*4)));
         for(unsigned cy=0;cy<ny;++cy)for(unsigned cx=0;cx<nx;++cx){
@@ -239,11 +310,18 @@ static void draw_scene(r3_raster_t *target,const r3_snapshot_t *s,
                 float v0=-b->half.y+2*b->half.y*(cy+(k>=2))/(float)ny;
                 q[k]=add(add(add(b->center,mul(b->axis[2],b->half.z)),mul(b->axis[0],u)),mul(b->axis[1],v0));
             }
-            uint32_t paint=(cx+cy)%2?b->color:0xf2e6d5;
+            uint32_t paint=(cx+cy)%2?b->color:light_tile;
             triangle(target,q[0],q[1],q[2],paint,focus);
             triangle(target,q[0],q[2],q[3],paint,focus);
         }
     }
+    if(world->bend)draw_bend(target,world->bend,focus,style);
+    if(style)
+        for(unsigned i=0;i<style->face_count;++i){
+            const r3_art_face_t *face=&style->faces[i];
+            const r3_vec_t *v=face->vertices;
+            bend_quad(target,v[0],v[1],v[2],v[3],face->color,focus);
+        }
     for(unsigned lat=0;lat<6;++lat)for(unsigned lon=0;lon<12;++lon){
         r3_vec_t a=sphere_point(lat,lon,s->radius,q,s->position),b=sphere_point(lat+1,lon,s->radius,q,s->position);
         r3_vec_t c=sphere_point(lat+1,lon+1,s->radius,q,s->position),d=sphere_point(lat,lon+1,s->radius,q,s->position);
@@ -266,6 +344,39 @@ static bool color_edge(uint16_t a, uint16_t b)
     int blue=(int)(a&31u)-(int)(b&31u);
     /* Approximately twelve levels in RGB888, using native channel steps. */
     return red>=2||red<=-2||green>=3||green<=-3||blue>=2||blue<=-2;
+}
+
+static uint16_t mix_play_edge(uint16_t center, uint16_t left, uint16_t right,
+    uint16_t above, uint16_t below)
+{
+    unsigned red=4u*(center>>11)+(left>>11)+(right>>11)+(above>>11)+(below>>11);
+    unsigned green=4u*((center>>5)&63u)+((left>>5)&63u)+((right>>5)&63u)+
+        ((above>>5)&63u)+((below>>5)&63u);
+    unsigned blue=4u*(center&31u)+(left&31u)+(right&31u)+(above&31u)+(below&31u);
+    return (uint16_t)((((red+4u)>>3)<<11)|(((green+4u)>>3)<<5)|((blue+4u)>>3));
+}
+
+static void smooth_play_edges(uint16_t *color, uint16_t *scratch)
+{
+    uint16_t *above=scratch,*current=scratch+R3_VIEW_W;
+    memcpy(above,color,R3_VIEW_W*sizeof(*color));
+    for(unsigned y=0;y<R3_VIEW_H;++y){
+        uint16_t *row=color+y*R3_VIEW_W;
+        memcpy(current,row,R3_VIEW_W*sizeof(*color));
+        const uint16_t *below=y+1<R3_VIEW_H?row+R3_VIEW_W:current;
+        for(unsigned x=0;x<R3_VIEW_W;++x){
+            uint16_t center=current[x];
+            uint16_t left=x?current[x-1]:center,right=x+1<R3_VIEW_W?current[x+1]:center;
+            uint16_t top=above[x],bottom=below[x];
+            if(center==left&&center==right&&center==top&&center==bottom)continue;
+            if(color_edge(center,left)||color_edge(center,right)||
+               color_edge(center,top)||color_edge(center,bottom))
+                row[x]=mix_play_edge(center,left,right,top,bottom);
+        }
+        uint16_t *previous=above;
+        above=current;
+        current=previous;
+    }
 }
 
 static uint32_t expand_word(uint32_t left, uint32_t center, uint32_t right)
@@ -327,7 +438,7 @@ static void draw_edge_bands(uint16_t *color, uint16_t *scratch, unsigned depth_r
     const r3_snapshot_t *s,
     const r3_world_t *world, r3_quat_t q, r3_vec_t focus, r3_edge_aa_t *edges)
 {
-    const uint16_t background=rgb(0x0c1220,1);
+    const uint16_t background=rgb(world->style?world->style->background:0x0c1220,1);
     const unsigned half=depth_rows*R3_VIEW_W/2, capacity=half/EDGE_SAMPLES;
     unsigned first=0;
     while(first<R3_VIEW_H){
@@ -397,7 +508,7 @@ static int render_frame(uint16_t *color,uint16_t *depth,unsigned depth_rows,cons
             if(end>R3_VIEW_H)end=R3_VIEW_H;
             r3_raster_t target={
                 .color=color+first*R3_VIEW_W,.depth=depth,.sample_x=.5f,.sample_y=.5f,
-                .first_row=(int)first,.end_row=(int)end
+                .first_row=(int)first,.end_row=(int)end,.style=world->style
             };
             clear_target(&target);
             draw_scene(&target,s,world,q,focus);
@@ -410,10 +521,10 @@ static int render_frame(uint16_t *color,uint16_t *depth,unsigned depth_rows,cons
     }
 
     /* Independent depth tests avoid checker seams and silhouette color bleed. */
-    r3_raster_t target={.color=color,.depth=depth,.sample_x=.25f,.sample_y=.75f};
+    r3_raster_t target={.color=color,.depth=depth,.sample_x=.25f,.sample_y=.75f,.style=world->style};
     clear_target(&target);
     draw_scene(&target,s,world,q,focus);
-    target=(r3_raster_t){.color=aa_color,.depth=depth,.sample_x=.75f,.sample_y=.25f};
+    target=(r3_raster_t){.color=aa_color,.depth=depth,.sample_x=.75f,.sample_y=.25f,.style=world->style};
     clear_target(&target);
     draw_scene(&target,s,world,q,focus);
     for(unsigned i=0;i<R3_VIEW_PIXELS;++i)
@@ -427,6 +538,14 @@ int roll3_renderer_render_follow(uint16_t *color,uint16_t *depth,const r3_snapsh
 int roll3_renderer_render_edges(uint16_t *color,uint16_t *depth,unsigned depth_rows,const r3_snapshot_t *s,
     const r3_world_t *w,r3_camera_follow_t *follow,r3_edge_aa_t *edges)
 {return render_frame(color,depth,depth_rows,s,w,follow,NULL,edges);}
+int roll3_renderer_render_play(uint16_t *color,uint16_t *depth,unsigned depth_rows,
+    const r3_snapshot_t *s,const r3_world_t *w,r3_camera_follow_t *follow)
+{
+    int result=render_frame(color,depth,depth_rows,s,w,follow,NULL,NULL);
+    if(result==0)smooth_play_edges(color,depth);
+    return result;
+}
+
 int roll3_renderer_selftest(void (*report)(const char *,bool))
 {
     float x,y,z,x2,y2,z2;int failures=0;
@@ -445,6 +564,9 @@ int roll3_renderer_selftest(void (*report)(const char *,bool))
     CHECK("TC-509 edge-threshold-and-word-boundary",
           color_edge(0,2)&&!color_edge(0,1)&&color_edge(0,3u<<5)&&
           expand_word(0x80000000u,0,1)==0x80000001u&&count_bits(0x80000001u)==2);
+    CHECK("TC-516 play-edge-weight",
+          mix_play_edge(0xffff,0,0,0,0)==0x8410&&
+          mix_play_edge(0x34ba,0x34ba,0x34ba,0x34ba,0x34ba)==0x34ba);
     const uint16_t coverage[EDGE_SAMPLES]={0xffff,0xffff,0,0};
     CHECK("TC-509 four-sample-resolve",resolve_four(coverage)==0x8410);
     CHECK("TC-510 bounded-depth-rows",

@@ -55,16 +55,33 @@ r3_result_t roll3_session_action(roll3_session_t *s, r3_action_kind_t kind,
         s->started = s->anchor = now;
     } else if (kind == R3_RESUME) {
         s->recovery = false;
+    } else if (kind == R3_RESPAWN) {
+        s->fallen_at = 0;
+        s->remainder = 0;
     }
     return R3_OK;
 }
+
+bool roll3_session_try_auto_respawn(roll3_session_t *s, uint32_t now)
+{
+    if (s->game.s.state != R3_FALLEN || now - s->fallen_at < ROLL3_AUTO_RESPAWN_MS)
+        return false;
+    return roll3_session_action(s,R3_RESPAWN,s->game.s.run,now) == R3_OK;
+}
+
+/* Gameplay limits, independent of the core world's gravity and contact model. */
+#define ROLL3_TILT_MAX_ACCEL 4.9f
+#define ROLL3_NEUTRAL_BRAKE_GAIN 3.0f
+#define ROLL3_NEUTRAL_BRAKE_MAX 2.0f
+#define ROLL3_NEUTRAL_FLAT_Z .995f
 
 static float normalized(float value)
 {
     float magnitude = (fabsf(value) - 0.03f) / (0.45f - 0.03f);
     float u = fminf(1.0f, fmaxf(0.0f, magnitude));
-    /* Gentle fine control, retaining full uphill acceleration. */
-    return copysignf(u * (0.43f + 0.57f * u), value);
+    /* Reduce the middle of the curve while keeping both endpoints. */
+    float middle = .26f * u * u * (1-u);
+    return copysignf(u * (.43f + .57f * u - middle), value);
 }
 
 static void calibrate(roll3_session_t *s, const lab_motion_t *m, uint32_t now)
@@ -127,14 +144,42 @@ static void consume(roll3_session_t *s, const lab_motion_t *m, uint32_t now)
             }
         }
         /* ADR-0009: map screen-right and screen-up into the ground plane. */
-        float right = 4.9f * normalized(s->filtered[1]);
-        float forward = 4.9f * normalized(s->filtered[0]);
+        float right = ROLL3_TILT_MAX_ACCEL * normalized(s->filtered[1]);
+        float forward = ROLL3_TILT_MAX_ACCEL * normalized(s->filtered[0]);
+        float length_squared = right*right + forward*forward;
+        if (length_squared > ROLL3_TILT_MAX_ACCEL*ROLL3_TILT_MAX_ACCEL) {
+            float scale = ROLL3_TILT_MAX_ACCEL / sqrtf(length_squared);
+            right *= scale;
+            forward *= scale;
+        }
         s->input.acceleration.x = R3_CAM_COS * right + R3_CAM_SIN * forward;
         s->input.acceleration.y = -R3_CAM_SIN * right + R3_CAM_COS * forward;
     }
     memcpy(s->previous, m->a, sizeof(s->previous));
     s->sequence = m->sequence;
     s->stamp = m->sampled_ms;
+}
+
+static r3_input_t input_for_step(const roll3_session_t *s)
+{
+    r3_input_t input = s->input;
+    const r3_snapshot_t *ball = &s->game.s;
+    if (input.acceleration.x != 0 || input.acceleration.y != 0 ||
+        !ball->grounded || ball->contact_normal.z < ROLL3_NEUTRAL_FLAT_Z)
+        return input;
+
+    float vx = ball->velocity.x, vy = ball->velocity.y;
+    float speed_squared = vx*vx + vy*vy;
+    float gain = ROLL3_NEUTRAL_BRAKE_GAIN;
+    const float capped_speed = ROLL3_NEUTRAL_BRAKE_MAX / ROLL3_NEUTRAL_BRAKE_GAIN;
+    if (speed_squared > capped_speed*capped_speed)
+        gain = ROLL3_NEUTRAL_BRAKE_MAX / sqrtf(speed_squared);
+
+    /* At the 5 ms fixed step, proportional braking removes at most 1.5%
+     * of velocity per step. The capped term can only remove less. */
+    input.acceleration.x = -gain*vx;
+    input.acceleration.y = -gain*vy;
+    return input;
 }
 
 void roll3_session_update(roll3_session_t *s, uint32_t now, const lab_motion_t *m,
@@ -163,10 +208,15 @@ void roll3_session_update(roll3_session_t *s, uint32_t now, const lab_motion_t *
     }
     s->remainder += gap;
     while (s->remainder >= R3_STEP_MS && s->game.s.state == R3_RUNNING) {
-        if (r3_step(&s->game, &s->input, R3_STEP_MS) != R3_OK) {
+        r3_input_t input = input_for_step(s);
+        if (r3_step(&s->game, &input, R3_STEP_MS) != R3_OK) {
             if (s->game.s.state == R3_ERROR) s->input_fault = ROLL3_INPUT_FAULT_PHYSICS;
             break;
         }
         s->remainder -= R3_STEP_MS;
+    }
+    if (s->game.s.state == R3_FALLEN) {
+        s->fallen_at = now;
+        s->remainder = 0;
     }
 }
