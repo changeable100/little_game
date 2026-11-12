@@ -3,4 +3,5 @@
 #include "lvgl.h"
 LV_FONT_DECLARE(roll3_font_16)
 LV_FONT_DECLARE(roll3_font_20)
+LV_FONT_DECLARE(roll3_font_28)
 #endif

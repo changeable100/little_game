@@ -8,6 +8,8 @@ typedef struct {
     r3_snapshot_t s;
     uint32_t last_request;
     bool goal_touched; /* Per-step latch, private to the physical owner. */
+    r3_vec_t resume_velocity,resume_omega;
+    bool pause_motion_saved;
 } r3_game_t;
 r3_result_t r3_world_validate(const r3_world_t *world);
 r3_result_t r3_init(r3_game_t *game, const r3_world_t *world);

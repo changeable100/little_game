@@ -80,6 +80,7 @@ static void run_cycle(void)
     uint32_t now = now_ms();
     uint32_t cycle_started=now;
     uint32_t previous_elapsed=session.game.s.elapsed_ms;
+    uint32_t previous_revision=session.game.s.revision,background_steps=0;
     r3_state_t previous_state = session.game.s.state;
     uint32_t previous_run = session.game.s.run;
     r3_result_t result = R3_OK;
@@ -91,6 +92,8 @@ static void run_cycle(void)
         /* A UI heartbeat may be newer than a previous worker iteration. */
         roll3_session_update(&session, now, received ? &sample : NULL,
                              now - heartbeat <= ROLL3_UI_TIMEOUT_MS);
+        if(previous_state==R3_WON&&previous_run==session.game.s.run&&session.game.s.state==R3_WON)
+            background_steps=session.game.s.revision-previous_revision;
         if (pending) result = roll3_session_action(&session, action, run, now);
     } else if (session.game.s.state != R3_READY) {
         result = roll3_session_action(&session, R3_BACK, previous_run, now);
@@ -107,6 +110,7 @@ static void run_cycle(void)
     uint32_t cycle_ms=now_ms()-cycle_started;
     uint32_t steps=previous_run==session.game.s.run&&session.game.s.elapsed_ms>=previous_elapsed?
         (session.game.s.elapsed_ms-previous_elapsed)/R3_STEP_MS:0;
+    if(previous_state==R3_WON)steps=background_steps;
     if(cycle_ms>mailbox.cycle_max_ms)mailbox.cycle_max_ms=cycle_ms;
     if(steps>mailbox.steps_max)mailbox.steps_max=steps;
     mailbox.have_sample = session.sequence != 0;
@@ -232,7 +236,7 @@ void roll3_runtime_report_frame(uint32_t frames, uint32_t sample_age_ms,
 
 void roll3_runtime_report_open(int result,unsigned depth_rows)
 {
-    rt_kprintf("[roll3:open] result=%d depth_rows=%u build=m3-finish-20261111 refresh_ms=33\n",result,depth_rows);
+    rt_kprintf("[roll3:open] result=%d depth_rows=%u build=m3-immersive-20261111 refresh_ms=33\n",result,depth_rows);
 }
 
 bool roll3_runtime_submit(r3_action_kind_t kind, uint32_t run)

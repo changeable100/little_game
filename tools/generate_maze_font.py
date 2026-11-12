@@ -37,7 +37,7 @@ def write(path,content):
         path.parent.mkdir(parents=True,exist_ok=True)
         path.write_text(content,encoding='utf-8',newline='\n')
 
-sizes=(16,20) if args.roll3 else (16,20,28)
+sizes=(16,20,28)
 asset_dir='roll3-font' if args.roll3 else 'maze-font'
 for size in sizes:
     face=ImageFont.truetype(str(source),size)

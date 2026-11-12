@@ -188,11 +188,24 @@ void roll3_session_update(roll3_session_t *s, uint32_t now, const lab_motion_t *
     uint32_t gap = now - s->anchor;
     s->anchor = now;
     r3_state_t before = s->game.s.state;
+    if(before==R3_WON&&s->game.world->finish_rolls){
+        if(!ui_alive||gap>ROLL3_CATCHUP_MS){s->remainder=0;return;}
+        s->remainder+=gap;
+        const r3_input_t gravity={{0,0,-9.81f},true};
+        while(s->remainder>=R3_STEP_MS){
+            if(r3_step(&s->game,&gravity,R3_STEP_MS)!=R3_OK){s->remainder=0;break;}
+            s->remainder-=R3_STEP_MS;
+        }
+        return;
+    }
     if (!roll3_session_needs_motion(s)) return;
     if (before == R3_RUNNING && (!ui_alive || gap > ROLL3_CATCHUP_MS)) {
         if (roll3_session_action(s, R3_PAUSE, s->game.s.run, now) == R3_OK) {
             s->paused_at = now;
             s->recovery = true;
+            /* Delayed recovery keeps the original safe stop; only a manual
+             * menu pause restores its old motion on RESUME. */
+            s->game.pause_motion_saved=false;
             s->remainder = 0;
         }
     }
@@ -215,6 +228,7 @@ void roll3_session_update(roll3_session_t *s, uint32_t now, const lab_motion_t *
         }
         s->remainder -= R3_STEP_MS;
     }
+    if(s->game.s.state==R3_WON&&s->game.world->finish_rolls)s->remainder=0;
     if (s->game.s.state == R3_FALLEN) {
         s->fallen_at = now;
         s->remainder = 0;

@@ -40,7 +40,7 @@ if not args.maze_only and not args.runtime_ui and not args.roll3_view:
     app_sources += ('lab_game_ui.c', 'lab_ride.c', 'lab_ui.c', 'lab_ble_ui.c', 'lab_pan_ui.c', 'lab_registry.c', 'modules/test_display.c', 'modules/test_touch.c', 'modules/touch_decode.c')
 if args.roll3_view:
     app_sources=('roll3_renderer.c','roll3_view.c','roll3_page.c','roll3_physics.c',
-                 'roll3_scene.c','roll3_font_16.c','roll3_font_20.c')
+                 'roll3_scene.c','roll3_font_16.c','roll3_font_20.c','roll3_font_28.c')
     sources=[p for p in sources if p.name!='maze_runtime_unavailable.c']
 sources += [root.parent / 'src' / name for name in app_sources]
 sources.append(root / ('roll3_view_test.c' if args.roll3_view else 'maze_ui_runtime_test.c' if args.runtime_ui else 'maze_ui_test.c' if args.maze_only else 'ui_test.c'))

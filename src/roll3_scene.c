@@ -108,7 +108,7 @@ static const r3_world_t m3_scene = {
     .spawn=LOCAL(0,0,3.70f+R3_RADIUS),
     .checkpoint_spawn=LOCAL(4.35f,16.50f,1.55f+R3_RADIUS),
     .checkpoint=ZONE(4.35f,16.50f,1.55f),.goal=ZONE(.10f,16.60f,1.08f),
-    .fall_z=-3,.bend=&m3_bend,.style=&m3_style,.goal_box_plus_one=10
+    .fall_z=-3,.bend=&m3_bend,.style=&m3_style,.goal_box_plus_one=10,.finish_rolls=true
 };
 
 const r3_world_t *r3_demo_world(void) {return &m3_scene;}

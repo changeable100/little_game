@@ -13,7 +13,7 @@ static const r3_input_t gravity={{0,0,-9.81f},true}, zero={{0,0,0},true};
 static const r3_box_t floor_box={{0,0,-0.2f},{20,20,0.2f},BASIS,0,0.6f,0,0x123456};
 static r3_world_t test_world(const r3_box_t *b,unsigned count) {
     r3_world_t w={b,count,{0,0,R3_RADIUS},{-3,-3,R3_RADIUS},
-        {{-4,-4,0},{-2,-2,2}},{{9,9,0},{10,10,2}},-3,NULL,NULL,0};
+        {{-4,-4,0},{-2,-2,2}},{{9,9,0},{10,10,2}},-3,NULL,NULL,0,false};
     return w;
 }
 static r3_result_t act(r3_game_t *g,r3_action_kind_t kind) {
@@ -648,9 +648,11 @@ static bool m3_goal_all_surface(void) {
         g.s.position=from_uv(points[i].x,points[i].y,1.08f+R3_RADIUS);
         g.s.velocity=from_uv(.1f,.1f,0);g.s.elapsed_ms=12340;
         CHECK(steps(&g,&gravity,1)&&g.s.state==R3_WON&&!g.s.limited);
-        CHECK(norm2(g.s.velocity)==0&&norm2(g.s.omega)==0);
+        CHECK(norm2(g.s.velocity)>.0001f);
         uint32_t frozen=g.s.elapsed_ms;
-        CHECK(r3_step(&g,&gravity,5)==R3_WRONG_STATE&&g.s.elapsed_ms==frozen);
+        r3_vec_t before=g.s.position;
+        CHECK(steps(&g,&gravity,1)&&g.s.elapsed_ms==frozen&&g.s.state==R3_WON);
+        CHECK(norm2((r3_vec_t){g.s.position.x-before.x,g.s.position.y-before.y,g.s.position.z-before.z})>1e-9f);
     }
     return true;
 }
@@ -719,6 +721,54 @@ static bool goal_selector_guard(void) {
     return r3_m1_world()->goal_box_plus_one==0&&r3_m2_world()->goal_box_plus_one==0;
 }
 
+static bool won_rollout_latched(void) {
+    r3_game_t g;CHECK(start(&g,r3_demo_world()));
+    g.s.position=from_uv(.1f,16.6f,1.08f+R3_RADIUS);g.s.velocity=from_uv(.5f,0,0);
+    CHECK(steps(&g,&gravity,1)&&g.s.state==R3_WON);
+    uint32_t time=g.s.elapsed_ms,falls=g.s.falls;
+    g.s.position=from_uv(3,16.6f,-3.1f);
+    CHECK(steps(&g,&gravity,20)&&g.s.state==R3_WON&&g.s.elapsed_ms==time&&g.s.falls==falls);
+    return g.s.position.z<-3.1f;
+}
+
+static bool menu_pause_restore(void) {
+    r3_game_t g;CHECK(start(&g,r3_demo_world()));
+    g.s.velocity=(r3_vec_t){1,.5f,0};g.s.omega=(r3_vec_t){-2.5f,5,0};
+    r3_snapshot_t before=g.s;CHECK(act(&g,R3_PAUSE)==R3_OK);
+    for(unsigned i=0;i<200;++i)CHECK(r3_step(&g,&gravity,5)==R3_WRONG_STATE);
+    CHECK(g.s.elapsed_ms==before.elapsed_ms&&norm2(g.s.velocity)==0&&norm2(g.s.omega)==0);
+    CHECK(g.s.position.x==before.position.x&&g.s.position.y==before.position.y&&g.s.position.z==before.position.z);
+    CHECK(act(&g,R3_RESUME)==R3_OK);
+    return near(g.s.velocity.x,1,1e-6f)&&near(g.s.velocity.y,.5f,1e-6f)&&near(g.s.omega.y,5,1e-6f);
+}
+
+static bool menu_checkpoint_return(void) {
+    for(unsigned checkpoint=0;checkpoint<2;++checkpoint){
+        r3_game_t g;CHECK(start(&g,r3_demo_world()));
+        g.s.checkpoint=checkpoint;g.s.elapsed_ms=12345;g.s.falls=4;uint32_t run=g.s.run;
+        CHECK(act(&g,R3_PAUSE)==R3_OK&&act(&g,R3_RESPAWN)==R3_OK);
+        r3_vec_t wanted=checkpoint?g.world->checkpoint_spawn:g.world->spawn;
+        CHECK(g.s.state==R3_RUNNING&&g.s.run==run&&g.s.elapsed_ms==12345&&g.s.falls==4);
+        CHECK(g.s.position.x==wanted.x&&g.s.position.y==wanted.y&&g.s.position.z==wanted.z);
+        CHECK(norm2(g.s.velocity)==0&&norm2(g.s.omega)==0);
+    }
+    return true;
+}
+
+static bool completed_session_gravity(void) {
+    roll3_session_t s;CHECK(roll3_session_init(&s,r3_demo_world())==R3_OK);
+    s.game.s.state=R3_WON;s.game.s.velocity=(r3_vec_t){1,0,0};s.game.s.elapsed_ms=12000;s.anchor=100;
+    r3_vec_t before=s.game.s.position;
+    roll3_session_update(&s,120,NULL,true);
+    CHECK(s.game.s.position.x>before.x+.01f&&s.game.s.elapsed_ms==12000&&s.game.s.state==R3_WON);
+    CHECK(!roll3_session_needs_motion(&s));before=s.game.s.position;
+    roll3_session_update(&s,371,NULL,true);
+    CHECK(s.game.s.position.x==before.x&&s.remainder==0);
+    roll3_session_update(&s,391,NULL,false);CHECK(s.game.s.position.x==before.x);
+    s.anchor=UINT32_MAX-9;roll3_session_update(&s,10,NULL,true);
+    return s.game.s.position.x>before.x&&s.game.s.elapsed_ms==12000;
+}
+
 int r3_selftest_run(maze_test_report_t report) {
     int failures=0;
 #define RUN(name,expr) do {bool passed=(expr);if(!passed)++failures;if(report)report(name,passed);}while(0)
@@ -773,12 +823,16 @@ int r3_selftest_run(maze_test_report_t report) {
     RUN("TC-521 M3 7.5mps smooth floor keeps moving",m3_fast_bend_contact(7.5f,0));
     RUN("TC-521 M3 fast negative-angle curve keeps moving",m3_fast_bend_contact(7.5f,-.261799388f));
     RUN("TC-521 M3 fast positive-angle curve keeps moving",m3_fast_bend_contact(7.5f,.261799388f));
-    RUN("TC-523 entire green goal locks and freezes at nine points",m3_goal_all_surface());
+    RUN("TC-524 nine green points lock score and keep rolling",m3_goal_all_surface());
     RUN("TC-523 airborne sidewall and pink approach do not win",m3_goal_no_false_contact());
     RUN("TC-523 three entrance lanes reach goal",m3_goal_entrance());
     RUN("TC-523 three solid goal rails geometry",m3_goal_rail_geometry());
     RUN("TC-523 goal guards contain nine 2mps impacts with win disabled",m3_goal_rails_collide());
     RUN("TC-523 goal selector guarded and legacy worlds unchanged",goal_selector_guard());
+    RUN("TC-524 rolling off green preserves settlement",won_rollout_latched());
+    RUN("TC-524 completion advances without IMU with bounded delays",completed_session_gravity());
+    RUN("TC-525 menu pause restores linear and angular motion",menu_pause_restore());
+    RUN("TC-525 menu return uses checkpoint zero or one",menu_checkpoint_return());
 #undef RUN
     return failures;
 }

@@ -39,6 +39,10 @@ bool roll3_renderer_project(r3_vec_t p,float *x,float *y,float *depth)
 {return roll3_renderer_project_focus(p,(r3_vec_t){0,0,R3_RADIUS},x,y,depth);}
 r3_vec_t roll3_renderer_focus(const r3_snapshot_t *s,const r3_world_t *world)
 {
+    if(s->state==R3_WON&&world->finish_rolls&&world->goal_box_plus_one){
+        const r3_box_t *b=&world->boxes[world->goal_box_plus_one-1];
+        return add(b->center,mul(b->axis[2],b->half.z+R3_RADIUS));
+    }
     r3_vec_t f=s->state==R3_FALLEN ? (s->checkpoint?world->checkpoint_spawn:world->spawn) : s->position;
     f.z=fmaxf(R3_RADIUS,f.z);
     return f;

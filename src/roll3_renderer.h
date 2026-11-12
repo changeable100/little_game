@@ -1,8 +1,9 @@
 #ifndef ROLL3_RENDERER_H
 #define ROLL3_RENDERER_H
 #include "roll3_contract.h"
-#define R3_VIEW_W 240
-#define R3_VIEW_H 200
+#define R3_VIEW_W 200
+#define R3_VIEW_H 232
+#define R3_VIEW_SCALE 512u
 #define R3_VIEW_PIXELS (R3_VIEW_W * R3_VIEW_H)
 #define R3_VIEW_BUFFER_BYTES (R3_VIEW_PIXELS * sizeof(uint16_t) * 2u)
 #define R3_EDGE_WORDS ((R3_VIEW_W + 31) / 32)

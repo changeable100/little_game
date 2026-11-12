@@ -16,8 +16,8 @@ int roll3_view_create(void);
 int roll3_view_create_live(void (*action)(r3_action_kind_t), void (*closed)(void));
 void roll3_view_action_status(bool pending, r3_result_t result);
 void roll3_view_render(const r3_snapshot_t *snapshot,const r3_world_t *world);
-/* Existing page refresh calls this even after the terminal revision freezes.
- * Updates text after 1000ms; no new timer, model action or scene render. */
+/* Existing page refresh drives the 800ms modal presentation. No new physics
+ * timer or borrowed snapshot is retained by this text/layout update. */
 void roll3_view_tick(void);
 void roll3_view_destroy(void);
 const char *roll3_view_error_text(void);

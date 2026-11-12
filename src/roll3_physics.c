@@ -184,6 +184,7 @@ static void reset(r3_game_t *g) {
     memset(&g->s,0,sizeof(g->s));
     g->s.version=ROLL3_CONTRACT_VERSION;g->s.run=run;g->s.revision=revision;
     g->s.position=g->world->spawn;g->s.radius=R3_RADIUS;g->s.orientation.w=1;
+    g->pause_motion_saved=false;
 }
 r3_result_t r3_init(r3_game_t *g,const r3_world_t *w) {
     if(!g||r3_world_validate(w)!=R3_OK)return R3_INVALID;
@@ -204,7 +205,7 @@ r3_result_t r3_action(r3_game_t *g,const r3_action_t *a) {
     case R3_BACK:next=R3_READY;fresh=true;break;
     case R3_PAUSE:if(g->s.state!=R3_RUNNING)return R3_WRONG_STATE;next=R3_PAUSED;break;
     case R3_RESUME:if(g->s.state!=R3_PAUSED)return R3_WRONG_STATE;next=R3_RUNNING;break;
-    case R3_RESPAWN:if(g->s.state!=R3_FALLEN)return R3_WRONG_STATE;next=R3_RUNNING;break;
+    case R3_RESPAWN:if(g->s.state!=R3_FALLEN&&g->s.state!=R3_PAUSED)return R3_WRONG_STATE;next=R3_RUNNING;break;
     default:return R3_INVALID;
     }
     if(fresh) {
@@ -215,6 +216,11 @@ r3_result_t r3_action(r3_game_t *g,const r3_action_t *a) {
         g->s.position=g->s.checkpoint?g->world->checkpoint_spawn:g->world->spawn;
         g->s.orientation=(r3_quat_t){1,0,0,0};g->s.grounded=false;g->s.contacts=0;
         g->s.contact_normal=(r3_vec_t){0,0,0};
+        g->pause_motion_saved=false;
+    }
+    if(a->kind==R3_PAUSE){g->resume_velocity=g->s.velocity;g->resume_omega=g->s.omega;g->pause_motion_saved=true;}
+    if(a->kind==R3_RESUME&&g->pause_motion_saved){
+        g->s.velocity=g->resume_velocity;g->s.omega=g->resume_omega;g->pause_motion_saved=false;
     }
     if(next!=R3_RUNNING||a->kind==R3_RESPAWN)g->s.velocity=g->s.omega=(r3_vec_t){0,0,0};
     g->s.state=next;g->last_request=a->request;++g->s.revision;return R3_OK;
@@ -407,7 +413,8 @@ static void orientation(r3_snapshot_t *s) {
 }
 r3_result_t r3_step(r3_game_t *g,const r3_input_t *input,uint32_t dt_ms) {
     if(!g||!g->world||!input||dt_ms!=R3_STEP_MS)return R3_INVALID;
-    if(g->s.state!=R3_RUNNING)return R3_WRONG_STATE;
+    bool completed=g->s.state==R3_WON&&g->world->finish_rolls;
+    if(g->s.state!=R3_RUNNING&&!completed)return R3_WRONG_STATE;
     if(g->s.revision==UINT32_MAX)return R3_EXHAUSTED;
     if(!input->valid||!finite_vec(input->acceleration)||dot(input->acceleration,input->acceleration)>400) {
         (void)r3_input_failed(g, g->s.run);
@@ -419,8 +426,8 @@ r3_result_t r3_step(r3_game_t *g,const r3_input_t *input,uint32_t dt_ms) {
     g->s.velocity=add(g->s.velocity,mul(input->acceleration,DT));
     cap_motion(&g->s);
     depenetrate(g);
-    float remaining=g->goal_touched?0:DT;
-    for(unsigned impact=0;impact<IMPACTS&&remaining>1e-8f&&!g->goal_touched;impact++) {
+    float remaining=g->goal_touched&&!g->world->finish_rolls?0:DT;
+    for(unsigned impact=0;impact<IMPACTS&&remaining>1e-8f&&(!g->goal_touched||g->world->finish_rolls);impact++) {
         float span=remaining;
         bool support=g->world->bend&&bend_support_move(g->world->bend,g->s.position,g->s.velocity,&span);
         r3_vec_t delta=mul(g->s.velocity,span);
@@ -437,14 +444,14 @@ r3_result_t r3_step(r3_game_t *g,const r3_input_t *input,uint32_t dt_ms) {
         g->s.position=add(add(g->s.position,mul(delta,hit.t)),mul(hit.normal,SKIN));
         remaining-=span*hit.t;impulse(g,hit.material,hit.normal);
     }
-    if(g->goal_touched)remaining=0;
+    if(g->goal_touched&&!g->world->finish_rolls)remaining=0;
     if(remaining>1e-8f)limited(&g->s);
     depenetrate(g);cap_motion(&g->s);orientation(&g->s);
-    g->s.elapsed_ms=UINT32_MAX-g->s.elapsed_ms<R3_STEP_MS?UINT32_MAX:g->s.elapsed_ms+R3_STEP_MS;
+    if(!completed)g->s.elapsed_ms=UINT32_MAX-g->s.elapsed_ms<R3_STEP_MS?UINT32_MAX:g->s.elapsed_ms+R3_STEP_MS;
     if(g->s.grounded&&inside(g->world->checkpoint,g->s.position))g->s.checkpoint=1;
-    if(g->s.position.z<g->world->fall_z) {g->s.state=R3_FALLEN;g->s.falls=inc(g->s.falls);}
-    else if(g->world->goal_box_plus_one?g->goal_touched:
-        (g->s.grounded&&inside(g->world->goal,g->s.position)))g->s.state=R3_WON;
-    if(g->s.state!=R3_RUNNING)g->s.velocity=g->s.omega=(r3_vec_t){0,0,0};
+    if(!completed&&g->s.position.z<g->world->fall_z) {g->s.state=R3_FALLEN;g->s.falls=inc(g->s.falls);}
+    else if(!completed&&(g->world->goal_box_plus_one?g->goal_touched:
+        (g->s.grounded&&inside(g->world->goal,g->s.position))))g->s.state=R3_WON;
+    if(g->s.state!=R3_RUNNING&&!(g->s.state==R3_WON&&g->world->finish_rolls))g->s.velocity=g->s.omega=(r3_vec_t){0,0,0};
     ++g->s.revision;return R3_OK;
 }

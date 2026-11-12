@@ -51,6 +51,7 @@ typedef struct {
     const r3_bend_t *bend; /* Optional; follows the same immutable lifetime. */
     const r3_course_style_t *style;
     uint32_t goal_box_plus_one; /* Zero: legacy goal zone. Otherwise top contact wins. */
+    bool finish_rolls; /* Lock score at WON but keep autonomous gravity motion. */
 } r3_world_t;
 typedef enum { R3_OK=0, R3_INVALID=-1, R3_WRONG_STATE=-2,
                R3_STALE=-3, R3_EXHAUSTED=-4 } r3_result_t;

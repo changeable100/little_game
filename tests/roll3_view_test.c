@@ -132,6 +132,7 @@ static void click(const char *caption)
 {
     lv_obj_t *target = find(lv_layer_top(), caption);
     assert(target);
+    lv_obj_send_event(lv_obj_get_parent(target), LV_EVENT_PRESSED, NULL);
     lv_obj_send_event(lv_obj_get_parent(target), LV_EVENT_CLICKED, NULL);
 }
 static void publish(r3_state_t state)
@@ -246,202 +247,128 @@ int main(void)
     assert(edge_blends>0);
     puts("TC-507 three cube faces and subpixel edge coverage PASS");
 
+
     lv_init();lv_display_t *d=lv_display_create(390,450);lv_display_set_color_format(d,LV_COLOR_FORMAT_XRGB8888);
     lv_display_set_buffers(d,display_buffer,NULL,sizeof(display_buffer),LV_DISPLAY_RENDER_MODE_FULL);lv_display_set_flush_cb(d,flush);
     original_draw=lv_draw_buf_get_handlers()->buf_malloc_cb;lv_draw_buf_get_handlers()->buf_malloc_cb=draw_alloc;
-    unsigned base=objects(lv_layer_top()),clock_base=timers();fail_buffer=true;
-    assert(roll3_view_create()==-103);assert(strstr(roll3_view_error_text(),"内存不足"));
-    assert(buffer_live==0&&objects(lv_layer_top())==base);fail_buffer=false;
-    buffer_budget=R3_VIEW_COLOR_BYTES;
-    assert(roll3_view_create()==-103&&buffer_live==0&&buffer_bytes==0);
-    assert(objects(lv_layer_top())==base&&timers()==clock_base);
+    unsigned base=objects(lv_layer_top()),clock_base=timers();
+    const r3_world_t *m3=r3_demo_world();
+
+    fail_buffer=true;assert(roll3_view_create()==-103);fail_buffer=false;
+    assert(!buffer_live&&objects(lv_layer_top())==base);
+    buffer_budget=R3_VIEW_COLOR_BYTES;assert(roll3_view_create()==-103&&!buffer_live&&!buffer_bytes);
     buffer_budget=R3_VIEW_COLOR_BYTES+R3_VIEW_WORKSPACE_BYTES(R3_VIEW_LOW_DEPTH_ROWS);
     assert(roll3_view_create()==0&&roll3_view_depth_rows()==R3_VIEW_LOW_DEPTH_ROWS);
-    s=(r3_snapshot_t){.version=1,.radius=R3_RADIUS,.orientation={1,0,0,0},
-        .position=world->spawn,.state=R3_RUNNING};
-    roll3_view_render(&s,world);
-    screenshot("roll3-LOW-MEMORY.ppm");
-    roll3_view_destroy();
-    assert(buffer_live==0&&buffer_bytes==0&&objects(lv_layer_top())==base);
+    s=(r3_snapshot_t){.version=1,.radius=R3_RADIUS,.orientation={1,0,0,0},.position=m3->checkpoint_spawn,.state=R3_RUNNING};
+    roll3_view_render(&s,m3);glyphs(lv_layer_top());screenshot("IMMERSIVE-LOW.ppm");roll3_view_destroy();
+    assert(!buffer_live&&!buffer_bytes&&objects(lv_layer_top())==base&&timers()==clock_base);
     buffer_budget=R3_VIEW_COLOR_BYTES+R3_VIEW_WORKSPACE_BYTES(R3_VIEW_DEFAULT_DEPTH_ROWS);
-    /* Inspect the actual image plane owned by LVGL for the two quality paths. */
-    static r3_edge_aa_t expected_edges;
+    assert(buffer_budget<=153600&&R3_VIEW_COLOR_BYTES<=96000);
+    assert(R3_VIEW_COLOR_BYTES+R3_VIEW_WORKSPACE_BYTES(50)<=129600);
     assert(roll3_view_create()==0);
-    s=(r3_snapshot_t){.version=1,.radius=R3_RADIUS,.orientation={1,0,0,0},
-        .position=world->checkpoint_spawn,.state=R3_RUNNING};
-    roll3_view_render(&s,world);
-    lv_obj_t *quality_page=lv_obj_get_child(lv_layer_top(),-1);
-    lv_obj_t *quality_image=lv_obj_get_child(quality_page,0);
-    const lv_image_dsc_t *quality=lv_image_get_src(quality_image);
-    assert(roll3_renderer_render_play(color+1,depth+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&s,world,NULL)==0);
-    assert(memcmp(quality->data,color+1,R3_VIEW_COLOR_BYTES)==0);
-    assert(roll3_renderer_render_edges(saved,depth+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&s,world,NULL,NULL)==0);
-    assert(memcmp(quality->data,saved,R3_VIEW_COLOR_BYTES)!=0);
-    s.state=R3_PAUSED;
-    roll3_view_render(&s,world);
-    assert(roll3_renderer_render_edges(saved,depth+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&s,world,NULL,&expected_edges)==0);
-    assert(memcmp(quality->data,saved,R3_VIEW_COLOR_BYTES)==0);
-    assert(memcmp(color+1,saved,R3_VIEW_COLOR_BYTES)!=0);
+    roll3_view_render(&s,m3);
+    lv_obj_t *root=lv_obj_get_child(lv_layer_top(),-1),*plane=lv_obj_get_child(root,0);
+    const lv_image_dsc_t *picture=lv_image_get_src(plane);
+    assert(picture->header.w==200&&picture->header.h==232&&lv_image_get_scale(plane)==512);
+    lv_obj_update_layout(root);
+    assert(lv_obj_get_x(plane)<=0&&lv_obj_get_y(plane)<=0);
+    assert(lv_obj_get_x(plane)+(int)picture->header.w*2>=390&&lv_obj_get_y(plane)+(int)picture->header.h*2>=450);
+    screenshot("IMMERSIVE-PLAY.ppm");
+    unsigned top_pixel=frame[(2*390+195)*4]|frame[(2*390+195)*4+1]<<8|frame[(2*390+195)*4+2]<<16;
+    unsigned bottom_pixel=frame[(447*390+195)*4]|frame[(447*390+195)*4+1]<<8|frame[(447*390+195)*4+2]<<16;
+    assert(top_pixel!=0x0c1220&&bottom_pixel!=0x0c1220);
+    assert(!find(lv_layer_top(),"游玩中")&&!find(lv_layer_top(),"主机预览：操作尚未接入"));
+    assert(find(lv_layer_top(),"菜单")&&find(lv_layer_top(),"00:00"));
     roll3_view_destroy();
-    assert(buffer_live==0&&objects(lv_layer_top())==base&&timers()==clock_base);
-    puts("TC-516 actual play smoothing and pause edge coverage PASS");
+    puts("TC-525 full 390x450 portrait scene, only clock/menu HUD and smaller buffers PASS");
+
     const char *names[]={"READY","CALIBRATING","RUNNING","PAUSED","FALLEN","WON","ERROR"};
-    for(unsigned round=0;round<20;++round){assert(roll3_view_create()==0);assert(roll3_view_create()==-100);
+    for(unsigned round=0;round<20;++round){
+        assert(roll3_view_create()==0&&roll3_view_create()==-100);
         unsigned count=objects(lv_layer_top()),allocations=buffer_attempts;
-        for(unsigned st=0;st<7;++st){s=(r3_snapshot_t){.version=1,.radius=.2f,.orientation={1,0,0,0},
-                .position=world->spawn,.state=(r3_state_t)st,.run=1,.revision=st,
-                .elapsed_ms=st>=2?12345:0,.falls=st>=2?1:0,.checkpoint=st>=2?1:0};
-            if(st>=2)s.position=world->checkpoint_spawn;
-            if(st==R3_FALLEN)s.position=from_uv(-2,5.5f,-1);
-            if(st==R3_WON)s.position=from_uv(5.5f,11,.10f+R3_RADIUS);
-            if(st==R3_ERROR)s.error=R3_INPUT_ERROR;
-            s.orientation=(r3_quat_t){.92387953f,.38268343f,0,0};
-            roll3_view_render(&s,world);glyphs(lv_layer_top());
-            if(st==R3_WON){lv_tick_inc(1000);roll3_view_render(&s,world);}
-            lv_obj_t *close=find(lv_layer_top(),"返回");assert(close);
-            lv_obj_t *root=lv_obj_get_child(lv_layer_top(),-1);
-            for(int i=4;i<=5;++i)assert(lv_obj_has_state(lv_obj_get_child(root,i),LV_STATE_DISABLED));
-            if(round==0){char file[80];snprintf(file,sizeof(file),"roll3-%s.ppm",names[st]);screenshot(file);}
-            assert(buffer_live==2&&buffer_bytes==buffer_budget&&buffer_attempts==allocations&&objects(lv_layer_top())==count&&timers()==clock_base);
+        for(unsigned state=0;state<7;++state){
+            s=(r3_snapshot_t){.version=1,.radius=R3_RADIUS,.orientation={1,0,0,0},.position=m3->checkpoint_spawn,
+                .state=(r3_state_t)state,.run=round+1,.revision=state,.elapsed_ms=state>=2?12345:0,.checkpoint=1};
+            if(state==R3_WON)s.position=from_uv(.1f,16.6f,1.08f+R3_RADIUS);
+            if(state==R3_ERROR)s.error=R3_INPUT_ERROR;
+            roll3_view_render(&s,m3);
+            if(state==R3_RUNNING){lv_tick_inc(600);roll3_view_tick();}
+            if(state==R3_WON){lv_tick_inc(800);roll3_view_tick();}
+            glyphs(lv_layer_top());
+            if(round==0){char file[80];snprintf(file,sizeof(file),"IMMERSIVE-%s.ppm",names[state]);screenshot(file);}
+            assert(objects(lv_layer_top())==count&&buffer_live==2&&buffer_bytes==buffer_budget&&buffer_attempts==allocations&&timers()==clock_base);
         }
-        s.orientation=(r3_quat_t){0,0,0,0};roll3_view_render(&s,world);assert(find(lv_layer_top(),"三维数据无效"));
-        if(round%2)lv_obj_delete(lv_obj_get_child(lv_layer_top(),-1));else
-            lv_obj_send_event(lv_obj_get_parent(find(lv_layer_top(),"返回")),LV_EVENT_CLICKED,NULL);
-        roll3_view_destroy();roll3_view_destroy();assert(buffer_live==0&&objects(lv_layer_top())==base&&timers()==clock_base);
+        s.orientation=(r3_quat_t){0,0,0,0};roll3_view_render(&s,m3);assert(find(lv_layer_top(),"三维数据无效"));
+        if(round%2)lv_obj_delete(lv_obj_get_child(lv_layer_top(),-1));else click("退出");
+        roll3_view_destroy();
+        assert(!buffer_live&&!buffer_bytes&&objects(lv_layer_top())==base&&timers()==clock_base);
     }
-    printf("TC-501 seven Chinese states/glyphs, controls, allocation failure, 20 cycles PASS; persistent buffers=%lu bytes\n",(unsigned long)buffer_budget);
-    const struct {const char *name;float u,v,z;r3_state_t state;} views[]={
-        {"M1-S.ppm",0,0,1.70f,R3_READY},{"M1-C1.ppm",0,5.5f,1.25f,R3_RUNNING},
-        {"M1-C2.ppm",5.5f,5.5f,.80f,R3_RUNNING},{"M1-G.ppm",5.5f,11,.30f,R3_WON}
-    };
-    for(unsigned i=0;i<sizeof(views)/sizeof(*views);++i){
-        assert(roll3_view_create()==0);
-        s=(r3_snapshot_t){.version=ROLL3_CONTRACT_VERSION,.radius=R3_RADIUS,.orientation={1,0,0,0},
-            .position=from_uv(views[i].u,views[i].v,views[i].z),.state=views[i].state,.checkpoint=i!=0};
-        roll3_view_render(&s,world);screenshot(views[i].name);roll3_view_destroy();
+    puts("TC-525 seven modal states, all Chinese glyphs, 20 exits/external deletes and resource baseline PASS");
+
+    fail_buffer=true;assert(roll3_page_open()==-103&&!live_open);fail_buffer=false;
+    fail_timer=true;assert(roll3_page_open()==-105&&!live_open);fail_timer=false;
+    assert(!buffer_live&&objects(lv_layer_top())==base&&timers()==clock_base);
+    assert(roll3_page_open()==0&&live_open);
+    assert(find(lv_layer_top(),"准备出发"));
+    unsigned sent=requests;
+    click("开始校准");click("开始校准");assert(requests==sent+1&&last_action==R3_START);
+    publish(R3_CALIBRATING);assert(find(lv_layer_top(),"放平校准"));
+    screenshot("IMMERSIVE-CALIBRATION.ppm");
+    live_snapshot.elapsed_ms=12345;publish(R3_RUNNING);assert(find(lv_layer_top(),"准备好了"));
+    screenshot("IMMERSIVE-GO.ppm");
+    lv_tick_inc(600);lv_timer_handler();
+    click("菜单");assert(last_action==R3_PAUSE&&live_pending);sent=requests;
+    click("继续");assert(requests==sent);
+    publish(R3_PAUSED);assert(find(lv_layer_top(),"小球和时间已暂停"));
+    screenshot("IMMERSIVE-MENU.ppm");
+    lv_obj_t *old_checkpoint_button=lv_obj_get_parent(find(lv_layer_top(),"回到存档点"));
+    click("继续");assert(last_action==R3_RESUME);publish(R3_RUNNING);
+    sent=requests;lv_obj_send_event(old_checkpoint_button,LV_EVENT_CLICKED,NULL);
+    assert(live_open&&requests==sent);
+    click("菜单");publish(R3_PAUSED);click("回到存档点");assert(last_action==R3_RESPAWN);
+    live_snapshot.position=m3->checkpoint_spawn;publish(R3_RUNNING);
+    assert(find(lv_layer_top(),"00:12"));
+    publish(R3_ERROR);click("重新校准");assert(last_action==R3_RESTART);
+    ++live_snapshot.run;live_snapshot.elapsed_ms=0;publish(R3_CALIBRATING);publish(R3_RUNNING);
+    lv_tick_inc(600);lv_timer_handler();
+    puts("TC-525 real action sink: pause waits for acknowledgement, duplicate guard, resume, checkpoint and recalibrate PASS");
+
+    live_snapshot.elapsed_ms=12345;live_snapshot.position=from_uv(.1f,16.6f,1.08f+R3_RADIUS);publish(R3_WON);
+    lv_obj_t *result_title=find(lv_layer_top(),"通关啦！");assert(result_title);
+    lv_obj_t *result_card=lv_obj_get_parent(result_title);
+    lv_obj_update_layout(lv_layer_top());int start_y=lv_obj_get_y(result_card),start_width=lv_obj_get_width(result_card);
+    assert(lv_obj_get_style_text_opa(result_title,LV_PART_MAIN)==0);
+    screenshot("IMMERSIVE-RESULT-000.ppm");
+    const unsigned times[]={200,400,800};unsigned elapsed=0,old_opacity=0;int old_width=start_width;
+    for(unsigned i=0;i<3;++i){
+        lv_tick_inc(times[i]-elapsed);elapsed=times[i];
+        live_snapshot.position.x+=.01f;++live_snapshot.revision;
+        roll3_view_render(&live_snapshot,m3);roll3_view_tick();lv_obj_update_layout(lv_layer_top());
+        unsigned opacity=lv_obj_get_style_text_opa(result_title,LV_PART_MAIN);
+        assert(opacity>old_opacity&&lv_obj_get_width(result_card)>old_width);
+        old_opacity=opacity;old_width=lv_obj_get_width(result_card);
+        char file[80];snprintf(file,sizeof(file),"IMMERSIVE-RESULT-%03u.ppm",times[i]);screenshot(file);
     }
-    assert(buffer_live==0&&objects(lv_layer_top())==base&&timers()==clock_base);
-    puts("TC-513 four M1 preview poses captured with production camera direction");
-    const r3_world_t *m2=r3_m2_world();
-    const r3_bend_t *bend=m2->bend;
-    assert(bend&&r3_world_validate(m2)==R3_OK);
-    const r3_vec_t m2_positions[]={
-        m2->spawn,from_uv(4.35f,9.20f,2.325f),m2->checkpoint_spawn,
-        r3_bend_point(bend,0,1,bend->radius,r3_bend_height(bend,0,1,bend->radius)+R3_RADIUS),
-        from_uv(.10f,12.90f,1.08f+R3_RADIUS)
-    };
-    const char *m2_views[]={"M2-S.ppm","M2-RAMP.ppm","M2-CP.ppm","M2-BEND.ppm","M2-G.ppm"};
-    for(unsigned i=0;i<sizeof(m2_positions)/sizeof(*m2_positions);++i){
-        assert(roll3_view_create()==0);
-        s=(r3_snapshot_t){.version=ROLL3_CONTRACT_VERSION,.radius=R3_RADIUS,.orientation={1,0,0,0},
-            .position=m2_positions[i],.state=i==0?R3_READY:i==4?R3_WON:R3_RUNNING,.checkpoint=i>=2};
-        roll3_view_render(&s,m2);
-        assert(!find(lv_layer_top(),"三维数据无效"));
-        screenshot(m2_views[i]);roll3_view_destroy();
-    }
-    assert(buffer_live==0&&objects(lv_layer_top())==base&&timers()==clock_base);
-    puts("TC-517 M2 start, long ramp, checkpoint, banked bend and goal captured");
-    const r3_world_t *m3=r3_demo_world();
-    bend=m3->bend;
-    assert(bend&&m3->style&&r3_world_validate(m3)==R3_OK);
-    const r3_vec_t m3_positions[]={
-        m3->spawn,from_uv(1.40f,5.09f,3.05f+R3_RADIUS),
-        from_uv(4.35f,10.3f,2.55f+R3_RADIUS),m3->checkpoint_spawn,
-        r3_bend_point(bend,0,1,bend->radius,r3_bend_height(bend,0,1,bend->radius)+R3_RADIUS),
-        from_uv(.10f,16.60f,1.08f+R3_RADIUS)
-    };
-    const char *m3_views[]={"M3-S.ppm","M3-TURN.ppm","M3-LANDING.ppm","M3-CP.ppm","M3-BEND.ppm","M3-G.ppm"};
-    for(unsigned i=0;i<sizeof(m3_positions)/sizeof(*m3_positions);++i){
-        assert(roll3_view_create()==0);
-        s=(r3_snapshot_t){.version=ROLL3_CONTRACT_VERSION,.radius=R3_RADIUS,.orientation={1,0,0,0},
-            .position=m3_positions[i],.state=i==0?R3_READY:i==5?R3_WON:R3_RUNNING,.checkpoint=i>=3};
-        roll3_view_render(&s,m3);
-        assert(!find(lv_layer_top(),"三维数据无效"));
-        assert(buffer_live==2&&buffer_bytes==buffer_budget);
-        screenshot(m3_views[i]);roll3_view_destroy();
-    }
-    assert(buffer_live==0&&objects(lv_layer_top())==base&&timers()==clock_base);
-    puts("TC-518 M3 six scene poses with standard view allocation PASS");
-    fail_buffer = true;
-    assert(roll3_page_open() == -103 && !live_open && closes == 1);
-    fail_buffer = false;
-    assert(roll3_page_open() == 0 && roll3_page_open() == -104);
-    assert(last_open_result==0&&last_depth_rows==R3_VIEW_DEFAULT_DEPTH_ROWS);
-    lv_obj_update_layout(lv_layer_top());
-    lv_obj_t *live_root = lv_obj_get_child(lv_layer_top(), -1);
-    lv_obj_t *live_image = lv_obj_get_child(live_root, 0);
-    lv_obj_t *live_detail = lv_obj_get_child(live_root, 2);
-    int32_t image_bottom = lv_obj_get_y(live_image) +
-        (R3_VIEW_H * lv_image_get_scale(live_image) + 255) / 256;
-    assert(image_bottom <= lv_obj_get_y(live_detail));
-    assert(lv_obj_get_x(live_image)>=0&&lv_obj_get_x(live_image)+R3_VIEW_W*3/2<=390);
-    assert(lv_obj_get_y(live_image)>=35&&lv_image_get_scale(live_image)==384&&lv_image_get_antialias(live_image));
-    click("开始"); assert(requests == 1 && last_action == R3_START);
-    click("开始"); assert(requests == 1);
-    live_snapshot.run = 1;
-    publish(R3_CALIBRATING);
-    click("开始"); assert(requests == 1);
-    publish(R3_RUNNING);
-    click("暂停"); assert(requests == 2 && last_action == R3_PAUSE);
-    publish(R3_PAUSED);
-    click("继续"); assert(requests == 3 && last_action == R3_RESUME);
-    publish(R3_FALLEN);
-    click("回检查点"); assert(requests == 4 && last_action == R3_RESPAWN);
-    publish(R3_WON);
-    click("重开"); assert(requests == 5 && last_action == R3_RESTART);
-    glyphs(lv_layer_top());
-    click("返回"); assert(!live_open && closes == 2);
-    assert(roll3_page_open() == 0);
-    lv_obj_delete(lv_obj_get_child(lv_layer_top(), -1));
-    roll3_page_close();
-    assert(!live_open && closes == 3 && !buffer_live &&
-           objects(lv_layer_top()) == base && timers() == clock_base);
-    fail_timer=true;
-    assert(roll3_page_open()==-105&&last_open_result==-105&&last_depth_rows==0);
-    assert(!live_open&&closes==4&&buffer_live==0&&buffer_bytes==0);
-    assert(objects(lv_layer_top())==base&&timers()==clock_base);
-    fail_timer=false;
-    puts("TC-510 split budget, compact fallback, partial cleanup and timer error PASS");
-    puts("TC-504 live layout, buttons, duplicate guard, return, external delete PASS");
-    /* A terminal model stops revising; the existing page timer must still
-     * announce success after one second, without repainting the whole scene. */
-    assert(roll3_page_open()==0);
-    live_snapshot.elapsed_ms=12000;
-    live_snapshot.position=from_uv(-.7f,16.4f,1.08f+R3_RADIUS);
-    publish(R3_WON);
-    assert(find(lv_layer_top(),"请等待")&&!find(lv_layer_top(),"通关  12秒"));
-    screenshot("M3-GOAL-WAIT.ppm");glyphs(lv_layer_top());
-    lv_tick_inc(999);roll3_view_render(&live_snapshot,r3_demo_world());
-    assert(!find(lv_layer_top(),"通关  12秒"));
-    lv_tick_inc(1);roll3_view_render(&live_snapshot,r3_demo_world());
-    assert(find(lv_layer_top(),"通关  12秒"));
-    screenshot("M3-GOAL-WON.ppm");
-    click("返回");
+    assert(lv_obj_get_y(result_card)<start_y&&old_opacity==255);
+    assert(find(lv_layer_top(),"00:12.34")&&find(lv_layer_top(),"下一关敬请期待"));
+    sent=requests;click("下一关");assert(requests==sent);
+    lv_tick_inc(1000);lv_timer_handler();assert(lv_obj_get_style_text_opa(result_title,LV_PART_MAIN)==255);
+    assert(find(lv_layer_top(),"00:12.34"));
+    click("退出");assert(!live_open&&!buffer_live);
+    puts("TC-524 settlement reveal at 0/200/400/800ms, frozen score, no replay and disabled next-level PASS");
+
+    assert(roll3_page_open()==0);publish(R3_RUNNING);live_snapshot.elapsed_ms=7000;publish(R3_WON);
+    lv_tick_inc(200);roll3_view_tick();lv_obj_delete(lv_obj_get_child(lv_layer_top(),-1));
+    assert(!live_open&&!buffer_live);
+    assert(roll3_page_open()==0);assert(find(lv_layer_top(),"准备出发"));
+    lv_tick_inc(1000);lv_timer_handler();assert(!find(lv_layer_top(),"通关啦！"));
+    lv_tick_inc((UINT32_MAX-300u)-lv_tick_get());publish(R3_WON);
+    result_title=find(lv_layer_top(),"通关啦！");assert(result_title);
+    lv_tick_inc(800);roll3_view_tick();assert(lv_obj_get_style_text_opa(result_title,LV_PART_MAIN)==255);
+    click("退出");roll3_page_close();
     assert(!live_open&&!buffer_live&&objects(lv_layer_top())==base&&timers()==clock_base);
-    puts("TC-523 delayed success notice after 999/1000ms PASS");
-    assert(roll3_page_open()==0);
-    live_snapshot.elapsed_ms=17000;publish(R3_WON);
-    uint32_t frozen_revision=live_snapshot.revision;
-    lv_tick_inc(1033);lv_timer_handler();
-    assert(live_snapshot.revision==frozen_revision&&find(lv_layer_top(),"通关  17秒"));
-    publish(R3_RUNNING);live_snapshot.elapsed_ms=19000;publish(R3_WON);
-    assert(find(lv_layer_top(),"请等待"));
-    click("重开");lv_tick_inc(1033);lv_timer_handler();
-    assert(!find(lv_layer_top(),"通关  19秒"));
-    live_snapshot.elapsed_ms=0;++live_snapshot.run;publish(R3_CALIBRATING);
-    lv_tick_inc(1033);lv_timer_handler();
-    assert(find(lv_layer_top(),"请放平校准  0秒")&&!find(lv_layer_top(),"通关  19秒"));
-    live_snapshot.elapsed_ms=21000;publish(R3_WON);click("返回");
-    assert(roll3_page_open()==0);lv_tick_inc(1033);lv_timer_handler();
-    assert(find(lv_layer_top(),"准备开始  0秒")&&!find(lv_layer_top(),"通关  21秒"));
-    lv_tick_inc((UINT32_MAX-500u)-lv_tick_get());
-    live_snapshot.elapsed_ms=23000;publish(R3_WON);
-    lv_tick_inc(999);roll3_view_render(&live_snapshot,r3_demo_world());
-    assert(find(lv_layer_top(),"请等待"));
-    lv_tick_inc(1);roll3_view_render(&live_snapshot,r3_demo_world());
-    assert(find(lv_layer_top(),"通关  23秒"));click("返回");
-    assert(!live_open&&!buffer_live&&objects(lv_layer_top())==base&&timers()==clock_base);
-    puts("TC-523 frozen-revision timer, restart, close, new page and tick wrap PASS");
-    printf("LVGL draw-buffer malloc attempts=%u largest=%lu bytes (in addition to caller buffers)\n",draw_attempts,(unsigned long)largest_draw);
+    puts("TC-524 close during animation, clean reentry and millisecond wrap PASS");
+    printf("LVGL draw-buffer malloc attempts=%u largest=%lu bytes (caller planes excluded)\n",draw_attempts,(unsigned long)largest_draw);
+    assert(draw_attempts==0);
     return 0;
 }

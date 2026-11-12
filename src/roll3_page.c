@@ -56,7 +56,7 @@ static void refresh(lv_timer_t *timer)
     if (!have_frame || snapshot.revision != displayed_revision) {
         uint32_t start = lv_tick_get();
         roll3_view_render(&snapshot, r3_demo_world());
-        if (snapshot.state == R3_RUNNING)
+        if (snapshot.state == R3_RUNNING || (snapshot.state==R3_WON&&r3_demo_world()->finish_rolls))
             record_frame(start, lv_tick_elaps(start), sample_age);
         else
             timing.active = false;

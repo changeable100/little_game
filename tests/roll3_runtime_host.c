@@ -155,5 +155,21 @@ int main(void)
     run_cycle();
     assert(!roll3_runtime_busy());
     puts("TC-515 auto respawn requires live page and yields to restart/close PASS");
+    start_calibrated_page();
+    session.game.s.position=r3_demo_world()->goal_box_plus_one?
+        (r3_vec_t){r3_demo_world()->boxes[9].center.x,r3_demo_world()->boxes[9].center.y,1.08f+R3_RADIUS}:session.game.s.position;
+    session.game.s.velocity=(r3_vec_t){.6f,0,0};
+    unsigned previous_stops=stops;
+    advance_sample(5);snapshot=read_page(false);
+    assert(snapshot.state==R3_WON&&stops==previous_stops+1);
+    /* This fake service acknowledges stop asynchronously, like earlier close
+     * cases in this suite. Complete that acknowledgement before the next cycle. */
+    held_token=0;
+    uint32_t score_time=snapshot.elapsed_ms;float ball_x=snapshot.position.x;
+    publication.valid=false;clock_ms+=20;run_cycle();snapshot=read_page(false);
+    assert(snapshot.state==R3_WON&&snapshot.elapsed_ms==score_time&&snapshot.position.x>ball_x&&motion_token==0);
+    assert(mailbox.steps_max>=4&&session.input_fault==ROLL3_INPUT_FAULT_NONE);
+    roll3_runtime_close();run_cycle();assert(!roll3_runtime_busy());
+    puts("TC-524 worker releases IMU, rolls behind result and closes cleanly PASS");
     return 0;
 }
