@@ -9,7 +9,7 @@
 
 #define NEAR_Z .15f
 #define FAR_Z 30.0f
-#define FOCAL (R3_VIEW_H * .9604911f) /* Vertical FOV 55 degrees. */
+#define FOCAL (R3_VIEW_H * .9604911f * .75f) /* REQ-526: 75% of immersive framing. */
 static r3_vec_t add(r3_vec_t a,r3_vec_t b){return (r3_vec_t){a.x+b.x,a.y+b.y,a.z+b.z};}
 static r3_vec_t sub(r3_vec_t a,r3_vec_t b){return (r3_vec_t){a.x-b.x,a.y-b.y,a.z-b.z};}
 static r3_vec_t mul(r3_vec_t a,float s){return (r3_vec_t){a.x*s,a.y*s,a.z*s};}
@@ -700,8 +700,16 @@ int roll3_renderer_selftest(void (*report)(const char *,bool))
     CHECK("TC-505 screen-right",center&&roll3_renderer_project_focus(add(f,(r3_vec_t){R3_CAM_COS,-R3_CAM_SIN,0}),f,&x2,&y2,&z2)&&x2>x);
     CHECK("TC-505 screen-forward",center&&roll3_renderer_project_focus(add(f,(r3_vec_t){R3_CAM_SIN,R3_CAM_COS,0}),f,&x2,&y2,&z2)&&y2<y);
     CHECK("TC-505 near-guard",!roll3_renderer_project_focus(add(f,eye_offset),f,&x2,&y2,&z2));
+    const float prior_focal=R3_VIEW_H*.9604911f;
+    r3_vec_t side=add(f,(r3_vec_t){R3_CAM_COS,-R3_CAM_SIN,0});
+    bool framing=roll3_renderer_project_focus(side,f,&x2,&y2,&z2);
+    CHECK("TC-526 framing-75pct",framing&&fabsf((x2-R3_VIEW_W*.5f)*z2/prior_focal-.75f)<.00075f);
+    r3_vec_t up=add(f,(r3_vec_t){0,0,1});
+    framing=roll3_renderer_project_focus(up,f,&x2,&y2,&z2);
+    float length=sqrtf(3.2f*3.2f+2.6f*2.6f);
+    CHECK("TC-526 vertical-75pct",framing&&fabsf((R3_VIEW_H*.5f-y2)*z2/(prior_focal*3.2f/length)-.75f)<.00075f);
     CHECK("TC-505 follow-translation",roll3_renderer_project_focus((r3_vec_t){8,5,.7f},(r3_vec_t){8,5,.7f},&x2,&y2,&z2)&&fabsf(x2-x)<.01f&&fabsf(y2-y)<.01f);
-    CHECK("TC-505 ball-diameter-24px",center&&2*R3_RADIUS*FOCAL/z*1.5f>=24);
+    CHECK("TC-505 ball-diameter-24px",center&&2*R3_RADIUS*FOCAL/z*(R3_VIEW_SCALE/256.f)>=24);
     CHECK("TC-507 camera-sees-three-cube-faces",
           eye_offset.x<-.5f&&eye_offset.y<-.5f&&eye_offset.z>.5f);
     CHECK("TC-507 antialias-rgb565-resolve",average_rgb565(0xffff,0)==0x8410);

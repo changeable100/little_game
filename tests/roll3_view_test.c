@@ -150,14 +150,32 @@ static void render(const r3_snapshot_t *s,const r3_world_t *w)
 {assert(roll3_renderer_render(color+1,depth+1,s,w)==0);assert(color[0]==0xabcd&&color[R3_VIEW_PIXELS+1]==0xabcd);
  assert(depth[0]==0xabcd&&depth[R3_VIEW_PIXELS+1]==0xabcd);}
 static unsigned coverage(void){unsigned n=0;for(unsigned i=1;i<=R3_VIEW_PIXELS;++i)n+=depth[i]!=65535;return n;}
+static unsigned bit_at(const uint8_t *p,unsigned i){return (p[i/8]>>(7-i%8))&1;}
+static void pixel_font(const lv_font_t *font)
+{
+    const lv_font_fmt_txt_dsc_t *d=font->dsc;
+    assert(d->bpp==1&&font->line_height%2==0&&font->base_line%2==0);
+    for(unsigned c=0;c<d->cmaps[0].list_length;++c){
+        const lv_font_fmt_txt_glyph_dsc_t *g=&d->glyph_dsc[c+1];
+        assert(g->box_w%2==0&&g->box_h%2==0&&g->ofs_x%2==0&&g->ofs_y%2==0&&g->adv_w%32==0);
+        const uint8_t *b=d->glyph_bitmap+g->bitmap_index;
+        for(unsigned y=0;y<g->box_h;y+=2)for(unsigned x=0;x<g->box_w;x+=2){
+            unsigned i=y*g->box_w+x,v=bit_at(b,i);
+            assert(v==bit_at(b,i+1)&&v==bit_at(b,i+g->box_w)&&v==bit_at(b,i+g->box_w+1));
+        }
+    }
+}
 int main(void)
 {
+    setvbuf(stdout,NULL,_IONBF,0);
     puts("3D host view and production page adapter with fake runtime");
+    pixel_font(&roll3_font_16);pixel_font(&roll3_font_20);pixel_font(&roll3_font_28);
+    puts("TC-526 monochrome 2x2 block glyphs/metrics, three sizes PASS");
     color[0]=color[R3_VIEW_PIXELS+1]=depth[0]=depth[R3_VIEW_PIXELS+1]=0xabcd;
     assert(roll3_renderer_selftest(math_report)==0);
     const r3_world_t *world=r3_m1_world();
     r3_snapshot_t s={.version=ROLL3_CONTRACT_VERSION,.radius=.2f,.orientation={1,0,0,0},.position={3,0,1}};
-    r3_box_t distant=world->boxes[0];distant.center=(r3_vec_t){30,20,0};
+    r3_box_t distant=world->boxes[0];distant.center=(r3_vec_t){80,80,0}; /* Legal world, beyond far plane in size fixture. */
     r3_world_t lone=*world;lone.boxes=&distant;lone.box_count=1;
     lone.spawn=(r3_vec_t){0,0,R3_RADIUS}; /* Independent cube/ball fixture. */
     render(&s,&lone);unsigned near_count=coverage();memcpy(saved,color+1,sizeof(saved));
@@ -279,6 +297,21 @@ int main(void)
     assert(top_pixel!=0x0c1220&&bottom_pixel!=0x0c1220);
     assert(!find(lv_layer_top(),"游玩中")&&!find(lv_layer_top(),"主机预览：操作尚未接入"));
     assert(find(lv_layer_top(),"菜单")&&find(lv_layer_top(),"00:00"));
+    lv_obj_t *menu=lv_obj_get_parent(find(lv_layer_top(),"菜单"));
+    lv_obj_t *clock_panel=lv_obj_get_parent(find(lv_layer_top(),"00:00"));
+    assert(lv_obj_get_width(menu)>=56&&lv_obj_get_height(menu)>=56);
+    assert(lv_obj_get_style_radius(menu,0)==0&&lv_obj_get_style_radius(clock_panel,0)==0);
+    assert((lv_color_to_u32(lv_obj_get_style_bg_color(clock_panel,0))&0xffffffu)==0xe9cbe5);
+    const r3_vec_t poses[]={m3->spawn,from_uv(0,2.7f,3.375f+R3_RADIUS),
+        from_uv(4.35f,13.15f,2.05f+R3_RADIUS),from_uv(.1f,16.6f,1.08f+R3_RADIUS)};
+    const char *pose_names[]={"START","SLOPE","LONG","GOAL"};
+    for(unsigned i=0;i<4;++i){
+        s.position=poses[i];++s.run;roll3_view_render(&s,m3);
+        char file[80];snprintf(file,sizeof(file),"PIXEL-%s.ppm",pose_names[i]);screenshot(file);
+    }
+    s.position=r3_bend_point(m3->bend,0,1,m3->bend->radius,
+        r3_bend_height(m3->bend,0,1,m3->bend->radius)+R3_RADIUS);
+    ++s.run;roll3_view_render(&s,m3);screenshot("PIXEL-BEND.ppm");
     roll3_view_destroy();
     puts("TC-525 full 390x450 portrait scene, only clock/menu HUD and smaller buffers PASS");
 
@@ -321,6 +354,11 @@ int main(void)
     click("继续");assert(requests==sent);
     publish(R3_PAUSED);assert(find(lv_layer_top(),"小球和时间已暂停"));
     screenshot("IMMERSIVE-MENU.ppm");
+    lv_obj_t *pause_card=lv_obj_get_parent(find(lv_layer_top(),"游戏菜单"));
+    assert(lv_obj_get_style_radius(pause_card,0)==0);
+    const char *actions[]={"继续","回到存档点","退出"};
+    for(unsigned i=0;i<3;++i){lv_obj_t *b=lv_obj_get_parent(find(pause_card,actions[i]));
+        assert(lv_obj_get_height(b)>=44&&lv_obj_get_style_radius(b,0)==0);}
     lv_obj_t *old_checkpoint_button=lv_obj_get_parent(find(lv_layer_top(),"回到存档点"));
     click("继续");assert(last_action==R3_RESUME);publish(R3_RUNNING);
     sent=requests;lv_obj_send_event(old_checkpoint_button,LV_EVENT_CLICKED,NULL);
@@ -345,6 +383,8 @@ int main(void)
         live_snapshot.position.x+=.01f;++live_snapshot.revision;
         roll3_view_render(&live_snapshot,m3);roll3_view_tick();lv_obj_update_layout(lv_layer_top());
         unsigned opacity=lv_obj_get_style_text_opa(result_title,LV_PART_MAIN);
+        assert(lv_obj_get_x(result_card)%2==0&&lv_obj_get_y(result_card)%2==0);
+        assert(lv_obj_get_width(result_card)%2==0&&lv_obj_get_height(result_card)%2==0);
         assert(opacity>old_opacity&&lv_obj_get_width(result_card)>old_width);
         old_opacity=opacity;old_width=lv_obj_get_width(result_card);
         char file[80];snprintf(file,sizeof(file),"IMMERSIVE-RESULT-%03u.ppm",times[i]);screenshot(file);

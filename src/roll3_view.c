@@ -7,8 +7,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#define INK 0x49305f
-#define CREAM 0xfff2d9
+#define INK 0x55356e
+#define PAPER 0xe9cbe5
+#define ROSE 0xc58bca
 typedef enum {MODAL_NONE,MODAL_READY,MODAL_CAL,MODAL_GO,MODAL_MENU,
               MODAL_FALL,MODAL_ERROR,MODAL_RESULT,MODAL_INVALID} modal_t;
 typedef struct {r3_edge_aa_t edges;uint16_t depth[];} workspace_t;
@@ -53,8 +54,42 @@ static lv_obj_t *box(lv_obj_t *p,int x,int y,int w,int h,uint32_t color,int radi
     lv_obj_set_pos(o,x,y);lv_obj_set_size(o,w,h);lv_obj_set_style_bg_color(o,lv_color_hex(color),0);
     lv_obj_set_style_bg_opa(o,LV_OPA_COVER,0);lv_obj_set_style_radius(o,radius,0);return o;
 }
-static void outlined(lv_obj_t *o,int w)
-{lv_obj_set_style_border_width(o,w,0);lv_obj_set_style_border_color(o,lv_color_hex(INK),0);}
+/* Rectangles only: 2px steps, opaque offset shadow, no rounded/blurred layer.
+ * The custom fill uses text opacity so the native object's transparent fill
+ * cannot claim a cover rectangle over the cut-away corners. */
+static void stepped(lv_layer_t *layer,int x,int y,int w,int h,uint32_t color,lv_opa_t opacity) {
+    if(!opacity||w<16||h<16)return;
+    const int inset[]={6,4,2,0,2,4,6};
+    const int top[]={0,2,4,6,h-6,h-4,h-2};
+    const int high[]={2,2,2,h-12,2,2,2};
+    lv_draw_rect_dsc_t d;lv_draw_rect_dsc_init(&d);d.base.layer=layer;
+    d.bg_color=lv_color_hex(color);d.bg_opa=opacity;d.radius=0;
+    for(unsigned i=0;i<7;++i){
+        lv_area_t a={x+inset[i],y+top[i],x+w-inset[i]-1,y+top[i]+high[i]-1};
+        lv_draw_rect(layer,&d,&a);
+    }
+}
+static void pixel_panel(lv_event_t *event) {
+    lv_obj_t *o=lv_event_get_target(event);lv_area_t a;lv_obj_get_coords(o,&a);
+    lv_layer_t *layer=lv_event_get_layer(event);lv_opa_t opacity=lv_obj_get_style_text_opa(o,0);
+    int w=lv_area_get_width(&a)-4,h=lv_area_get_height(&a)-4;
+    uint32_t fill=lv_color_to_u32(lv_obj_get_style_bg_color(o,0))&0xffffffu;
+    stepped(layer,a.x1+4,a.y1+4,w,h,0x422657,opacity);
+    stepped(layer,a.x1,a.y1,w,h,INK,opacity);
+    stepped(layer,a.x1+2,a.y1+2,w-4,h-4,fill,opacity);
+    lv_draw_rect_dsc_t d;lv_draw_rect_dsc_init(&d);d.base.layer=layer;
+    d.bg_color=lv_color_hex(lv_obj_has_state(o,LV_STATE_DISABLED)?0xcbb7d0:0xf4dcee);d.bg_opa=opacity;
+    lv_area_t highlight={a.x1+8,a.y1+4,a.x1+w-9,a.y1+5};lv_draw_rect(layer,&d,&highlight);
+}
+static void pixel_style(lv_obj_t *o,uint32_t color) {
+    lv_obj_set_style_bg_color(o,lv_color_hex(color),0);lv_obj_set_style_bg_opa(o,LV_OPA_TRANSP,0);
+    lv_obj_set_style_radius(o,0,0);lv_obj_set_style_border_width(o,0,0);
+    lv_obj_set_style_text_opa(o,LV_OPA_COVER,0);
+    lv_obj_add_event_cb(o,pixel_panel,LV_EVENT_DRAW_MAIN,NULL);
+}
+static lv_obj_t *pixel_box(lv_obj_t *p,int x,int y,int w,int h,uint32_t color) {
+    lv_obj_t *o=box(p,x,y,w,h,color,0);pixel_style(o,color);return o;
+}
 static lv_obj_t *label(lv_obj_t *p,const char *s,int x,int y,int w,const lv_font_t *font) {
     lv_obj_t *o=lv_label_create(p);lv_label_set_text_static(o,s);lv_obj_set_pos(o,x,y);lv_obj_set_width(o,w);
     lv_obj_set_style_text_font(o,font,0);lv_obj_set_style_text_color(o,lv_color_hex(INK),0);
@@ -87,13 +122,13 @@ void roll3_view_destroy(void){if(page)lv_obj_delete(page);}
  * temporary ARGB bitmap. Resize/slide and fade individual drawing properties. */
 static void paint_popup(unsigned progress) {
     unsigned opacity=progress*255u/256u;
-    int w=274+(int)(28u*progress/256u),h=272+(int)(28u*progress/256u);
-    int y=102+(int)(48u*(256u-progress)/256u);
+    int w=274+4*(int)(7u*progress/256u),h=272+4*(int)(7u*progress/256u);
+    int y=102+2*(int)(24u*(256u-progress)/256u);
     lv_obj_set_pos(card,(390-w)/2,y);lv_obj_set_size(card,w,h);
-    lv_obj_set_style_bg_opa(card,(lv_opa_t)opacity,0);lv_obj_set_style_border_opa(card,(lv_opa_t)opacity,0);
+    lv_obj_set_style_text_opa(card,(lv_opa_t)opacity,0);
     lv_obj_set_style_bg_opa(shade,(lv_opa_t)(80u*progress/256u),0);
-    lv_obj_set_pos(badge,170,y-25);
-    lv_obj_set_style_bg_opa(badge,(lv_opa_t)opacity,0);lv_obj_set_style_border_opa(badge,(lv_opa_t)opacity,0);
+    lv_obj_set_pos(badge,168,y-24);
+    lv_obj_set_style_text_opa(badge,(lv_opa_t)opacity,0);
     lv_obj_t *labels[]={title,info,score,hint,badge_text,captions[0],captions[1],captions[2]};
     for(unsigned i=0;i<sizeof(labels)/sizeof(*labels);++i)lv_obj_set_style_text_opa(labels[i],(lv_opa_t)opacity,0);
     lv_obj_set_style_text_opa(hint,progress<256?0:LV_OPA_COVER,0);
@@ -101,7 +136,7 @@ static void paint_popup(unsigned progress) {
     for(unsigned i=0;i<4;++i)lv_obj_set_width(wide[i],w-28);
     for(unsigned i=0;i<3;++i){
         lv_obj_set_width(buttons[i],w-56);lv_obj_set_width(captions[i],w-56);
-        lv_obj_set_style_bg_opa(buttons[i],(lv_opa_t)opacity,0);lv_obj_set_style_border_opa(buttons[i],(lv_opa_t)opacity,0);
+        lv_obj_set_style_text_opa(buttons[i],(lv_opa_t)opacity,0);
     }
 }
 static void set_mode(modal_t wanted) {
@@ -119,14 +154,14 @@ static void set_mode(modal_t wanted) {
     else if(wanted==MODAL_GO){
         text(title,"准备好了");text(info,"倾斜板子，出发吧！");
         for(unsigned i=0;i<3;++i)visible(buttons[i],false);
-        lv_obj_set_size(card,302,160);lv_obj_set_pos(card,44,145);lv_obj_set_style_bg_opa(shade,40,0);
+        lv_obj_set_size(card,302,160);lv_obj_set_pos(card,44,146);lv_obj_set_style_bg_opa(shade,40,0);
     } else if(wanted==MODAL_MENU){
         text(title,"游戏菜单");text(info,"小球和时间已暂停");text(captions[0],"继续");text(captions[1],"回到存档点");
     } else if(wanted==MODAL_FALL){text(title,"掉下去啦");text(info,"正在回到存档点");text(captions[0],"回到存档点");}
     else if(wanted==MODAL_ERROR){text(title,"输入异常");text(info,"放平板子后，重新校准");text(captions[0],"重新校准");}
     else if(wanted==MODAL_INVALID){text(title,"三维数据无效");text(info,"请退出后重新进入");visible(buttons[0],false);}
     else if(wanted==MODAL_RESULT){
-        text(title,"通关啦！");text(info,"本关耗时");lv_obj_set_y(info,72);lv_obj_set_height(info,24);
+        text(title,"通关啦！");lv_obj_set_y(title,36);text(info,"本关耗时");lv_obj_set_y(info,80);lv_obj_set_height(info,26);
         visible(score,true);visible(hint,true);visible(badge,true);
         text(hint,"下一关敬请期待");text(captions[0],"下一关");text(captions[1],"退出");
         lv_obj_set_y(buttons[0],168);lv_obj_set_y(buttons[1],222);result_progress=257;
@@ -203,28 +238,25 @@ static int create(void (*action)(r3_action_kind_t),void (*closed)(void)) {
     image_obj=lv_image_create(page);lv_image_set_src(image_obj,&image);lv_image_set_pivot(image_obj,0,0);
     lv_image_set_scale(image_obj,R3_VIEW_SCALE);lv_image_set_antialias(image_obj,true);
     lv_obj_set_pos(image_obj,(390-R3_VIEW_W*2)/2,(450-R3_VIEW_H*2)/2);
-    clock_box=box(page,24,27,154,50,CREAM,23);outlined(clock_box,3);
-    lv_obj_t *clock=box(clock_box,10,9,30,30,0xffcf60,15);outlined(clock,2);
-    static const lv_point_precise_t hands[]={{14,6},{14,14},{21,18}};
-    lv_obj_t *line=lv_line_create(clock);lv_line_set_points(line,hands,3);lv_obj_set_style_line_color(line,lv_color_hex(INK),0);lv_obj_set_style_line_width(line,2,0);
-    clock_text=label(clock_box,"00:00",44,7,100,&roll3_font_28);
+    clock_box=pixel_box(page,24,28,140,44,PAPER);
+    lv_obj_t *clock=pixel_box(clock_box,8,8,28,28,ROSE);
+    box(clock,10,6,2,8,INK,0);box(clock,10,12,8,2,INK,0);
+    clock_text=label(clock_box,"00:00",36,8,96,&roll3_font_20);
     menu_button=lv_button_create(page);lv_obj_remove_style_all(menu_button);lv_obj_set_pos(menu_button,310,25);lv_obj_set_size(menu_button,56,56);
-    lv_obj_set_style_bg_color(menu_button,lv_color_hex(CREAM),0);lv_obj_set_style_bg_opa(menu_button,LV_OPA_COVER,0);lv_obj_set_style_radius(menu_button,18,0);outlined(menu_button,3);
-    static const lv_point_precise_t stroke[]={{0,0},{22,0}};
-    for(unsigned i=0;i<3;++i){line=lv_line_create(menu_button);lv_line_set_points(line,stroke,2);lv_obj_set_pos(line,14,10+(int)i*6);lv_obj_set_style_line_color(line,lv_color_hex(INK),0);lv_obj_set_style_line_width(line,2,0);}
-    label(menu_button,"菜单",0,30,56,&roll3_font_16);
+    lv_obj_set_y(menu_button,26);pixel_style(menu_button,PAPER);
+    for(unsigned i=0;i<3;++i)box(menu_button,14,10+(int)i*6,24,2,INK,0);
+    label(menu_button,"菜单",0,26,56,&roll3_font_20);
     lv_obj_add_event_cb(menu_button,pressed,LV_EVENT_PRESSED,NULL);lv_obj_add_event_cb(menu_button,clicked,LV_EVENT_CLICKED,NULL);
     shade=box(page,0,0,390,450,0x281b42,0);lv_obj_set_style_bg_opa(shade,80,0);
-    card=box(shade,44,102,302,300,CREAM,25);outlined(card,3);
-    title=label(card,"",14,24,274,&roll3_font_28);info=label(card,"",14,72,274,&roll3_font_16);
-    score=label(card,"",14,105,274,&roll3_font_28);hint=label(card,"",14,273,274,&roll3_font_16);
-    badge=box(shade,170,77,50,50,0xffcf60,25);outlined(badge,3);
-    badge_text=label(badge,"*",0,4,50,&roll3_font_28);lv_obj_add_flag(card,LV_OBJ_FLAG_OVERFLOW_VISIBLE);
+    card=pixel_box(shade,44,102,302,300,PAPER);
+    title=label(card,"",14,24,274,&roll3_font_28);info=label(card,"",14,72,274,&roll3_font_20);
+    score=label(card,"",14,112,274,&roll3_font_28);hint=label(card,"",14,270,274,&roll3_font_20);
+    badge=pixel_box(shade,168,78,54,54,ROSE);
+    badge_text=label(badge,"★",0,8,50,&roll3_font_28);lv_obj_add_flag(card,LV_OBJ_FLAG_OVERFLOW_VISIBLE);
     for(unsigned i=0;i<3;++i){
         buttons[i]=lv_button_create(card);lv_obj_remove_style_all(buttons[i]);lv_obj_set_pos(buttons[i],28,128+(int)i*56);lv_obj_set_size(buttons[i],246,44);
-        lv_obj_set_style_radius(buttons[i],17,0);outlined(buttons[i],2);
-        lv_obj_set_style_bg_color(buttons[i],lv_color_hex(i==0?0x9bdfbc:i==1?0xffce65:0xf4d6e5),0);
-        lv_obj_set_style_bg_color(buttons[i],lv_color_hex(0xe0dbce),LV_STATE_DISABLED);lv_obj_set_style_bg_opa(buttons[i],LV_OPA_COVER,0);
+        pixel_style(buttons[i],i==0?0xcba2d7:i==1?ROSE:0xd7b0db);
+        lv_obj_set_style_bg_color(buttons[i],lv_color_hex(0xc4afca),LV_STATE_DISABLED);
         captions[i]=label(buttons[i],"",0,8,246,&roll3_font_20);
         lv_obj_add_event_cb(buttons[i],pressed,LV_EVENT_PRESSED,NULL);lv_obj_add_event_cb(buttons[i],clicked,LV_EVENT_CLICKED,NULL);
     }
@@ -264,7 +296,7 @@ void roll3_view_render(const r3_snapshot_t *s,const r3_world_t *world) {
     shown_run=s->run;uint32_t seconds=s->elapsed_ms/1000u;
     if(seconds!=shown_seconds){
         shown_seconds=seconds;snprintf(time_text,sizeof(time_text),"%02lu:%02lu",(unsigned long)(seconds/60u),(unsigned long)(seconds%60u));
-        lv_obj_set_style_text_font(clock_text,seconds/60u>=100?&roll3_font_20:&roll3_font_28,0);lv_label_set_text_static(clock_text,time_text);
+        lv_obj_set_style_text_font(clock_text,seconds/60u>=100?&roll3_font_16:&roll3_font_20,0);lv_label_set_text_static(clock_text,time_text);
     }
     roll3_view_tick();
 }
