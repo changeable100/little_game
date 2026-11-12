@@ -65,6 +65,7 @@ static void refresh(lv_timer_t *timer)
         have_frame = true;
     }
     roll3_view_action_status(pending, result);
+    roll3_view_tick();
 }
 
 static void submit(r3_action_kind_t action)

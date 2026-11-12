@@ -13,7 +13,7 @@ static const r3_input_t gravity={{0,0,-9.81f},true}, zero={{0,0,0},true};
 static const r3_box_t floor_box={{0,0,-0.2f},{20,20,0.2f},BASIS,0,0.6f,0,0x123456};
 static r3_world_t test_world(const r3_box_t *b,unsigned count) {
     r3_world_t w={b,count,{0,0,R3_RADIUS},{-3,-3,R3_RADIUS},
-        {{-4,-4,0},{-2,-2,2}},{{9,9,0},{10,10,2}},-3,NULL,NULL};
+        {{-4,-4,0},{-2,-2,2}},{{9,9,0},{10,10,2}},-3,NULL,NULL,0};
     return w;
 }
 static r3_result_t act(r3_game_t *g,r3_action_kind_t kind) {
@@ -576,7 +576,7 @@ static bool m3_trough_profile(void)
     for(int side=-1;side<=1;side+=2){
         float r=b->radius+side*b->half_width;
         r3_bend_profile_t edge=r3_bend_profile(b,0,1,r);
-        CHECK(near(edge.height-center.height,.26f,.001f));
+        CHECK(near(edge.height-center.height,.32f,.001f));
         CHECK(side*edge.radial_grade>.4f);
     }
     for(unsigned end=0;end<2;++end){
@@ -639,6 +639,86 @@ static bool m3_fast_bend_contact(float speed,float angle) {
     return true;
 }
 
+static bool m3_goal_all_surface(void) {
+    const r3_vec_t points[]={{.1f,16.6f,0},{-0.93f,15.75f,0},{1.13f,15.75f,0},
+        {-0.93f,17.45f,0},{1.13f,17.45f,0},{-.93f,16.6f,0},{1.13f,16.6f,0},
+        {.1f,15.75f,0},{.1f,17.45f,0}};
+    for(unsigned i=0;i<sizeof(points)/sizeof(*points);++i){
+        r3_game_t g;CHECK(start(&g,r3_demo_world()));
+        g.s.position=from_uv(points[i].x,points[i].y,1.08f+R3_RADIUS);
+        g.s.velocity=from_uv(.1f,.1f,0);g.s.elapsed_ms=12340;
+        CHECK(steps(&g,&gravity,1)&&g.s.state==R3_WON&&!g.s.limited);
+        CHECK(norm2(g.s.velocity)==0&&norm2(g.s.omega)==0);
+        uint32_t frozen=g.s.elapsed_ms;
+        CHECK(r3_step(&g,&gravity,5)==R3_WRONG_STATE&&g.s.elapsed_ms==frozen);
+    }
+    return true;
+}
+
+static bool m3_goal_no_false_contact(void) {
+    const r3_vec_t points[]={{.1f,16.6f,1.08f+R3_RADIUS+.05f},
+        {1.38f+R3_RADIUS,16.6f,.93f},{.1f,15.5f-R3_RADIUS,.93f},
+        {.1f,18.2f,.97f+.2f*.155237834f/.987877125f+R3_RADIUS/.987877125f}};
+    for(unsigned i=0;i<sizeof(points)/sizeof(*points);++i){
+        r3_game_t g;CHECK(start(&g,r3_demo_world()));
+        g.s.position=from_uv(points[i].x,points[i].y,points[i].z);
+        CHECK(steps(&g,&gravity,1)&&g.s.state==R3_RUNNING&&!g.s.limited);
+    }
+    return true;
+}
+
+static bool m3_goal_entrance(void) {
+    for(int side=-1;side<=1;++side){
+        r3_game_t g;CHECK(start(&g,r3_demo_world()));
+        g.s.position=from_uv(.1f+side*.7f,18.05f,
+            .97f+.35f*.155237834f/.987877125f+R3_RADIUS/.987877125f);
+        g.s.velocity=from_uv(0,-2,2*.155237834f/.987877125f);
+        for(unsigned i=0;i<300&&g.s.state==R3_RUNNING;++i)
+            CHECK(steps(&g,&gravity,1)&&!g.s.limited);
+        CHECK(g.s.state==R3_WON&&g.s.falls==0);
+    }
+    return true;
+}
+
+static bool m3_goal_rail_geometry(void) {
+    const r3_world_t *w=r3_demo_world();
+    CHECK(w->box_count==15);
+    const r3_vec_t centers[]={{-1.22f,16.6f,1.23f},{1.42f,16.6f,1.23f},{.1f,15.46f,1.23f}};
+    for(unsigned i=0;i<3;++i){
+        r3_vec_t p=to_uv(w->boxes[12+i].center);
+        CHECK(near(p.x,centers[i].x,.001f)&&near(p.y,centers[i].y,.001f)&&near(p.z,centers[i].z,.001f));
+        CHECK(near(w->boxes[12+i].half.z,.15f,.0001f));
+        CHECK(near(i==2?w->boxes[12+i].half.y:w->boxes[12+i].half.x,.04f,.0001f));
+    }
+    return true;
+}
+
+static bool m3_goal_rails_collide(void) {
+    r3_world_t w=*r3_demo_world();w.goal_box_plus_one=0;
+    w.goal=(r3_zone_t){{40,40,0},{41,41,2}};
+    for(unsigned edge=0;edge<3;++edge)for(int lane=-1;lane<=1;++lane){
+        r3_game_t g;CHECK(start(&g,&w));
+        float u=edge==0?-.83f:edge==1?1.03f:.1f+lane*.8f;
+        float v=edge==2?15.85f:16.6f+lane*.7f;
+        g.s.position=from_uv(u,v,1.08f+R3_RADIUS);
+        g.s.velocity=from_uv(edge==0?-2:edge==1?2:0,edge==2?-2:0,0);
+        for(unsigned i=0;i<100;++i){
+            CHECK(steps(&g,&gravity,1)&&g.s.state==R3_RUNNING&&!g.s.limited);
+            r3_vec_t p=to_uv(g.s.position);
+            CHECK(p.x>=-.985f&&p.x<=1.185f&&p.y>=15.695f&&p.z>1.26f);
+        }
+    }
+    return true;
+}
+
+static bool goal_selector_guard(void) {
+    r3_world_t w=*r3_demo_world();
+    w.goal_box_plus_one=w.box_count+1;
+    CHECK(r3_world_validate(&w)==R3_INVALID);
+    w.goal_box_plus_one=0;CHECK(r3_world_validate(&w)==R3_OK);
+    return r3_m1_world()->goal_box_plus_one==0&&r3_m2_world()->goal_box_plus_one==0;
+}
+
 int r3_selftest_run(maze_test_report_t report) {
     int failures=0;
 #define RUN(name,expr) do {bool passed=(expr);if(!passed)++failures;if(report)report(name,passed);}while(0)
@@ -685,7 +765,7 @@ int r3_selftest_run(maze_test_report_t report) {
     RUN("TC-517 auto respawn continues from checkpoint to M2 goal",m2_route(true));
     RUN("TC-518 both M3 guide rails stop the ball",m3_guide_rails());
     RUN("TC-518 M3 two turns landing checkpoint U bend and goal",m3_replay());
-    RUN("TC-520 stretched narrow trough with flat flush joins",m3_trough_profile());
+    RUN("TC-522 deeper narrow trough with flat flush joins",m3_trough_profile());
     RUN("TC-519 both trough joins cross in both directions",bend_crossings(r3_demo_world()));
     RUN("TC-519 gravity returns ball from inner slope",m3_trough_returns(-1));
     RUN("TC-519 gravity returns ball from outer slope",m3_trough_returns(1));
@@ -693,6 +773,12 @@ int r3_selftest_run(maze_test_report_t report) {
     RUN("TC-521 M3 7.5mps smooth floor keeps moving",m3_fast_bend_contact(7.5f,0));
     RUN("TC-521 M3 fast negative-angle curve keeps moving",m3_fast_bend_contact(7.5f,-.261799388f));
     RUN("TC-521 M3 fast positive-angle curve keeps moving",m3_fast_bend_contact(7.5f,.261799388f));
+    RUN("TC-523 entire green goal locks and freezes at nine points",m3_goal_all_surface());
+    RUN("TC-523 airborne sidewall and pink approach do not win",m3_goal_no_false_contact());
+    RUN("TC-523 three entrance lanes reach goal",m3_goal_entrance());
+    RUN("TC-523 three solid goal rails geometry",m3_goal_rail_geometry());
+    RUN("TC-523 goal guards contain nine 2mps impacts with win disabled",m3_goal_rails_collide());
+    RUN("TC-523 goal selector guarded and legacy worlds unchanged",goal_selector_guard());
 #undef RUN
     return failures;
 }

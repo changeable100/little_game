@@ -74,7 +74,7 @@ static const r3_world_t m2_scene = {
 
 const r3_world_t *r3_m2_world(void) {return &m2_scene;}
 
-/* M3 has two real guide rails after the ten road pieces. */
+/* M3: ten road pieces, two turn guides and three open-side goal guards. */
 static const r3_box_t m3_boxes[] = {
     DECK(0,0,3.70f,1.33f,1,0xe399b7),
     SLOPE(0,2.70f,3.375f,0,1,1.730787393f,1.33f,0.982211915f,0.187775807f,0xe399b7),
@@ -88,6 +88,9 @@ static const r3_box_t m3_boxes[] = {
     DECK(.10f,16.60f,1.08f,1.28f,1.10f,0x8ac879),
     DECK(.65f,7.24f,3.35f,1.96f,.06f,0xb964d1),
     DECK(2.22f,5.76f,3.29f,1.03f,.07f,0xb964d1),
+    DECK(-1.22f,16.60f,1.38f,.04f,1.10f,0x4a9f66),
+    DECK(1.42f,16.60f,1.38f,.04f,1.10f,0x4a9f66),
+    DECK(.10f,15.46f,1.38f,1.36f,.04f,0x4a9f66),
 };
 _Static_assert(sizeof(m3_boxes)/sizeof(*m3_boxes)<=R3_MAX_BOXES,"M3 exceeds OBB budget");
 
@@ -95,7 +98,7 @@ static const r3_bend_t m3_bend = {
     .origin=LOCAL(2.225f,19.10f,1.25f),
     .radial_start=LOCAL(1,0,0),.sweep_axis=LOCAL(0,1,0),
     .radius=2.125f,.half_width=.96f,.exit_z=.86f,
-    .trough_depth=.26f,.longitudinal_scale=1.55f,.color=0xe399b7
+    .trough_depth=.32f,.longitudinal_scale=1.55f,.color=0xe399b7
 };
 
 #include "roll3_stage_art.h"
@@ -105,7 +108,7 @@ static const r3_world_t m3_scene = {
     .spawn=LOCAL(0,0,3.70f+R3_RADIUS),
     .checkpoint_spawn=LOCAL(4.35f,16.50f,1.55f+R3_RADIUS),
     .checkpoint=ZONE(4.35f,16.50f,1.55f),.goal=ZONE(.10f,16.60f,1.08f),
-    .fall_z=-3,.bend=&m3_bend,.style=&m3_style
+    .fall_z=-3,.bend=&m3_bend,.style=&m3_style,.goal_box_plus_one=10
 };
 
 const r3_world_t *r3_demo_world(void) {return &m3_scene;}

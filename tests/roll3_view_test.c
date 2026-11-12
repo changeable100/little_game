@@ -297,6 +297,7 @@ int main(void)
             if(st==R3_ERROR)s.error=R3_INPUT_ERROR;
             s.orientation=(r3_quat_t){.92387953f,.38268343f,0,0};
             roll3_view_render(&s,world);glyphs(lv_layer_top());
+            if(st==R3_WON){lv_tick_inc(1000);roll3_view_render(&s,world);}
             lv_obj_t *close=find(lv_layer_top(),"返回");assert(close);
             lv_obj_t *root=lv_obj_get_child(lv_layer_top(),-1);
             for(int i=4;i<=5;++i)assert(lv_obj_has_state(lv_obj_get_child(root,i),LV_STATE_DISABLED));
@@ -402,6 +403,45 @@ int main(void)
     fail_timer=false;
     puts("TC-510 split budget, compact fallback, partial cleanup and timer error PASS");
     puts("TC-504 live layout, buttons, duplicate guard, return, external delete PASS");
+    /* A terminal model stops revising; the existing page timer must still
+     * announce success after one second, without repainting the whole scene. */
+    assert(roll3_page_open()==0);
+    live_snapshot.elapsed_ms=12000;
+    live_snapshot.position=from_uv(-.7f,16.4f,1.08f+R3_RADIUS);
+    publish(R3_WON);
+    assert(find(lv_layer_top(),"请等待")&&!find(lv_layer_top(),"通关  12秒"));
+    screenshot("M3-GOAL-WAIT.ppm");glyphs(lv_layer_top());
+    lv_tick_inc(999);roll3_view_render(&live_snapshot,r3_demo_world());
+    assert(!find(lv_layer_top(),"通关  12秒"));
+    lv_tick_inc(1);roll3_view_render(&live_snapshot,r3_demo_world());
+    assert(find(lv_layer_top(),"通关  12秒"));
+    screenshot("M3-GOAL-WON.ppm");
+    click("返回");
+    assert(!live_open&&!buffer_live&&objects(lv_layer_top())==base&&timers()==clock_base);
+    puts("TC-523 delayed success notice after 999/1000ms PASS");
+    assert(roll3_page_open()==0);
+    live_snapshot.elapsed_ms=17000;publish(R3_WON);
+    uint32_t frozen_revision=live_snapshot.revision;
+    lv_tick_inc(1033);lv_timer_handler();
+    assert(live_snapshot.revision==frozen_revision&&find(lv_layer_top(),"通关  17秒"));
+    publish(R3_RUNNING);live_snapshot.elapsed_ms=19000;publish(R3_WON);
+    assert(find(lv_layer_top(),"请等待"));
+    click("重开");lv_tick_inc(1033);lv_timer_handler();
+    assert(!find(lv_layer_top(),"通关  19秒"));
+    live_snapshot.elapsed_ms=0;++live_snapshot.run;publish(R3_CALIBRATING);
+    lv_tick_inc(1033);lv_timer_handler();
+    assert(find(lv_layer_top(),"请放平校准  0秒")&&!find(lv_layer_top(),"通关  19秒"));
+    live_snapshot.elapsed_ms=21000;publish(R3_WON);click("返回");
+    assert(roll3_page_open()==0);lv_tick_inc(1033);lv_timer_handler();
+    assert(find(lv_layer_top(),"准备开始  0秒")&&!find(lv_layer_top(),"通关  21秒"));
+    lv_tick_inc((UINT32_MAX-500u)-lv_tick_get());
+    live_snapshot.elapsed_ms=23000;publish(R3_WON);
+    lv_tick_inc(999);roll3_view_render(&live_snapshot,r3_demo_world());
+    assert(find(lv_layer_top(),"请等待"));
+    lv_tick_inc(1);roll3_view_render(&live_snapshot,r3_demo_world());
+    assert(find(lv_layer_top(),"通关  23秒"));click("返回");
+    assert(!live_open&&!buffer_live&&objects(lv_layer_top())==base&&timers()==clock_base);
+    puts("TC-523 frozen-revision timer, restart, close, new page and tick wrap PASS");
     printf("LVGL draw-buffer malloc attempts=%u largest=%lu bytes (in addition to caller buffers)\n",draw_attempts,(unsigned long)largest_draw);
     return 0;
 }

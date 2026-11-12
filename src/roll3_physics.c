@@ -147,6 +147,7 @@ r3_result_t r3_world_validate(const r3_world_t *w) {
        !zone_valid(w->goal)||!isfinite(w->fall_z)||fabsf(w->fall_z)>100||
        w->spawn.z<=w->fall_z+R3_RADIUS||w->checkpoint_spawn.z<=w->fall_z+R3_RADIUS||
        !inside(w->checkpoint,w->checkpoint_spawn))return R3_INVALID;
+    if(w->goal_box_plus_one>w->box_count)return R3_INVALID;
     if(w->style){
         const r3_course_style_t *style=w->style;
         if(style->face_count>R3_MAX_ART_FACES||(style->face_count&&!style->faces)||
@@ -330,13 +331,19 @@ static void sweep_bend(hit_t *hit, const r3_bend_t *bend, bend_surface_t surface
     *hit=(hit_t){true,high,normal,&bend_materials[surface]};
 }
 
-static void mark_contact(r3_snapshot_t *s,r3_vec_t n) {
+static void mark_contact(r3_game_t *g,const r3_box_t *box,r3_vec_t n) {
+    r3_snapshot_t *s=&g->s;
     if(s->contacts<UINT8_MAX)++s->contacts;
     if(n.z>0.25f)s->grounded=true;
     s->contact_normal=n;
+    if(g->world->goal_box_plus_one&&box==&g->world->boxes[g->world->goal_box_plus_one-1]&&
+       n.z>.25f&&dot(n,box->axis[2])>.25f&&
+       dot(sub(s->position,box->center),box->axis[2])>=box->half.z-SKIN)
+        g->goal_touched=true;
 }
-static void impulse(r3_snapshot_t *s,const r3_box_t *box,r3_vec_t n) {
-    mark_contact(s,n);
+static void impulse(r3_game_t *g,const r3_box_t *box,r3_vec_t n) {
+    r3_snapshot_t *s=&g->s;
+    mark_contact(g,box,n);
     float vn=dot(s->velocity,n);
     if(vn>=0)return;
     float e=vn < -0.5f ? box->restitution : 0;
@@ -371,8 +378,8 @@ static void depenetrate(r3_game_t *g) {
             r3_vec_t n;float gap=separation(&g->world->boxes[i],g->s.position,&n);
             if(gap < -SKIN) {
                 g->s.position=add(g->s.position,mul(n,SKIN-gap));
-                impulse(&g->s,&g->world->boxes[i],n);corrected=true;
-            } else if(gap<=2*SKIN)mark_contact(&g->s,n);
+                impulse(g,&g->world->boxes[i],n);corrected=true;
+            } else if(gap<=2*SKIN)mark_contact(g,&g->world->boxes[i],n);
         }
         if(g->world->bend){
             for(bend_surface_t i=BEND_FLOOR;i<BEND_SURFACES;++i){
@@ -380,8 +387,8 @@ static void depenetrate(r3_game_t *g) {
                 float gap=bend_gap(g->world->bend,i,g->s.position,&n);
                 if(gap < -SKIN){
                     g->s.position=add(g->s.position,mul(n,SKIN-gap));
-                    impulse(&g->s,&bend_materials[i],n);corrected=true;
-                }else if(gap<=2*SKIN)mark_contact(&g->s,n);
+                    impulse(g,&bend_materials[i],n);corrected=true;
+                }else if(gap<=2*SKIN)mark_contact(g,&bend_materials[i],n);
             }
         }
         if(!corrected)return;
@@ -407,12 +414,13 @@ r3_result_t r3_step(r3_game_t *g,const r3_input_t *input,uint32_t dt_ms) {
         return R3_INVALID;
     }
     g->s.contacts=0;g->s.grounded=false;g->s.limited=false;g->s.speed_limited=false;
+    g->goal_touched=false;
     g->s.contact_normal=(r3_vec_t){0,0,0};
     g->s.velocity=add(g->s.velocity,mul(input->acceleration,DT));
     cap_motion(&g->s);
     depenetrate(g);
-    float remaining=DT;
-    for(unsigned impact=0;impact<IMPACTS&&remaining>1e-8f;impact++) {
+    float remaining=g->goal_touched?0:DT;
+    for(unsigned impact=0;impact<IMPACTS&&remaining>1e-8f&&!g->goal_touched;impact++) {
         float span=remaining;
         bool support=g->world->bend&&bend_support_move(g->world->bend,g->s.position,g->s.velocity,&span);
         r3_vec_t delta=mul(g->s.velocity,span);
@@ -427,14 +435,16 @@ r3_result_t r3_step(r3_game_t *g,const r3_input_t *input,uint32_t dt_ms) {
             continue;
         }
         g->s.position=add(add(g->s.position,mul(delta,hit.t)),mul(hit.normal,SKIN));
-        remaining-=span*hit.t;impulse(&g->s,hit.material,hit.normal);
+        remaining-=span*hit.t;impulse(g,hit.material,hit.normal);
     }
+    if(g->goal_touched)remaining=0;
     if(remaining>1e-8f)limited(&g->s);
     depenetrate(g);cap_motion(&g->s);orientation(&g->s);
     g->s.elapsed_ms=UINT32_MAX-g->s.elapsed_ms<R3_STEP_MS?UINT32_MAX:g->s.elapsed_ms+R3_STEP_MS;
     if(g->s.grounded&&inside(g->world->checkpoint,g->s.position))g->s.checkpoint=1;
     if(g->s.position.z<g->world->fall_z) {g->s.state=R3_FALLEN;g->s.falls=inc(g->s.falls);}
-    else if(g->s.grounded&&inside(g->world->goal,g->s.position))g->s.state=R3_WON;
+    else if(g->world->goal_box_plus_one?g->goal_touched:
+        (g->s.grounded&&inside(g->world->goal,g->s.position)))g->s.state=R3_WON;
     if(g->s.state!=R3_RUNNING)g->s.velocity=g->s.omega=(r3_vec_t){0,0,0};
     ++g->s.revision;return R3_OK;
 }

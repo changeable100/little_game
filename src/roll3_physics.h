@@ -7,6 +7,7 @@ typedef struct {
     const r3_world_t *world;
     r3_snapshot_t s;
     uint32_t last_request;
+    bool goal_touched; /* Per-step latch, private to the physical owner. */
 } r3_game_t;
 r3_result_t r3_world_validate(const r3_world_t *world);
 r3_result_t r3_init(r3_game_t *game, const r3_world_t *world);

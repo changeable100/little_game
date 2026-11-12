@@ -23,7 +23,7 @@ int main(void)
         for(int side=-1;side<=1;side+=2)
         for(unsigned ai=0;ai<5;++ai)for(unsigned si=0;si<4;++si){
             r3_world_t w=*original;
-            if(isolated){w.boxes=b;w.box_count=1;w.bend=NULL;w.style=NULL;}
+            if(isolated){w.boxes=b;w.box_count=1;w.bend=NULL;w.style=NULL;w.goal_box_plus_one=0;}
             /* r3_init validates original spawn, so start before narrowing world. */
             r3_game_t g;
             if(r3_init(&g,original)!=R3_OK)return 2;

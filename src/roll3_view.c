@@ -14,6 +14,8 @@ static void (*on_closed)(void);
 static bool valid_frame, action_pending;
 static r3_state_t view_state;
 static uint32_t shown_seconds, shown_falls, shown_checkpoint;
+static uint32_t finish_started,finish_run;
+static bool finish_active,finish_waiting;
 typedef struct {
     r3_edge_aa_t edges;
     uint16_t depth[];
@@ -46,6 +48,7 @@ static void deleted(lv_event_t *event)
     workspace=NULL;
     frame_color=NULL;
     depth_rows=0;
+    finish_active=finish_waiting=false;
     page=image_obj=status=detail=primary=secondary=NULL;
     image.data=NULL;
     void (*closed)(void) = on_closed;
@@ -108,6 +111,7 @@ static int create(void (*action)(r3_action_kind_t), void (*closed)(void))
     send_action = action;
     on_closed = closed;
     valid_frame = action_pending = false;
+    finish_active=finish_waiting=false;
     memset(&camera_follow,0,sizeof(camera_follow));
     page=lv_obj_create(lv_layer_top());lv_obj_remove_style_all(page);
     lv_obj_set_size(page,390,450);lv_obj_set_style_bg_color(page,lv_color_hex(0x0c1220),0);
@@ -159,6 +163,15 @@ void roll3_view_action_status(bool pending, r3_result_t result)
     }
 }
 
+void roll3_view_tick(void)
+{
+    if(!page||!valid_frame||action_pending||view_state!=R3_WON||!finish_waiting||
+       lv_tick_elaps(finish_started)<1000u)return;
+    finish_waiting=false;
+    snprintf(status_text,sizeof(status_text),"通关  %lu秒",(unsigned long)shown_seconds);
+    lv_label_set_text_static(status,status_text);
+}
+
 void roll3_view_render(const r3_snapshot_t *s,const r3_world_t *world)
 {
     if(!page)return;
@@ -170,16 +183,26 @@ void roll3_view_render(const r3_snapshot_t *s,const r3_world_t *world)
     lv_image_cache_drop(&image);lv_obj_invalidate(image_obj);
     bool state_changed=!valid_frame||!s||view_state!=s->state;
     valid_frame = result == 0;
-    if(result){lv_label_set_text_static(status,"三维数据无效");lv_label_set_text_static(detail,"请检查快照版本、姿态与关卡");controls();return;}
+    if(result){finish_active=finish_waiting=false;lv_label_set_text_static(status,"三维数据无效");lv_label_set_text_static(detail,"请检查快照版本、姿态与关卡");controls();return;}
     view_state = s->state;
+    bool notice_started=false;
+    if(s->state==R3_WON){
+        if(!finish_active||finish_run!=s->run){
+            finish_active=finish_waiting=notice_started=true;
+            finish_run=s->run;finish_started=lv_tick_get();
+        }
+    }else finish_active=finish_waiting=false;
     static const char *states[]={"准备开始","请放平校准","游玩中","已暂停","小球掉落","通关","输入异常"};
     static const char *messages[]={"点击开始后，保持板子平放","等待真实校准完成","倾斜板子，沿坡道前进",
         "暂停期间不累计时间","等待返回当前检查点，保留本局时间","用时已冻结，可重开或返回","输入无效，请重开或返回"};
     uint32_t seconds=s->elapsed_ms/1000u;
-    if(state_changed||seconds!=shown_seconds){
+    if(state_changed||notice_started||seconds!=shown_seconds){
         shown_seconds=seconds;
-        snprintf(status_text,sizeof(status_text),"%s  %lu秒",states[s->state],(unsigned long)seconds);
-        lv_label_set_text_static(status,status_text);
+        if(finish_waiting)lv_label_set_text_static(status,"请等待");
+        else{
+            snprintf(status_text,sizeof(status_text),"%s  %lu秒",states[s->state],(unsigned long)seconds);
+            lv_label_set_text_static(status,status_text);
+        }
     }
     if(state_changed||s->falls!=shown_falls||s->checkpoint!=shown_checkpoint){
         shown_falls=s->falls;
@@ -193,4 +216,5 @@ void roll3_view_render(const r3_snapshot_t *s,const r3_world_t *world)
         lv_label_set_text_static(secondary,"重开");
         controls();
     }
+    roll3_view_tick();
 }
