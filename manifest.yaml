@@ -100,6 +100,11 @@ code:
   commit_range: A阶段二f4610d7与B已发布main e6bd646合并；本次合并版本未上板，HEAD见git log
   a_model_source: origin/feat/req-301-maze-model@9595000；模型实现源提交 77b15d3
 physical_verification:
+- item: TC-526 像素版真实错误页与字体不清楚反馈
+  required_action: 回传像素版屏幕，核对字形和状态
+  executed_at: 2026-11-12收到输入异常页原始照片
+  evidence_path: evidence/M4/roll3-pixel-2026-11-12/board-run01/analysis.md
+  agent_conclusion: 可见块状计时00:00及输入异常/重校准/退出，负责人仍不接受中文可读性并要求英文。缺独立镜像指纹和串口，不判校准/输入原因或动态行为通过；新英文另验。
 - item: TC-524/525 M3满屏游玩与结算静态页面、视觉整改反馈
   required_action: 真机游玩并回传满屏UI、结算及菜单动作证据
   executed_at: 2026-11-12收到两张原始照片
@@ -545,6 +550,7 @@ test_results:
   pass: true
   evidence_path: evidence/M3/chinese-loading-transition-fix-2026-11-08/ui_board_buffer.txt
 known_issues:
+- REQ-527：负责人像素版实拍显示输入异常且中文仍难读，要求三维页英文。文案修订不代表输入异常原因已解决，缺串口，真实故障观察保留。
 - REQ-526：按负责人A选择完成75%构图与粉紫像素界面候选，162核心、SDK LVGL/20轮/字形/两档边缘与SDK编译通过，最终指纹已归档。新真机视觉/触摸/动态验收待证据，旧25%性能目标未完成。
 - REQ-524/525实拍反馈：镜头偏近，计时/菜单/结算的高分辨率圆角字形与低分辨率粉紫赛道不协调，负责人要求整改。源码诊断同深度屏幕投影约放大1.5467倍；新风格/构图计划待确认。两张照片仅覆盖静态显示，动态验收未完成。
 - REQ-524/525：满屏HUD/暂停菜单/800ms动态结算通过162项核心、SDK LVGL/20轮、232行尾带与800冲边、SDK编译；后续两张实拍只支持静态页面，负责人不接受风格，动态未验收。下一关按负责人选择置灰；旧25%性能目标保持未完成。新世界标记/私有暂停运动和字库必须完整重编，Git src仍待集成。
@@ -918,3 +924,14 @@ map_creation_handoff_20261112:
   baseline_branch: codex/roll3-release-20261112，推送后由B确认实际提交SHA
   ownership: B负责新地图路线/几何/装饰与地图测试，A负责物理核心/输入/镜头/菜单结算与最终集成
   delivery: 独立分支与SHA、REQ/TC/ADR、路线预算、连续通关回放、实际SDK预览、失败重测与构建指纹
+
+roll3_english_20261112:
+  requirements: REQ-527 / TC-527，替代REQ-211在三维游玩页的中文要求
+  source: 本分支src/下完整源码，基于已发布56c95716
+  build_tag: m3-english-20261112
+  software: 96字符三字号单色2x2、英文/可见文字宽度、真实SDK LVGL七态/20轮/动作/800ms/旧事件、严格编译/字库check与SDK编译通过；物理逻辑沿用本次162项核心通过的发布基线
+  firmware_bytes: 1222392
+  firmware_sha256: 8ae4cceb48d6a7508c3a14f012e7d266f000a3698b974aef44b43361980d03bd
+  evidence: evidence/M4/roll3-english-2026-11-12/README.md
+  fingerprint: evidence/M4/roll3-english-2026-11-12/firmware.json
+  physical: 新英文未烧录验收；像素中文照片仅支持错误页显示/可读性不接受，输入异常原因缺串口待查
