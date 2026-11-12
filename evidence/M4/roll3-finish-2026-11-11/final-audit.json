@@ -1,0 +1,8 @@
+{
+  "fingerprints": "PASS",
+  "commit_message_format": "PASS",
+  "protected_project_unchanged": "PASS",
+  "physical_verification": "PENDING",
+  "course_trace": "PASS 42",
+  "course_all": "FAIL historical 8 commits and 14-day gap; manifest 4 missing fields WARN"
+}

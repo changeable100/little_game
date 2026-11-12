@@ -1,0 +1,127 @@
+{
+  "board": "sf32lb52-lchspi-ulp",
+  "sdk": "2.5.1",
+  "source_baseline": "M2 bend 20261110",
+  "local_build": "D:/course_starter/build/m3-stage-20261110",
+  "physical_verified": false,
+  "patch": {
+    "path": "m3-stage.patch",
+    "sha256": "41b01de22598e88b2fdb919e42bb753381eb560ad7ba9a2ec760043ba8ba458d"
+  },
+  "download_script": "project/build_sf32lb52-lchspi-ulp_hcpu/uart_download.bat",
+  "images": [
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/main.bin",
+      "bytes": 1249032,
+      "sha256": "f1593d3a2fb55a4e970cf193ba8f9d52c0d263c9180b95ff1453525c40db4be4"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/bootloader/bootloader.bin",
+      "bytes": 58496,
+      "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/ftab/ftab.bin",
+      "bytes": 11288,
+      "sha256": "24200a42bb70991841d7fa3dd8fe01e1c6f0011108bfa927d7a656c2b8e23f31"
+    }
+  ],
+  "sources": [
+    {
+      "path": "src/roll3_bend.h",
+      "sha256": "871e5cf5d7c40ce5cb8ffb08963616179b7d44e83ce5001e96c9c2e54b9869e7"
+    },
+    {
+      "path": "src/roll3_camera_basis.h",
+      "sha256": "9629b08a2df5929da7e6a98c7568b9daff5bb228cb5f6841898274f40eabe689"
+    },
+    {
+      "path": "src/roll3_contract.h",
+      "sha256": "dc796bad9b7b26c4f2e5288671d3cbcafdd331ffd8d681ec824e1e56a3c51191"
+    },
+    {
+      "path": "src/roll3_font.h",
+      "sha256": "4b855910927924f79a991ed352c9c0529952ad6f0b2ed38fb1b71eab249302e4"
+    },
+    {
+      "path": "src/roll3_font_16.c",
+      "sha256": "28e85c4d264221fe627d819bc23dd9c780abb6f4618f80697ec8d5d1d9257d00"
+    },
+    {
+      "path": "src/roll3_font_20.c",
+      "sha256": "83b0ee8d8a52f904d4ffa2c053c381a7772080e792381841c2f15279456e547a"
+    },
+    {
+      "path": "src/roll3_page.c",
+      "sha256": "ee609d10c79228af447b0beb250c9a526f73ad2d5ef04fdf5a7166d3e4b26a16"
+    },
+    {
+      "path": "src/roll3_page.h",
+      "sha256": "8e0a1d34da23e70392332ecb51acd12324d0a164b242f6c9e4213360b3479d53"
+    },
+    {
+      "path": "src/roll3_physics.c",
+      "sha256": "dbe5415d0c412c08c3c38a1751f6b9312697b9a5e9f284cfee68489ca97c818d"
+    },
+    {
+      "path": "src/roll3_physics.h",
+      "sha256": "ea3bd40e7fef86a710b10b208ac9cb1fed7b702ac6b489b3d75eef0dc6f62feb"
+    },
+    {
+      "path": "src/roll3_renderer.c",
+      "sha256": "d326c0e0e29c15360785dee7f4bb0b32b37c8383e462ea95dd904c48a2ebb810"
+    },
+    {
+      "path": "src/roll3_renderer.h",
+      "sha256": "318d513f329a89d47a38117815719ba35688717b4d028eec0d45d6633cc366b2"
+    },
+    {
+      "path": "src/roll3_runtime.c",
+      "sha256": "c300534b731d6e5323db1165c061aec0d04ca3321218ed29b7e4e7c4d32ca291"
+    },
+    {
+      "path": "src/roll3_runtime.h",
+      "sha256": "ddc8514e777fe011aa6c63e5e845cd5c77bab527461ff0e8c985029c385750d4"
+    },
+    {
+      "path": "src/roll3_scene.c",
+      "sha256": "d670a0b6426bac31f09abfa5f9912b986f9e42bdb745a06149e88c40fc56f3dd"
+    },
+    {
+      "path": "src/roll3_scene.h",
+      "sha256": "f2a8f5323883a0bb91e80f5a8fd693d45e8bebe2ec5f16a606520db2f423f5a7"
+    },
+    {
+      "path": "src/roll3_selftest.c",
+      "sha256": "d2c943af6c6fc02c79bf9d8eb015e63d8cb7ab817730768bc6bbcf5291d3b2a1"
+    },
+    {
+      "path": "src/roll3_selftest.h",
+      "sha256": "a1d4be908d0e3562097bc0c406ccf6056bd337f85c2391bd5fa418201a46af53"
+    },
+    {
+      "path": "src/roll3_session.c",
+      "sha256": "44d71360973d35f774a42747fdde8fad7fd05397cd98ac142fe25efa7b5d24e6"
+    },
+    {
+      "path": "src/roll3_session.h",
+      "sha256": "51daf27c840b5f86b0b5bfd05ee1b9cafdc3ff503c1489a6d557d1d0c6b395f3"
+    },
+    {
+      "path": "src/roll3_session_selftest.c",
+      "sha256": "b082e1069063478796209888ec01f0c757b3515a69bfce8ebdf6a44918dc252a"
+    },
+    {
+      "path": "src/roll3_stage_art.h",
+      "sha256": "a76062892ceb5f9ad2b4fd06f9bebe6356948672169f7e67d879cb6d67743690"
+    },
+    {
+      "path": "src/roll3_view.c",
+      "sha256": "23b727e1b29585761da35eb41803c2b4871080aea5b145ebdad6423e0918f85c"
+    },
+    {
+      "path": "src/roll3_view.h",
+      "sha256": "e3867454c5f2aecb0a7df1b2abe35fcfb921842f5f3822badeca7e1a000686bc"
+    }
+  ]
+}

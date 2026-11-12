@@ -1,0 +1,470 @@
+--- a/src/roll3_contract.h
++++ b/src/roll3_contract.h
+@@ -5,7 +5,7 @@
+ #include <stdint.h>
+ 
+ #define ROLL3_CONTRACT_VERSION 1u
+-#define R3_MAX_BOXES 12u
++#define R3_MAX_BOXES 16u
+ #define R3_MAX_ART_FACES 144u
+ #define R3_STEP_MS 5u
+ #define R3_RADIUS 0.20f
+@@ -50,6 +50,7 @@
+     float fall_z;
+     const r3_bend_t *bend; /* Optional; follows the same immutable lifetime. */
+     const r3_course_style_t *style;
++    uint32_t goal_box_plus_one; /* Zero: legacy goal zone. Otherwise top contact wins. */
+ } r3_world_t;
+ typedef enum { R3_OK=0, R3_INVALID=-1, R3_WRONG_STATE=-2,
+                R3_STALE=-3, R3_EXHAUSTED=-4 } r3_result_t;
+--- a/src/roll3_page.c
++++ b/src/roll3_page.c
+@@ -65,6 +65,7 @@
+         have_frame = true;
+     }
+     roll3_view_action_status(pending, result);
++    roll3_view_tick();
+ }
+ 
+ static void submit(r3_action_kind_t action)
+--- a/src/roll3_physics.c
++++ b/src/roll3_physics.c
+@@ -147,6 +147,7 @@
+        !zone_valid(w->goal)||!isfinite(w->fall_z)||fabsf(w->fall_z)>100||
+        w->spawn.z<=w->fall_z+R3_RADIUS||w->checkpoint_spawn.z<=w->fall_z+R3_RADIUS||
+        !inside(w->checkpoint,w->checkpoint_spawn))return R3_INVALID;
++    if(w->goal_box_plus_one>w->box_count)return R3_INVALID;
+     if(w->style){
+         const r3_course_style_t *style=w->style;
+         if(style->face_count>R3_MAX_ART_FACES||(style->face_count&&!style->faces)||
+@@ -330,13 +331,19 @@
+     *hit=(hit_t){true,high,normal,&bend_materials[surface]};
+ }
+ 
+-static void mark_contact(r3_snapshot_t *s,r3_vec_t n) {
++static void mark_contact(r3_game_t *g,const r3_box_t *box,r3_vec_t n) {
++    r3_snapshot_t *s=&g->s;
+     if(s->contacts<UINT8_MAX)++s->contacts;
+     if(n.z>0.25f)s->grounded=true;
+     s->contact_normal=n;
+-}
+-static void impulse(r3_snapshot_t *s,const r3_box_t *box,r3_vec_t n) {
+-    mark_contact(s,n);
++    if(g->world->goal_box_plus_one&&box==&g->world->boxes[g->world->goal_box_plus_one-1]&&
++       n.z>.25f&&dot(n,box->axis[2])>.25f&&
++       dot(sub(s->position,box->center),box->axis[2])>=box->half.z-SKIN)
++        g->goal_touched=true;
++}
++static void impulse(r3_game_t *g,const r3_box_t *box,r3_vec_t n) {
++    r3_snapshot_t *s=&g->s;
++    mark_contact(g,box,n);
+     float vn=dot(s->velocity,n);
+     if(vn>=0)return;
+     float e=vn < -0.5f ? box->restitution : 0;
+@@ -371,8 +378,8 @@
+             r3_vec_t n;float gap=separation(&g->world->boxes[i],g->s.position,&n);
+             if(gap < -SKIN) {
+                 g->s.position=add(g->s.position,mul(n,SKIN-gap));
+-                impulse(&g->s,&g->world->boxes[i],n);corrected=true;
+-            } else if(gap<=2*SKIN)mark_contact(&g->s,n);
++                impulse(g,&g->world->boxes[i],n);corrected=true;
++            } else if(gap<=2*SKIN)mark_contact(g,&g->world->boxes[i],n);
+         }
+         if(g->world->bend){
+             for(bend_surface_t i=BEND_FLOOR;i<BEND_SURFACES;++i){
+@@ -380,8 +387,8 @@
+                 float gap=bend_gap(g->world->bend,i,g->s.position,&n);
+                 if(gap < -SKIN){
+                     g->s.position=add(g->s.position,mul(n,SKIN-gap));
+-                    impulse(&g->s,&bend_materials[i],n);corrected=true;
+-                }else if(gap<=2*SKIN)mark_contact(&g->s,n);
++                    impulse(g,&bend_materials[i],n);corrected=true;
++                }else if(gap<=2*SKIN)mark_contact(g,&bend_materials[i],n);
+             }
+         }
+         if(!corrected)return;
+@@ -407,12 +414,13 @@
+         return R3_INVALID;
+     }
+     g->s.contacts=0;g->s.grounded=false;g->s.limited=false;g->s.speed_limited=false;
++    g->goal_touched=false;
+     g->s.contact_normal=(r3_vec_t){0,0,0};
+     g->s.velocity=add(g->s.velocity,mul(input->acceleration,DT));
+     cap_motion(&g->s);
+     depenetrate(g);
+-    float remaining=DT;
+-    for(unsigned impact=0;impact<IMPACTS&&remaining>1e-8f;impact++) {
++    float remaining=g->goal_touched?0:DT;
++    for(unsigned impact=0;impact<IMPACTS&&remaining>1e-8f&&!g->goal_touched;impact++) {
+         float span=remaining;
+         bool support=g->world->bend&&bend_support_move(g->world->bend,g->s.position,g->s.velocity,&span);
+         r3_vec_t delta=mul(g->s.velocity,span);
+@@ -427,14 +435,16 @@
+             continue;
+         }
+         g->s.position=add(add(g->s.position,mul(delta,hit.t)),mul(hit.normal,SKIN));
+-        remaining-=span*hit.t;impulse(&g->s,hit.material,hit.normal);
+-    }
++        remaining-=span*hit.t;impulse(g,hit.material,hit.normal);
++    }
++    if(g->goal_touched)remaining=0;
+     if(remaining>1e-8f)limited(&g->s);
+     depenetrate(g);cap_motion(&g->s);orientation(&g->s);
+     g->s.elapsed_ms=UINT32_MAX-g->s.elapsed_ms<R3_STEP_MS?UINT32_MAX:g->s.elapsed_ms+R3_STEP_MS;
+     if(g->s.grounded&&inside(g->world->checkpoint,g->s.position))g->s.checkpoint=1;
+     if(g->s.position.z<g->world->fall_z) {g->s.state=R3_FALLEN;g->s.falls=inc(g->s.falls);}
+-    else if(g->s.grounded&&inside(g->world->goal,g->s.position))g->s.state=R3_WON;
++    else if(g->world->goal_box_plus_one?g->goal_touched:
++        (g->s.grounded&&inside(g->world->goal,g->s.position)))g->s.state=R3_WON;
+     if(g->s.state!=R3_RUNNING)g->s.velocity=g->s.omega=(r3_vec_t){0,0,0};
+     ++g->s.revision;return R3_OK;
+ }
+--- a/src/roll3_physics.h
++++ b/src/roll3_physics.h
+@@ -7,6 +7,7 @@
+     const r3_world_t *world;
+     r3_snapshot_t s;
+     uint32_t last_request;
++    bool goal_touched; /* Per-step latch, private to the physical owner. */
+ } r3_game_t;
+ r3_result_t r3_world_validate(const r3_world_t *world);
+ r3_result_t r3_init(r3_game_t *game, const r3_world_t *world);
+--- a/src/roll3_runtime.c
++++ b/src/roll3_runtime.c
+@@ -232,7 +232,7 @@
+ 
+ void roll3_runtime_report_open(int result,unsigned depth_rows)
+ {
+-    rt_kprintf("[roll3:open] result=%d depth_rows=%u build=m3-fluid-20261111 refresh_ms=33\n",result,depth_rows);
++    rt_kprintf("[roll3:open] result=%d depth_rows=%u build=m3-finish-20261111 refresh_ms=33\n",result,depth_rows);
+ }
+ 
+ bool roll3_runtime_submit(r3_action_kind_t kind, uint32_t run)
+--- a/src/roll3_scene.c
++++ b/src/roll3_scene.c
+@@ -74,7 +74,7 @@
+ 
+ const r3_world_t *r3_m2_world(void) {return &m2_scene;}
+ 
+-/* M3 has two real guide rails after the ten road pieces. */
++/* M3: ten road pieces, two turn guides and three open-side goal guards. */
+ static const r3_box_t m3_boxes[] = {
+     DECK(0,0,3.70f,1.33f,1,0xe399b7),
+     SLOPE(0,2.70f,3.375f,0,1,1.730787393f,1.33f,0.982211915f,0.187775807f,0xe399b7),
+@@ -88,6 +88,9 @@
+     DECK(.10f,16.60f,1.08f,1.28f,1.10f,0x8ac879),
+     DECK(.65f,7.24f,3.35f,1.96f,.06f,0xb964d1),
+     DECK(2.22f,5.76f,3.29f,1.03f,.07f,0xb964d1),
++    DECK(-1.22f,16.60f,1.38f,.04f,1.10f,0x4a9f66),
++    DECK(1.42f,16.60f,1.38f,.04f,1.10f,0x4a9f66),
++    DECK(.10f,15.46f,1.38f,1.36f,.04f,0x4a9f66),
+ };
+ _Static_assert(sizeof(m3_boxes)/sizeof(*m3_boxes)<=R3_MAX_BOXES,"M3 exceeds OBB budget");
+ 
+@@ -95,7 +98,7 @@
+     .origin=LOCAL(2.225f,19.10f,1.25f),
+     .radial_start=LOCAL(1,0,0),.sweep_axis=LOCAL(0,1,0),
+     .radius=2.125f,.half_width=.96f,.exit_z=.86f,
+-    .trough_depth=.26f,.longitudinal_scale=1.55f,.color=0xe399b7
++    .trough_depth=.32f,.longitudinal_scale=1.55f,.color=0xe399b7
+ };
+ 
+ #include "roll3_stage_art.h"
+@@ -105,7 +108,7 @@
+     .spawn=LOCAL(0,0,3.70f+R3_RADIUS),
+     .checkpoint_spawn=LOCAL(4.35f,16.50f,1.55f+R3_RADIUS),
+     .checkpoint=ZONE(4.35f,16.50f,1.55f),.goal=ZONE(.10f,16.60f,1.08f),
+-    .fall_z=-3,.bend=&m3_bend,.style=&m3_style
++    .fall_z=-3,.bend=&m3_bend,.style=&m3_style,.goal_box_plus_one=10
+ };
+ 
+ const r3_world_t *r3_demo_world(void) {return &m3_scene;}
+--- a/src/roll3_selftest.c
++++ b/src/roll3_selftest.c
+@@ -13,7 +13,7 @@
+ static const r3_box_t floor_box={{0,0,-0.2f},{20,20,0.2f},BASIS,0,0.6f,0,0x123456};
+ static r3_world_t test_world(const r3_box_t *b,unsigned count) {
+     r3_world_t w={b,count,{0,0,R3_RADIUS},{-3,-3,R3_RADIUS},
+-        {{-4,-4,0},{-2,-2,2}},{{9,9,0},{10,10,2}},-3,NULL,NULL};
++        {{-4,-4,0},{-2,-2,2}},{{9,9,0},{10,10,2}},-3,NULL,NULL,0};
+     return w;
+ }
+ static r3_result_t act(r3_game_t *g,r3_action_kind_t kind) {
+@@ -576,7 +576,7 @@
+     for(int side=-1;side<=1;side+=2){
+         float r=b->radius+side*b->half_width;
+         r3_bend_profile_t edge=r3_bend_profile(b,0,1,r);
+-        CHECK(near(edge.height-center.height,.26f,.001f));
++        CHECK(near(edge.height-center.height,.32f,.001f));
+         CHECK(side*edge.radial_grade>.4f);
+     }
+     for(unsigned end=0;end<2;++end){
+@@ -637,6 +637,86 @@
+         CHECK(norm2(g.s.velocity)>=before*.75f*.75f);
+     }
+     return true;
++}
++
++static bool m3_goal_all_surface(void) {
++    const r3_vec_t points[]={{.1f,16.6f,0},{-0.93f,15.75f,0},{1.13f,15.75f,0},
++        {-0.93f,17.45f,0},{1.13f,17.45f,0},{-.93f,16.6f,0},{1.13f,16.6f,0},
++        {.1f,15.75f,0},{.1f,17.45f,0}};
++    for(unsigned i=0;i<sizeof(points)/sizeof(*points);++i){
++        r3_game_t g;CHECK(start(&g,r3_demo_world()));
++        g.s.position=from_uv(points[i].x,points[i].y,1.08f+R3_RADIUS);
++        g.s.velocity=from_uv(.1f,.1f,0);g.s.elapsed_ms=12340;
++        CHECK(steps(&g,&gravity,1)&&g.s.state==R3_WON&&!g.s.limited);
++        CHECK(norm2(g.s.velocity)==0&&norm2(g.s.omega)==0);
++        uint32_t frozen=g.s.elapsed_ms;
++        CHECK(r3_step(&g,&gravity,5)==R3_WRONG_STATE&&g.s.elapsed_ms==frozen);
++    }
++    return true;
++}
++
++static bool m3_goal_no_false_contact(void) {
++    const r3_vec_t points[]={{.1f,16.6f,1.08f+R3_RADIUS+.05f},
++        {1.38f+R3_RADIUS,16.6f,.93f},{.1f,15.5f-R3_RADIUS,.93f},
++        {.1f,18.2f,.97f+.2f*.155237834f/.987877125f+R3_RADIUS/.987877125f}};
++    for(unsigned i=0;i<sizeof(points)/sizeof(*points);++i){
++        r3_game_t g;CHECK(start(&g,r3_demo_world()));
++        g.s.position=from_uv(points[i].x,points[i].y,points[i].z);
++        CHECK(steps(&g,&gravity,1)&&g.s.state==R3_RUNNING&&!g.s.limited);
++    }
++    return true;
++}
++
++static bool m3_goal_entrance(void) {
++    for(int side=-1;side<=1;++side){
++        r3_game_t g;CHECK(start(&g,r3_demo_world()));
++        g.s.position=from_uv(.1f+side*.7f,18.05f,
++            .97f+.35f*.155237834f/.987877125f+R3_RADIUS/.987877125f);
++        g.s.velocity=from_uv(0,-2,2*.155237834f/.987877125f);
++        for(unsigned i=0;i<300&&g.s.state==R3_RUNNING;++i)
++            CHECK(steps(&g,&gravity,1)&&!g.s.limited);
++        CHECK(g.s.state==R3_WON&&g.s.falls==0);
++    }
++    return true;
++}
++
++static bool m3_goal_rail_geometry(void) {
++    const r3_world_t *w=r3_demo_world();
++    CHECK(w->box_count==15);
++    const r3_vec_t centers[]={{-1.22f,16.6f,1.23f},{1.42f,16.6f,1.23f},{.1f,15.46f,1.23f}};
++    for(unsigned i=0;i<3;++i){
++        r3_vec_t p=to_uv(w->boxes[12+i].center);
++        CHECK(near(p.x,centers[i].x,.001f)&&near(p.y,centers[i].y,.001f)&&near(p.z,centers[i].z,.001f));
++        CHECK(near(w->boxes[12+i].half.z,.15f,.0001f));
++        CHECK(near(i==2?w->boxes[12+i].half.y:w->boxes[12+i].half.x,.04f,.0001f));
++    }
++    return true;
++}
++
++static bool m3_goal_rails_collide(void) {
++    r3_world_t w=*r3_demo_world();w.goal_box_plus_one=0;
++    w.goal=(r3_zone_t){{40,40,0},{41,41,2}};
++    for(unsigned edge=0;edge<3;++edge)for(int lane=-1;lane<=1;++lane){
++        r3_game_t g;CHECK(start(&g,&w));
++        float u=edge==0?-.83f:edge==1?1.03f:.1f+lane*.8f;
++        float v=edge==2?15.85f:16.6f+lane*.7f;
++        g.s.position=from_uv(u,v,1.08f+R3_RADIUS);
++        g.s.velocity=from_uv(edge==0?-2:edge==1?2:0,edge==2?-2:0,0);
++        for(unsigned i=0;i<100;++i){
++            CHECK(steps(&g,&gravity,1)&&g.s.state==R3_RUNNING&&!g.s.limited);
++            r3_vec_t p=to_uv(g.s.position);
++            CHECK(p.x>=-.985f&&p.x<=1.185f&&p.y>=15.695f&&p.z>1.26f);
++        }
++    }
++    return true;
++}
++
++static bool goal_selector_guard(void) {
++    r3_world_t w=*r3_demo_world();
++    w.goal_box_plus_one=w.box_count+1;
++    CHECK(r3_world_validate(&w)==R3_INVALID);
++    w.goal_box_plus_one=0;CHECK(r3_world_validate(&w)==R3_OK);
++    return r3_m1_world()->goal_box_plus_one==0&&r3_m2_world()->goal_box_plus_one==0;
+ }
+ 
+ int r3_selftest_run(maze_test_report_t report) {
+@@ -685,7 +765,7 @@
+     RUN("TC-517 auto respawn continues from checkpoint to M2 goal",m2_route(true));
+     RUN("TC-518 both M3 guide rails stop the ball",m3_guide_rails());
+     RUN("TC-518 M3 two turns landing checkpoint U bend and goal",m3_replay());
+-    RUN("TC-520 stretched narrow trough with flat flush joins",m3_trough_profile());
++    RUN("TC-522 deeper narrow trough with flat flush joins",m3_trough_profile());
+     RUN("TC-519 both trough joins cross in both directions",bend_crossings(r3_demo_world()));
+     RUN("TC-519 gravity returns ball from inner slope",m3_trough_returns(-1));
+     RUN("TC-519 gravity returns ball from outer slope",m3_trough_returns(1));
+@@ -693,6 +773,12 @@
+     RUN("TC-521 M3 7.5mps smooth floor keeps moving",m3_fast_bend_contact(7.5f,0));
+     RUN("TC-521 M3 fast negative-angle curve keeps moving",m3_fast_bend_contact(7.5f,-.261799388f));
+     RUN("TC-521 M3 fast positive-angle curve keeps moving",m3_fast_bend_contact(7.5f,.261799388f));
++    RUN("TC-523 entire green goal locks and freezes at nine points",m3_goal_all_surface());
++    RUN("TC-523 airborne sidewall and pink approach do not win",m3_goal_no_false_contact());
++    RUN("TC-523 three entrance lanes reach goal",m3_goal_entrance());
++    RUN("TC-523 three solid goal rails geometry",m3_goal_rail_geometry());
++    RUN("TC-523 goal guards contain nine 2mps impacts with win disabled",m3_goal_rails_collide());
++    RUN("TC-523 goal selector guarded and legacy worlds unchanged",goal_selector_guard());
+ #undef RUN
+     return failures;
+ }
+--- a/src/roll3_view.c
++++ b/src/roll3_view.c
+@@ -14,6 +14,8 @@
+ static bool valid_frame, action_pending;
+ static r3_state_t view_state;
+ static uint32_t shown_seconds, shown_falls, shown_checkpoint;
++static uint32_t finish_started,finish_run;
++static bool finish_active,finish_waiting;
+ typedef struct {
+     r3_edge_aa_t edges;
+     uint16_t depth[];
+@@ -46,6 +48,7 @@
+     workspace=NULL;
+     frame_color=NULL;
+     depth_rows=0;
++    finish_active=finish_waiting=false;
+     page=image_obj=status=detail=primary=secondary=NULL;
+     image.data=NULL;
+     void (*closed)(void) = on_closed;
+@@ -108,6 +111,7 @@
+     send_action = action;
+     on_closed = closed;
+     valid_frame = action_pending = false;
++    finish_active=finish_waiting=false;
+     memset(&camera_follow,0,sizeof(camera_follow));
+     page=lv_obj_create(lv_layer_top());lv_obj_remove_style_all(page);
+     lv_obj_set_size(page,390,450);lv_obj_set_style_bg_color(page,lv_color_hex(0x0c1220),0);
+@@ -159,6 +163,15 @@
+     }
+ }
+ 
++void roll3_view_tick(void)
++{
++    if(!page||!valid_frame||action_pending||view_state!=R3_WON||!finish_waiting||
++       lv_tick_elaps(finish_started)<1000u)return;
++    finish_waiting=false;
++    snprintf(status_text,sizeof(status_text),"通关  %lu秒",(unsigned long)shown_seconds);
++    lv_label_set_text_static(status,status_text);
++}
++
+ void roll3_view_render(const r3_snapshot_t *s,const r3_world_t *world)
+ {
+     if(!page)return;
+@@ -170,16 +183,26 @@
+     lv_image_cache_drop(&image);lv_obj_invalidate(image_obj);
+     bool state_changed=!valid_frame||!s||view_state!=s->state;
+     valid_frame = result == 0;
+-    if(result){lv_label_set_text_static(status,"三维数据无效");lv_label_set_text_static(detail,"请检查快照版本、姿态与关卡");controls();return;}
++    if(result){finish_active=finish_waiting=false;lv_label_set_text_static(status,"三维数据无效");lv_label_set_text_static(detail,"请检查快照版本、姿态与关卡");controls();return;}
+     view_state = s->state;
++    bool notice_started=false;
++    if(s->state==R3_WON){
++        if(!finish_active||finish_run!=s->run){
++            finish_active=finish_waiting=notice_started=true;
++            finish_run=s->run;finish_started=lv_tick_get();
++        }
++    }else finish_active=finish_waiting=false;
+     static const char *states[]={"准备开始","请放平校准","游玩中","已暂停","小球掉落","通关","输入异常"};
+     static const char *messages[]={"点击开始后，保持板子平放","等待真实校准完成","倾斜板子，沿坡道前进",
+         "暂停期间不累计时间","等待返回当前检查点，保留本局时间","用时已冻结，可重开或返回","输入无效，请重开或返回"};
+     uint32_t seconds=s->elapsed_ms/1000u;
+-    if(state_changed||seconds!=shown_seconds){
++    if(state_changed||notice_started||seconds!=shown_seconds){
+         shown_seconds=seconds;
+-        snprintf(status_text,sizeof(status_text),"%s  %lu秒",states[s->state],(unsigned long)seconds);
+-        lv_label_set_text_static(status,status_text);
++        if(finish_waiting)lv_label_set_text_static(status,"请等待");
++        else{
++            snprintf(status_text,sizeof(status_text),"%s  %lu秒",states[s->state],(unsigned long)seconds);
++            lv_label_set_text_static(status,status_text);
++        }
+     }
+     if(state_changed||s->falls!=shown_falls||s->checkpoint!=shown_checkpoint){
+         shown_falls=s->falls;
+@@ -193,4 +216,5 @@
+         lv_label_set_text_static(secondary,"重开");
+         controls();
+     }
+-}
++    roll3_view_tick();
++}
+--- a/src/roll3_view.h
++++ b/src/roll3_view.h
+@@ -16,6 +16,9 @@
+ int roll3_view_create_live(void (*action)(r3_action_kind_t), void (*closed)(void));
+ void roll3_view_action_status(bool pending, r3_result_t result);
+ void roll3_view_render(const r3_snapshot_t *snapshot,const r3_world_t *world);
++/* Existing page refresh calls this even after the terminal revision freezes.
++ * Updates text after 1000ms; no new timer, model action or scene render. */
++void roll3_view_tick(void);
+ void roll3_view_destroy(void);
+ const char *roll3_view_error_text(void);
+ unsigned roll3_view_depth_rows(void);
+--- a/tests/roll3_edge_probe.c
++++ b/tests/roll3_edge_probe.c
+@@ -23,7 +23,7 @@
+         for(int side=-1;side<=1;side+=2)
+         for(unsigned ai=0;ai<5;++ai)for(unsigned si=0;si<4;++si){
+             r3_world_t w=*original;
+-            if(isolated){w.boxes=b;w.box_count=1;w.bend=NULL;w.style=NULL;}
++            if(isolated){w.boxes=b;w.box_count=1;w.bend=NULL;w.style=NULL;w.goal_box_plus_one=0;}
+             /* r3_init validates original spawn, so start before narrowing world. */
+             r3_game_t g;
+             if(r3_init(&g,original)!=R3_OK)return 2;
+--- a/tests/roll3_view_test.c
++++ b/tests/roll3_view_test.c
+@@ -297,6 +297,7 @@
+             if(st==R3_ERROR)s.error=R3_INPUT_ERROR;
+             s.orientation=(r3_quat_t){.92387953f,.38268343f,0,0};
+             roll3_view_render(&s,world);glyphs(lv_layer_top());
++            if(st==R3_WON){lv_tick_inc(1000);roll3_view_render(&s,world);}
+             lv_obj_t *close=find(lv_layer_top(),"返回");assert(close);
+             lv_obj_t *root=lv_obj_get_child(lv_layer_top(),-1);
+             for(int i=4;i<=5;++i)assert(lv_obj_has_state(lv_obj_get_child(root,i),LV_STATE_DISABLED));
+@@ -402,6 +403,45 @@
+     fail_timer=false;
+     puts("TC-510 split budget, compact fallback, partial cleanup and timer error PASS");
+     puts("TC-504 live layout, buttons, duplicate guard, return, external delete PASS");
++    /* A terminal model stops revising; the existing page timer must still
++     * announce success after one second, without repainting the whole scene. */
++    assert(roll3_page_open()==0);
++    live_snapshot.elapsed_ms=12000;
++    live_snapshot.position=from_uv(-.7f,16.4f,1.08f+R3_RADIUS);
++    publish(R3_WON);
++    assert(find(lv_layer_top(),"请等待")&&!find(lv_layer_top(),"通关  12秒"));
++    screenshot("M3-GOAL-WAIT.ppm");glyphs(lv_layer_top());
++    lv_tick_inc(999);roll3_view_render(&live_snapshot,r3_demo_world());
++    assert(!find(lv_layer_top(),"通关  12秒"));
++    lv_tick_inc(1);roll3_view_render(&live_snapshot,r3_demo_world());
++    assert(find(lv_layer_top(),"通关  12秒"));
++    screenshot("M3-GOAL-WON.ppm");
++    click("返回");
++    assert(!live_open&&!buffer_live&&objects(lv_layer_top())==base&&timers()==clock_base);
++    puts("TC-523 delayed success notice after 999/1000ms PASS");
++    assert(roll3_page_open()==0);
++    live_snapshot.elapsed_ms=17000;publish(R3_WON);
++    uint32_t frozen_revision=live_snapshot.revision;
++    lv_tick_inc(1033);lv_timer_handler();
++    assert(live_snapshot.revision==frozen_revision&&find(lv_layer_top(),"通关  17秒"));
++    publish(R3_RUNNING);live_snapshot.elapsed_ms=19000;publish(R3_WON);
++    assert(find(lv_layer_top(),"请等待"));
++    click("重开");lv_tick_inc(1033);lv_timer_handler();
++    assert(!find(lv_layer_top(),"通关  19秒"));
++    live_snapshot.elapsed_ms=0;++live_snapshot.run;publish(R3_CALIBRATING);
++    lv_tick_inc(1033);lv_timer_handler();
++    assert(find(lv_layer_top(),"请放平校准  0秒")&&!find(lv_layer_top(),"通关  19秒"));
++    live_snapshot.elapsed_ms=21000;publish(R3_WON);click("返回");
++    assert(roll3_page_open()==0);lv_tick_inc(1033);lv_timer_handler();
++    assert(find(lv_layer_top(),"准备开始  0秒")&&!find(lv_layer_top(),"通关  21秒"));
++    lv_tick_inc((UINT32_MAX-500u)-lv_tick_get());
++    live_snapshot.elapsed_ms=23000;publish(R3_WON);
++    lv_tick_inc(999);roll3_view_render(&live_snapshot,r3_demo_world());
++    assert(find(lv_layer_top(),"请等待"));
++    lv_tick_inc(1);roll3_view_render(&live_snapshot,r3_demo_world());
++    assert(find(lv_layer_top(),"通关  23秒"));click("返回");
++    assert(!live_open&&!buffer_live&&objects(lv_layer_top())==base&&timers()==clock_base);
++    puts("TC-523 frozen-revision timer, restart, close, new page and tick wrap PASS");
+     printf("LVGL draw-buffer malloc attempts=%u largest=%lu bytes (in addition to caller buffers)\n",draw_attempts,(unsigned long)largest_draw);
+     return 0;
+ }

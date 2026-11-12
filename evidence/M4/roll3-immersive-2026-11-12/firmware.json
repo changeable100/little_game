@@ -1,0 +1,759 @@
+{
+  "board": "sf32lb52-lchspi-ulp",
+  "sdk": "2.5.1",
+  "build_tag": "m3-immersive-20261111",
+  "session_started": "2026-11-11",
+  "archived": "2026-11-12",
+  "local_build": "D:\\course_starter\\build\\m3-immersive-20261111",
+  "source_baseline": "D:\\course_starter\\build\\m3-finish-20261111",
+  "physical_verified": false,
+  "images": [
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/main.bin",
+      "bytes": 1313656,
+      "sha256": "b3351d4c291309dbbb105ea2890d0e6f8f41ee6ed3b2f18ab299f09fe38404d8"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/bootloader/bootloader.bin",
+      "bytes": 58496,
+      "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/ftab/ftab.bin",
+      "bytes": 11288,
+      "sha256": "0f5664ff2f77840850908b80864a8d0d59a42730e238037c12b664893499a6a7"
+    }
+  ],
+  "sources": [
+    {
+      "path": "src/bluetooth/lab_ble_model.c",
+      "sha256": "4ebc0440fce71cbe454312a41475ed1e3a396782792461f4f193d245f680ef14"
+    },
+    {
+      "path": "src/bluetooth/lab_ble_service.c",
+      "sha256": "2a1b8f600cdf03ea8505579cf7d0b4a29a75081c63b16e275f03239fc1de6e70"
+    },
+    {
+      "path": "src/lab.c",
+      "sha256": "8994773be3cdf39feff97d0ef7809190d6e8fa3bfd06834d4a6c5ee4a80f87df"
+    },
+    {
+      "path": "src/lab.h",
+      "sha256": "ad8d8bd13717fdc0644f9704c4bb0568d858c20f5e31873ce1e8a0f4e4136df7"
+    },
+    {
+      "path": "src/lab_audio.c",
+      "sha256": "48ae60ce4728998ab3f0fa9cc6b5a318e98e1da960652c15d27803c57e5d20b1"
+    },
+    {
+      "path": "src/lab_audio.h",
+      "sha256": "1421859805f898d5dd804b1a53cfb777baf6e0add6b59eaab7675d110bc7c15d"
+    },
+    {
+      "path": "src/lab_ble.h",
+      "sha256": "c3c4f92f85e6649473ed7ed2ea97a6500004fbcda32201f2eb6a7b6f93667478"
+    },
+    {
+      "path": "src/lab_ble_ui.c",
+      "sha256": "e2349cf73ad63c1fa50dbe961445c4fbb4d4c48d7efd212a8c5df5151a292646"
+    },
+    {
+      "path": "src/lab_bus.c",
+      "sha256": "9e81a5ea3eef78092a538ce10a5a0c8e64f22e4429b1f969b17f5918dbafa5b2"
+    },
+    {
+      "path": "src/lab_game.h",
+      "sha256": "56048a616dff5173edb886e008a66a964f7e91bd78b87e896141e969a93db80d"
+    },
+    {
+      "path": "src/lab_game_pcm.h",
+      "sha256": "579a5e2aff12605cff3ed2ec78cad87852614efdb6afacc2ca54800aaacd78b3"
+    },
+    {
+      "path": "src/lab_game_sound.c",
+      "sha256": "88c4ebefde638268db41acc57ec7ea5e1b8195925ee7c89a61bf9aad66a4cf45"
+    },
+    {
+      "path": "src/lab_game_sound.h",
+      "sha256": "4ff4f5b03cbefd496708a9374fdfa8e3ca442c0b41ce8603a030b66475ec04e6"
+    },
+    {
+      "path": "src/lab_game_ui.c",
+      "sha256": "fd623351f75de010f3d172f72df3b84e88c79e2f080492887f53cc881a07fe10"
+    },
+    {
+      "path": "src/lab_pan.h",
+      "sha256": "978ad9184dd0c87200ad5afcca47cff7f114a4a4d144c4447a80dfbc6f442dca"
+    },
+    {
+      "path": "src/lab_pan_ui.c",
+      "sha256": "d1064b5115e3a53766f7fb2bacb3a55526e5c906b2d3326fe6447dcf62bd2691"
+    },
+    {
+      "path": "src/lab_registry.c",
+      "sha256": "08a276b478eac31405bf4e56724b507b71256ebe0b3e063ad42477b91ffc4e7e"
+    },
+    {
+      "path": "src/lab_ride.c",
+      "sha256": "2eb1fbdb30ac8858fccb5ab7af249f99bc9ef71452788ccadebe6bdf3b126981"
+    },
+    {
+      "path": "src/lab_ride.h",
+      "sha256": "d869f877916d35a4e009624d805d0023bcc4e58c323698b1ca12521faef8de8a"
+    },
+    {
+      "path": "src/lab_touch_capture.h",
+      "sha256": "7a01ba8a9bab889218300896b8d2d9fe2b83dfe791803b1cf561358bc6735064"
+    },
+    {
+      "path": "src/lab_ui.c",
+      "sha256": "da6f6efa19154c4c48ace8918064fa85c49f3650a3bac07da62920e9d45e41f0"
+    },
+    {
+      "path": "src/lab_ui.h",
+      "sha256": "bdf3a3e39df7272eb98fcc8fcba61b57c16525e42a465d94dd897b3760360a32"
+    },
+    {
+      "path": "src/lab_units.c",
+      "sha256": "55e00627120db6d85fbdb2524d1aea0be37a13d97cf96fbce5d60e39066ac741"
+    },
+    {
+      "path": "src/lab_units.h",
+      "sha256": "6318ab74b10c2da86fa5c00af1685a237af7b79f8e2713d98d55f3295b4862a8"
+    },
+    {
+      "path": "src/lab_wav.c",
+      "sha256": "202fbdd5c9b9a1d7522f5027094c479bd719156d4d0e7a41ea3767304bde3b5a"
+    },
+    {
+      "path": "src/lab_wav.h",
+      "sha256": "880a7044dcd48062be695f1401c881182316d7bf7aaf52da4e98cd25a770c434"
+    },
+    {
+      "path": "src/main.c",
+      "sha256": "14db265800d24611096d4f06e5b4c60f6d40a4a002216f31d020cafd336d98c9"
+    },
+    {
+      "path": "src/maze_contract.h",
+      "sha256": "ec69aedae53ac95863c9ec40e70650a1149c5d2dd1e4bdae43d0a39a9917aefe"
+    },
+    {
+      "path": "src/maze_controller.c",
+      "sha256": "dd3fdd950ac1239e265b52934636e5964d3e3b87736134db3c9a4dc2ba1b7af7"
+    },
+    {
+      "path": "src/maze_controller.h",
+      "sha256": "0c1a4e394521e346e1fb3eadf9e9d299ff77f694c58477568a36d55a0c51f5df"
+    },
+    {
+      "path": "src/maze_controller_selftest.c",
+      "sha256": "4849f1e1d975bf3036fb99a86d87aed16ff6b74959f2deb9417d8b48a02c5d2a"
+    },
+    {
+      "path": "src/maze_controller_selftest.h",
+      "sha256": "5ce4a405f775b6e5efb42e295dc19748152f1c2a52d758fcc159a2d3d782e808"
+    },
+    {
+      "path": "src/maze_font.h",
+      "sha256": "db3a16772dcc0ebc79a752084e08e4b6e3bd18fce045c083aa2767acd1cd9213"
+    },
+    {
+      "path": "src/maze_font_16.c",
+      "sha256": "81daab58a5ce671dde136609462c6447e2736668dd15eaabfdf7cf87226ada8a"
+    },
+    {
+      "path": "src/maze_font_20.c",
+      "sha256": "d7cc250f1655682da2d2c77af2811bcdfa8ea88ce23c5d4f518d17ac0f86e988"
+    },
+    {
+      "path": "src/maze_font_28.c",
+      "sha256": "c98bb763e02513a742576308b84833857e975436ab4231ee610bac4f341e7a3d"
+    },
+    {
+      "path": "src/maze_game.c",
+      "sha256": "f01fc4a03aaeb7c9a849ec990470a84b91bfe95a386b654f398b925dab134fd0"
+    },
+    {
+      "path": "src/maze_game.h",
+      "sha256": "a521bced8bf8f50e1baa2a55f97e8eb51b789fc2eaf5b289856d105063f98b3c"
+    },
+    {
+      "path": "src/maze_levels.c",
+      "sha256": "b9e54fd330d84953680c2abf24aea67e5a9e8cfa54dcec71870737d9995c3a79"
+    },
+    {
+      "path": "src/maze_levels.h",
+      "sha256": "5120d09137b9e89fa42c1c4984bc7e3538b18799689954d3e9ffe4de95831d9c"
+    },
+    {
+      "path": "src/maze_levels_selftest.c",
+      "sha256": "3503f7282fa8275ee65a115023e06f7bd84c83d88e626d01c63075552171a4cc"
+    },
+    {
+      "path": "src/maze_levels_selftest.h",
+      "sha256": "d0d30469d680e7aee291330af56ef492988c899a18d7e105fe9a6b4c4327b105"
+    },
+    {
+      "path": "src/maze_menu.c",
+      "sha256": "0f0bbd0610e636e6dcbe1602dbd8d872c75cd706fcab97319d587701c6f4aaa9"
+    },
+    {
+      "path": "src/maze_menu.h",
+      "sha256": "db555e034872acfc7c0ddb6914466f4cc27aa3ea612a001713661a74db787d8d"
+    },
+    {
+      "path": "src/maze_motion_service.c",
+      "sha256": "c2008fef567dee34d1dc09e46d9e7f56fd69dc721052876d2230301de2805953"
+    },
+    {
+      "path": "src/maze_runtime.c",
+      "sha256": "3f3103eebde7f21cbbefd83cc7d1815a3a89cd983ae0e94bc2fd45ba57328dca"
+    },
+    {
+      "path": "src/maze_runtime.h",
+      "sha256": "8eed21f1f26ada84b009ae0caf717e1e09ce48fbecf2ce925825922562163620"
+    },
+    {
+      "path": "src/maze_selftest.c",
+      "sha256": "d9be67b749c9bcd82155cf9ecaa83c0c1ae781411351a52fb8c3042f3c45fd86"
+    },
+    {
+      "path": "src/maze_selftest.h",
+      "sha256": "a7a2d848ff2b94e186f201218e447b2ab2c59ae160d430aa87f3c5340ac884c3"
+    },
+    {
+      "path": "src/maze_ui.c",
+      "sha256": "a4d09e64f32173ec7b01f515907f37ad31f129783981a49ff9e22b083a07bf49"
+    },
+    {
+      "path": "src/maze_ui.h",
+      "sha256": "96d51632e01a7e5b8cb58e0fc976594a957a61a365823455b39fd50abdf14be0"
+    },
+    {
+      "path": "src/maze_ui_runtime.c",
+      "sha256": "ee7ebdcf7d453195359c1703a62f16440c983efb860fd9d66216a0221b97ed38"
+    },
+    {
+      "path": "src/maze_ui_runtime.h",
+      "sha256": "07c73f2d4321e2c07b3b83ce967086466212b6042354d7b8f8acefafe11defd4"
+    },
+    {
+      "path": "src/modules/test_adc.c",
+      "sha256": "9fe835e33fd3e4e0bf5cfe828410fd89d08a78ed10506111e9a9b9713010d3b7"
+    },
+    {
+      "path": "src/modules/test_charger.c",
+      "sha256": "e524cc9dd62e96f88aff1374d3fd009c05c6e75d8f19f6f3bc3418490c6316b6"
+    },
+    {
+      "path": "src/modules/test_display.c",
+      "sha256": "0325d43eaebcdf36151a949596874bc8de971c09cdea502877b4f823177a72dc"
+    },
+    {
+      "path": "src/modules/test_game.c",
+      "sha256": "16badc88ea969cd58cdfd4097f8daa617742e5180cb52afaa1cf3b08342253e7"
+    },
+    {
+      "path": "src/modules/test_gpio.c",
+      "sha256": "8ec696f4853067bb7126f349292e128a535704dace62fba35a8aad91ef8c5a48"
+    },
+    {
+      "path": "src/modules/test_imu.c",
+      "sha256": "5ffd0a23d81ee8f8f2871ea38bc7026c04c8591e2215133179e76c8d077fa34c"
+    },
+    {
+      "path": "src/modules/test_key.c",
+      "sha256": "c7dbc6a7fae8f0042f43ff7866dd4c375d5527e739a2a534595a2e922de00734"
+    },
+    {
+      "path": "src/modules/test_light.c",
+      "sha256": "f1c8e142bf350e5f7277f3ce8063e5d3f64872a0c433b206041454f31a09ed0f"
+    },
+    {
+      "path": "src/modules/test_mag.c",
+      "sha256": "db15d0d1f342e3e77118e174c275ab0c2ae325b04cd5d50e4096636672f0c362"
+    },
+    {
+      "path": "src/modules/test_mic.c",
+      "sha256": "0c39a24a85f696e22722007124e368371643ba54816496f2b80736159606be55"
+    },
+    {
+      "path": "src/modules/test_rgb.c",
+      "sha256": "f4ddc271b85def74a7fa91ddc18710420a2d7bd7950923b34228c61710f24f70"
+    },
+    {
+      "path": "src/modules/test_rtc.c",
+      "sha256": "a10de00e843f57695b0883272dd91a0d284aa75fef0c70579fd461dc2f89b2cb"
+    },
+    {
+      "path": "src/modules/test_speaker.c",
+      "sha256": "d25961526d3058cbce6e96d4fa88c04a12a836bbd26486d0e1e492a0df688fa9"
+    },
+    {
+      "path": "src/modules/test_touch.c",
+      "sha256": "7b651f1a6195bcbc33ba61747d0f9d598acdd93459a5f7047f81e2df4b0953f0"
+    },
+    {
+      "path": "src/modules/test_touch_raw.c",
+      "sha256": "d3c4706678ae184a62aadec21539f801d976c2775f982381232d10b393480d91"
+    },
+    {
+      "path": "src/modules/test_uart.c",
+      "sha256": "d4504a6fa63f5b1b723ff68c534f24a6a2948afcc8d651d8e9aafa4a4f9a2db3"
+    },
+    {
+      "path": "src/modules/test_wav.c",
+      "sha256": "61856dcee782e1a3d493da4601db463eedcbf08d1bfd7ac552571aa0b4b32984"
+    },
+    {
+      "path": "src/modules/touch_capture.c",
+      "sha256": "d8667e07f4f412cb1d8ed8701ec954c9cbc9a6e396dfe46c7cdfcdd6cdfe2ed6"
+    },
+    {
+      "path": "src/modules/touch_decode.c",
+      "sha256": "0227696ebfeb43cf860ddcf7a838a5d84e3f686bfa11801d0906fd781e93b5ea"
+    },
+    {
+      "path": "src/network/lab_mqtt.c",
+      "sha256": "a129ebbc6171aeaf1c51c773f426411a98f5584f27863b9f65f71617d73a6c31"
+    },
+    {
+      "path": "src/network/lab_mqtt.h",
+      "sha256": "7e33920609ffdd2f5be92dd7fc9da1a379be28d6cec7f5a678c77072f801ba49"
+    },
+    {
+      "path": "src/network/lab_pan_audio_compat.c",
+      "sha256": "f36fe5b8d73421a02ed732772218b796c6fa787b57d98e029f4cb0dbca9353e1"
+    },
+    {
+      "path": "src/network/lab_pan_hid_compat.c",
+      "sha256": "20fe53c82a7a63a27e1afdc1c0c06e88bc217e0b697c267a0a4b255428bfecad"
+    },
+    {
+      "path": "src/network/lab_pan_identity.c",
+      "sha256": "0585ef854f85069b599c585837f19e270e8e4360090c1b586967797f66571fb6"
+    },
+    {
+      "path": "src/network/lab_pan_model.c",
+      "sha256": "4714e7960214d3b7df9200fdadbe5494d5761305de3b6f6da552b175769f67ef"
+    },
+    {
+      "path": "src/network/lab_pan_net.c",
+      "sha256": "726c2f5df93608a756533fb2b145b0a1470c349d06ed0a10eb369b85647acb4b"
+    },
+    {
+      "path": "src/network/lab_pan_net.h",
+      "sha256": "52731c31022715d0340dd348499ac9b76b7d80d871d7d711257060797f4253e8"
+    },
+    {
+      "path": "src/network/lab_pan_service.c",
+      "sha256": "8cb96aa1b3b3f18a571bad7cba4fd2a076a5e78e32883e06932948604662ef10"
+    },
+    {
+      "path": "src/roll3_bend.h",
+      "sha256": "9bdb100f382e9871564a6005d519277997bd58e68cdbd7e6b357e494755ad92f"
+    },
+    {
+      "path": "src/roll3_camera_basis.h",
+      "sha256": "9629b08a2df5929da7e6a98c7568b9daff5bb228cb5f6841898274f40eabe689"
+    },
+    {
+      "path": "src/roll3_contract.h",
+      "sha256": "ca94d283631bd34f901d1160cf0b646dac34f78f0e7b566ad606a046af6e6a60"
+    },
+    {
+      "path": "src/roll3_font.h",
+      "sha256": "7fe52fac32d1575da4089e61f810ac7929a5f5cf7c6710863b491bde94047ad6"
+    },
+    {
+      "path": "src/roll3_font_16.c",
+      "sha256": "cc7171b27f8898abf78009e8ce2e7de23b0a3bf4bd14a41f29a72f1675b018b8"
+    },
+    {
+      "path": "src/roll3_font_20.c",
+      "sha256": "ec98d4f0cd234e95e87296b9c0a96af86cda69bb585ce0d69020525eddebaa1e"
+    },
+    {
+      "path": "src/roll3_font_28.c",
+      "sha256": "38b1a182e996b057e782e03fe71782037fd96ba89712cea24482f9e0564e6dc9"
+    },
+    {
+      "path": "src/roll3_page.c",
+      "sha256": "d917dace74e69b4b3762996026325c4e6301148aee5a0d3c6d52b3f211ebe353"
+    },
+    {
+      "path": "src/roll3_page.h",
+      "sha256": "814f94bc71680317ff3fcb868259e79bfad4dcb643091c06c84da3e7bf7ff0b1"
+    },
+    {
+      "path": "src/roll3_physics.c",
+      "sha256": "4fca8b9fdaeb414097d278686e6dd76af6700c3f18992fa162fbc4bc07aad6b5"
+    },
+    {
+      "path": "src/roll3_physics.h",
+      "sha256": "859abe0ad8d1f5311586bb91006bd6165f9627a23c7b59c3e29fa0007e53f48a"
+    },
+    {
+      "path": "src/roll3_renderer.c",
+      "sha256": "4517db6a25820fc6e442a5e2520c3ba716b70de76893a273e1519bfaf05fd4af"
+    },
+    {
+      "path": "src/roll3_renderer.h",
+      "sha256": "49870a0abc8b611b967fbaa78b827f9cf59149419f6b3123320ac374286f0446"
+    },
+    {
+      "path": "src/roll3_runtime.c",
+      "sha256": "2c221a100130b229f13ae5e579d9464477a3a8c9f64ae66de7884779762f6387"
+    },
+    {
+      "path": "src/roll3_runtime.h",
+      "sha256": "ddc8514e777fe011aa6c63e5e845cd5c77bab527461ff0e8c985029c385750d4"
+    },
+    {
+      "path": "src/roll3_scene.c",
+      "sha256": "7b9163486b77a5a8da964001daff51eac9a104bb87989ae3a5652e40da1ac4c0"
+    },
+    {
+      "path": "src/roll3_scene.h",
+      "sha256": "f2a8f5323883a0bb91e80f5a8fd693d45e8bebe2ec5f16a606520db2f423f5a7"
+    },
+    {
+      "path": "src/roll3_selftest.c",
+      "sha256": "59fe70ce875f4cb00c053a113cda1ab2e283d07667ee86063678e27ca4807f86"
+    },
+    {
+      "path": "src/roll3_selftest.h",
+      "sha256": "a1d4be908d0e3562097bc0c406ccf6056bd337f85c2391bd5fa418201a46af53"
+    },
+    {
+      "path": "src/roll3_session.c",
+      "sha256": "caddc2fd5c50313e38a80da5f73c0a05b74f6c3c9ab5b83f1fb29f64ec51ab9d"
+    },
+    {
+      "path": "src/roll3_session.h",
+      "sha256": "51daf27c840b5f86b0b5bfd05ee1b9cafdc3ff503c1489a6d557d1d0c6b395f3"
+    },
+    {
+      "path": "src/roll3_session_selftest.c",
+      "sha256": "b082e1069063478796209888ec01f0c757b3515a69bfce8ebdf6a44918dc252a"
+    },
+    {
+      "path": "src/roll3_stage_art.h",
+      "sha256": "ed8474902bb3f3bb1006001cc51a01412a6c617518a984a9b94dbcfeae10753a"
+    },
+    {
+      "path": "src/roll3_view.c",
+      "sha256": "b99d260ab98701b073b47b5c412d5b9858b1455032e1be124627990817b5149c"
+    },
+    {
+      "path": "src/roll3_view.h",
+      "sha256": "445cb1a6ad5107ffe3a8547a2c97d0ea822a85326b45d9ff3d17573ccb0adea7"
+    },
+    {
+      "path": "tests/audio_test.c",
+      "sha256": "001eb291542e7a11503eb69ed44e5c25ce027b26ebfd336551a822ef23786df8"
+    },
+    {
+      "path": "tests/ble_include/board.h",
+      "sha256": "64426fdbc7c9f5de4694d8e8f84425c582909621d2f98f6ccccf20d7c65bd8f9"
+    },
+    {
+      "path": "tests/ble_include/rtconfig.h",
+      "sha256": "709da64ca36a6a34ada2875424afc878d614545fdba8e7f7130562a9228b3a53"
+    },
+    {
+      "path": "tests/ble_include/rtthread.h",
+      "sha256": "169c599c0da1a402fdc4c19359cf5b7ffb6444d04f21e94d5afbeee584f874fa"
+    },
+    {
+      "path": "tests/ble_service_test.c",
+      "sha256": "e851d5850cb00760dc305a7649ebe17166cfd9f8f4840345e2eb8ec74dcddaed"
+    },
+    {
+      "path": "tests/ble_test.c",
+      "sha256": "3d2f9d95b1d8b3ce762b2ea3f5e215bc26077109185030a434ebb2967317f3b8"
+    },
+    {
+      "path": "tests/capture_test.c",
+      "sha256": "760108e95f60aea54d76357cf0ea2ed7c4423210d20c4b739038d129a5ce713b"
+    },
+    {
+      "path": "tests/core_include/audio_server.h",
+      "sha256": "c4e075c4e10e263ad4edb5b9bfd138ed0f3c635afb10d7f2e105778eb4b8f76f"
+    },
+    {
+      "path": "tests/core_include/rtdevice.h",
+      "sha256": "71e6e26696e5c0f33912257a8bb35a29ec8f88f176323fd954dd2eb777466277"
+    },
+    {
+      "path": "tests/core_include/rthw.h",
+      "sha256": "26d315bf890891fdbffc818a49d91bcdba4949bb94a927c48c1e0e4ae08bbd18"
+    },
+    {
+      "path": "tests/core_include/rtthread.h",
+      "sha256": "e7aa654335422ea840c971dbdd3f292cfe6f4b05d47f007cbf30c650040cb3ce"
+    },
+    {
+      "path": "tests/core_test.c",
+      "sha256": "d83a567d69992e65bb8ea26add1d2b854861f984d57f261627d79c4c252bd614"
+    },
+    {
+      "path": "tests/game_sensor_test.c",
+      "sha256": "0846b55088ecf6cf140999f7163d9e0b2f16083e3f02570a278398e3bad63495"
+    },
+    {
+      "path": "tests/game_sound_test.c",
+      "sha256": "49ba2e2798b75ded0bfe178b3609893daf7311773b2e28255a7457be4b2aed2f"
+    },
+    {
+      "path": "tests/include/lv_conf.h",
+      "sha256": "3281207fb6671a811acac1ed0cd022b973a7874d3b55207532dc8511f0b2d99b"
+    },
+    {
+      "path": "tests/include/rtdevice.h",
+      "sha256": "4b4f0b9d209f4fb7ee6ad4d6dda8059c2314fdd4b06e7c5dec097d5bc3b0315a"
+    },
+    {
+      "path": "tests/include/rtthread.h",
+      "sha256": "edcfc459492e6a509c43458cb02d8fe6e28f9ab726a52e8c1b958a821f46f316"
+    },
+    {
+      "path": "tests/maze_adapter_host.c",
+      "sha256": "a610e43ce7b3ce3268c497069b1bcdb5a823fe8c96e07b96ac9d81774a71783c"
+    },
+    {
+      "path": "tests/maze_main_host.c",
+      "sha256": "0c927b94ccb3d36d5df1dc29eed35ff088c21aeac4a65b75a576ded99a17380a"
+    },
+    {
+      "path": "tests/maze_runtime_host.c",
+      "sha256": "379bada75dd9d6a390691b1462a0e3f7f7be9c3feaac871409fed78653062fcd"
+    },
+    {
+      "path": "tests/maze_runtime_unavailable.c",
+      "sha256": "ccce4d3c478ac245db1a0bc76c4cc4f83ac1060d5e6e2c3bfaf3b3551e662671"
+    },
+    {
+      "path": "tests/maze_ui_runtime_test.c",
+      "sha256": "376aa66be59a30482dacbe76e40fdf85a26b304141ca92159554a1c98ea07d0c"
+    },
+    {
+      "path": "tests/maze_ui_test.c",
+      "sha256": "d5007e470ee9cfbd2e861f15235c77bdb21772a47774d7eb8b19f57efc6f59b4"
+    },
+    {
+      "path": "tests/mqtt_probe.py",
+      "sha256": "6b76a03190dc9520cfb450d700703b580069bb48d30331c485aefe4071ab407d"
+    },
+    {
+      "path": "tests/mqtt_probe_bridge.c",
+      "sha256": "e51211c496bf36f87f90835b3f1a706a15fcba6194640b24fca3130e3e1b9c62"
+    },
+    {
+      "path": "tests/mqtt_test.c",
+      "sha256": "77c1e415aab73976c2c3437707fc72df8ad1e2555c279acaed512f4b94e0ac53"
+    },
+    {
+      "path": "tests/net_include/bf0_ble_common.h",
+      "sha256": "adc91b47bdb92b7b248a71d18577d7ae5035fdd2cb7a29593d211668aefa23dd"
+    },
+    {
+      "path": "tests/net_include/lwip/dhcp.h",
+      "sha256": "0307f79fc4839cd209d91bf5a924fdb8574d43768a3c5190ccb143c807176db0"
+    },
+    {
+      "path": "tests/net_include/lwip/dns.h",
+      "sha256": "0307f79fc4839cd209d91bf5a924fdb8574d43768a3c5190ccb143c807176db0"
+    },
+    {
+      "path": "tests/net_include/lwip/netif.h",
+      "sha256": "0307f79fc4839cd209d91bf5a924fdb8574d43768a3c5190ccb143c807176db0"
+    },
+    {
+      "path": "tests/net_include/lwip/sockets.h",
+      "sha256": "0307f79fc4839cd209d91bf5a924fdb8574d43768a3c5190ccb143c807176db0"
+    },
+    {
+      "path": "tests/net_include/lwip/tcpip.h",
+      "sha256": "0307f79fc4839cd209d91bf5a924fdb8574d43768a3c5190ccb143c807176db0"
+    },
+    {
+      "path": "tests/net_include/lwip/test_lwip.h",
+      "sha256": "a400b55b2296ab4b9db78215e5788c1a02323aaea9d1f7dceff1149118d6b29c"
+    },
+    {
+      "path": "tests/pan_include/bf0_ble_common.h",
+      "sha256": "01d4c3301dc9a2f530b2927135b16396a244d5a43e02e13bf2a1f26540b5e140"
+    },
+    {
+      "path": "tests/pan_include/bt_connection_manager.h",
+      "sha256": "7d7a57440bdaae42da3bf1b882393b0b137e097e9f93bde56d4168ed65e6c8a8"
+    },
+    {
+      "path": "tests/pan_include/bts2_app_inc.h",
+      "sha256": "1cf515aafe8bb235e334e815661e13a0779c88a60ac0a1360b908279b8f2e751"
+    },
+    {
+      "path": "tests/pan_include/rtthread.h",
+      "sha256": "7c5df51a9e74974e13f9da330388216ec53fef2e10af4e728907187a272dccf5"
+    },
+    {
+      "path": "tests/pan_net_test.c",
+      "sha256": "6916d8c25a3426bf7121493009c3435890eb0a2b3d4eb1b82617da00d8c3716b"
+    },
+    {
+      "path": "tests/pan_service_test.c",
+      "sha256": "bd60edc0ef485139fdc378f4a0a353b1b26685463c5f05afc9dcc5890e6589a4"
+    },
+    {
+      "path": "tests/pan_test.c",
+      "sha256": "d1354d5a0c129f14d0ae93fd336c1b08a4ef250e9487bd701b0f6151d7bfe78f"
+    },
+    {
+      "path": "tests/render.py",
+      "sha256": "856e731a3238948601734c2eb7e9944522cf438208619983e74276c3f0c5b585"
+    },
+    {
+      "path": "tests/ride_test.c",
+      "sha256": "5a5b8f53f93041b732f18e31947d6317f02eafa0b9b021121a3b4ab647d7bde5"
+    },
+    {
+      "path": "tests/roll3_edge_compare.c",
+      "sha256": "77a2de07cf5e7166b482888d895a835b5d6901a2bcbe2e4a66135cd883f78580"
+    },
+    {
+      "path": "tests/roll3_edge_probe.c",
+      "sha256": "6c22f49a29324e22568c384200b1c444158f5fbf08f747803b83caca108860ee"
+    },
+    {
+      "path": "tests/roll3_host.c",
+      "sha256": "e4dd6c1947a2eed95fbcfe41082a86685413a7f08a86ad059f5c97fa25d6c634"
+    },
+    {
+      "path": "tests/roll3_perf_compare.c",
+      "sha256": "93dbfe6ff2139fb80b2f21444b9f2da13dead729755235cf342d36b569d56144"
+    },
+    {
+      "path": "tests/roll3_physics_compare.c",
+      "sha256": "89db3cae06943fe92e376cee78d64c6cdd613f1d9816694771739fc6d741eede"
+    },
+    {
+      "path": "tests/roll3_runtime_host.c",
+      "sha256": "8d84d344db9bd98f913f96f2f5989fa8f6cad5f1a4035a4308e91a7618b88444"
+    },
+    {
+      "path": "tests/roll3_view_test.c",
+      "sha256": "1768e08c79dbf28c39b28a0a79cc1fe6d1feb9e2922f26112fc255a06d02555a"
+    },
+    {
+      "path": "tests/run_maze_host.py",
+      "sha256": "3d016b588644a3e1f65be5eea7e13157a339fbe32405d638435ae52017c81b08"
+    },
+    {
+      "path": "tests/run_roll3_sdk_view.py",
+      "sha256": "6fff57138c55046bfd886c9e2e8e9a390ea84d60b2f049a01fa73e18e6c14bf7"
+    },
+    {
+      "path": "tests/runtime_stubs/littlevgl2rtt.h",
+      "sha256": "12bca5cd4059788a77f6360147082c7bb3c2257ebc3dd510dc26b05f129af1eb"
+    },
+    {
+      "path": "tests/runtime_stubs/lvgl.h",
+      "sha256": "38fc5c85f9eabb9a45f33545c08e1ce90eb1a1fdc29665cbe8d6fad5a9460d67"
+    },
+    {
+      "path": "tests/runtime_stubs/rtdevice.h",
+      "sha256": "ed6e281b6f2bde68a3a7495510cf9d6f3c1cf5e71bbcbbb1e9b2549e27375d6e"
+    },
+    {
+      "path": "tests/runtime_stubs/rtthread.h",
+      "sha256": "0dd9a76419969e614562e6fe77c3cd24c372363b45e9c5611dbdd387fcb02008"
+    },
+    {
+      "path": "tests/ui_runtime_stubs/rtdevice.h",
+      "sha256": "ed6e281b6f2bde68a3a7495510cf9d6f3c1cf5e71bbcbbb1e9b2549e27375d6e"
+    },
+    {
+      "path": "tests/ui_runtime_stubs/rtthread.h",
+      "sha256": "943f48ec0b65a270bab23eb04cac13472ec97312c34aa8cd9085040d4b190aca"
+    },
+    {
+      "path": "tests/ui_test.c",
+      "sha256": "a88315a306ed690005bdf65ed7d9bcbe49e7e1c5c8d789e05ff0be09d526d900"
+    },
+    {
+      "path": "tests/units_test.c",
+      "sha256": "3f084b22ebfe2d458a28bf58b196b20933d165b360edefad51e3049b1af9ecf6"
+    },
+    {
+      "path": "tests/wav_test.c",
+      "sha256": "d14324efe3e57ec82ecdff586eeb86d66c480a6488245e18a7be43b90c18f116"
+    },
+    {
+      "path": "tools/generate_maze_font.py",
+      "sha256": "4957c2dc1899ddd5bef7e7b8d06c43260776e893a38edfcab7025c347acf32ff"
+    },
+    {
+      "path": "assets/roll3-font/OFL.txt",
+      "sha256": "49ce7ff064ec625e189f342f64ea639dfcfdd4ddef33ce1d742c9edd23a06af3"
+    },
+    {
+      "path": "assets/roll3-font/provenance.json",
+      "sha256": "1a7807245f036e1832df892eda1115920cb9ad99ec082dc730ffb3892be25527"
+    }
+  ],
+  "protected_project_files": [
+    {
+      "path": "project/SConstruct",
+      "sha256": "c7ebfbcfdcf5f9e44a6285fd13593a178489811e8de500c7146be0a3c2ad3ff3"
+    },
+    {
+      "path": "project/SConscript",
+      "sha256": "c0dcffa927b84456f4f4992b9c195a7b8e471f83a339ce4df049e3618e65c097"
+    },
+    {
+      "path": "project/Kconfig",
+      "sha256": "6e66a070c7f1992751f2d98c25f802776beae3b86380ade7b533ce00f831de48"
+    },
+    {
+      "path": "project/Kconfig.proj",
+      "sha256": "a79a5e79a957a1b04d16c4c75ce55b502da3b1c0c83c1279b3cfe8204b5ff156"
+    },
+    {
+      "path": "project/rtconfig.py",
+      "sha256": "9c8d0d8dc8633ab1a8324bcd19679616729360171fde33812b12c335938f45dc"
+    },
+    {
+      "path": "project/proj.conf",
+      "sha256": "f6228149c8edf2489204ab22262cef7fd8d5598cd3c094bca3fd6e6bb331b7fc"
+    }
+  ],
+  "patch": {
+    "path": "m3-immersive.patch",
+    "sha256": "41bff6143185db302e6583be762d35028890f8f051423210a5b6bb66f02073ba"
+  },
+  "changed_files": [
+    "src/roll3_contract.h",
+    "src/roll3_font.h",
+    "src/roll3_font_16.c",
+    "src/roll3_font_20.c",
+    "src/roll3_font_28.c",
+    "src/roll3_page.c",
+    "src/roll3_physics.c",
+    "src/roll3_physics.h",
+    "src/roll3_renderer.c",
+    "src/roll3_renderer.h",
+    "src/roll3_runtime.c",
+    "src/roll3_scene.c",
+    "src/roll3_selftest.c",
+    "src/roll3_session.c",
+    "src/roll3_view.c",
+    "src/roll3_view.h",
+    "tests/render.py",
+    "tests/roll3_runtime_host.c",
+    "tests/roll3_view_test.c",
+    "tools/generate_maze_font.py",
+    "assets/roll3-font/OFL.txt",
+    "assets/roll3-font/provenance.json"
+  ]
+}

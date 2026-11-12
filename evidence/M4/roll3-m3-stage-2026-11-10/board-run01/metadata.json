@@ -1,0 +1,30 @@
+{
+  "received_date": "2026-11-10",
+  "original_filename": "VID_20261110_192009.mp4",
+  "duration_s": 17.05,
+  "bytes": 54414027,
+  "sha256": "1f679683b3ee389faa51eb249c8253ded05111ed5c1edf9fe5a95bc63dff3553",
+  "board_firmware_sha256": null,
+  "frames": [
+    {
+      "time_s": 5.4,
+      "filename": "falling.jpg",
+      "sha256": "abb98b766f61f37e3c938eb3dcbd2e7ee76fb97c4b6ba20cda5836e477a61f07"
+    },
+    {
+      "time_s": 7.2,
+      "filename": "checkpoint.jpg",
+      "sha256": "1969dc0f7a78a1919261a6a610c8761872d132f3f242bb488b0c9e66b70a5b3a"
+    },
+    {
+      "time_s": 12.0,
+      "filename": "bend.jpg",
+      "sha256": "281f43b0bb4f4e0cc75033cea77b803d843029a5af6fed3cc8047431ea6027a5"
+    },
+    {
+      "time_s": 16.7,
+      "filename": "finish.jpg",
+      "sha256": "64fc14b04c108279e66e49a5f3e0074ae4733d978bef367d713746f7bf4679cf"
+    }
+  ]
+}

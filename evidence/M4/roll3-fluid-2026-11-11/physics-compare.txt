@@ -1,0 +1,2 @@
+TC-521 identical snapshot speed 4.644880 old=0.000000 limited=1 new=4.643016 limited=0
+TC-521 same-state host physics us old=7.190 new=0.528 ratio=0.073 sink=260000; NOT board timing

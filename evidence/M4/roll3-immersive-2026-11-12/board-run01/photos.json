@@ -1,0 +1,23 @@
+{
+  "received_on": "2026-11-12",
+  "association": "User feedback following m3-immersive delivery; no independent boot/serial fingerprint",
+  "originals_unedited": true,
+  "photos": [
+    {
+      "original": "C:\\Users\\10436\\AppData\\Local\\Temp\\codex-clipboard-072b77de-b678-4ad8-8513-7af1ce4204ed.jpg",
+      "archived": "play-original.jpg",
+      "bytes": 4884530,
+      "sha256": "7a858e3d9dba3381e431ffa2ab1076d49dc491b9f094d69c7df6841b1b05b9c3",
+      "width": 3072,
+      "height": 4096
+    },
+    {
+      "original": "C:\\Users\\10436\\AppData\\Local\\Temp\\codex-clipboard-a8bdf64d-617d-4f10-b09d-65c1f58ef17b.jpg",
+      "archived": "result-original.jpg",
+      "bytes": 6865692,
+      "sha256": "b44ef8e7bea8f7ae5c760a959407227f66106b0ff5ee2b0a40d7c4436ffc83df",
+      "width": 3072,
+      "height": 4096
+    }
+  ]
+}

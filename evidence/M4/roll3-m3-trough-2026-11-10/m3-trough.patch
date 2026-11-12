@@ -1,0 +1,274 @@
+--- a/src/roll3_contract.h
++++ b/src/roll3_contract.h
+@@ -24,6 +24,7 @@
+ typedef struct {
+     r3_vec_t origin, radial_start, sweep_axis;
+     float radius, half_width, exit_z, bank, rail_height;
++    float trough_depth; /* Edge rise in metres at the middle of the bend. */
+     uint32_t color;
+ } r3_bend_t; /* Half-annulus; radial_start points to the entry. */
+ 
+--- a/src/roll3_bend.h
++++ b/src/roll3_bend.h
+@@ -6,11 +6,32 @@
+ #define R3_BEND_RAIL_WIDTH .12f
+ #define R3_BEND_DEPTH .34f
+ 
+-/* sin(angle)^2 gives a flat cross section at both joins. */
++typedef struct {
++    float height, radial_grade, angular_rise;
++} r3_bend_profile_t;
++
++/* sin(angle)^2 flattens both cross sections at the straight joins.
++ * The derivatives are with respect to radius and angle, respectively. */
++static inline r3_bend_profile_t r3_bend_profile(const r3_bend_t *bend,
++    float cosine, float sine, float radius)
++{
++    float offset=radius-bend->radius;
++    float cross_height=bend->bank*offset,cross_grade=bend->bank;
++    if(bend->trough_depth>0){
++        float lateral=offset/bend->half_width;
++        cross_height+=bend->trough_depth*lateral*lateral;
++        cross_grade+=2*bend->trough_depth*lateral/bend->half_width;
++    }
++    float weight=sine*sine,half_drop=.5f*(bend->exit_z-bend->origin.z);
++    return (r3_bend_profile_t){
++        bend->origin.z+half_drop*(1-cosine)+weight*cross_height,
++        weight*cross_grade,half_drop*sine+2*sine*cosine*cross_height
++    };
++}
++
+ static inline float r3_bend_height(const r3_bend_t *bend, float cosine, float sine, float radius)
+ {
+-    return bend->origin.z + (bend->exit_z - bend->origin.z) * (.5f - .5f*cosine)
+-        + bend->bank*sine*sine*(radius - bend->radius);
++    return r3_bend_profile(bend,cosine,sine,radius).height;
+ }
+ 
+ static inline r3_vec_t r3_bend_point(const r3_bend_t *bend, float cosine, float sine,
+--- a/src/roll3_physics.c
++++ b/src/roll3_physics.c
+@@ -64,6 +64,7 @@
+         isfinite(b->radius)&&b->radius<=20&&isfinite(b->half_width)&&b->half_width>R3_RADIUS&&
+         b->radius-b->half_width>2*R3_RADIUS&&isfinite(b->bank)&&b->bank>=0&&b->bank<=.5f&&
+         isfinite(b->rail_height)&&b->rail_height>=0&&b->rail_height<=1&&b->color<=0xffffffu&&
++        isfinite(b->trough_depth)&&b->trough_depth>=0&&b->trough_depth<=.75f&&
+         finite_vec(b->radial_start)&&finite_vec(b->sweep_axis)&&
+         fabsf(b->radial_start.z)<.0001f&&fabsf(b->sweep_axis.z)<.0001f&&
+         fabsf(dot(b->radial_start,b->radial_start)-1)<.0001f&&
+@@ -75,6 +76,7 @@
+  * straight decks handle the opposite side of the common end line. */
+ static float bend_gap(const r3_bend_t *b, bend_surface_t surface, r3_vec_t p, r3_vec_t *normal)
+ {
++    if(surface==BEND_RAIL&&b->rail_height==0)return FLT_MAX;
+     r3_vec_t offset=sub(p,b->origin);
+     float outer=b->radius+b->half_width;
+     float bound=outer+R3_BEND_RAIL_WIDTH+R3_RADIUS;
+@@ -105,7 +107,8 @@
+     }
+ 
+     float floor_radius=clamp(radius,inner,outer);
+-    float height=r3_bend_height(b,cosine,sine,floor_radius);
++    r3_bend_profile_t profile=r3_bend_profile(b,cosine,sine,floor_radius);
++    float height=profile.height;
+     if(p.z<height-R3_BEND_DEPTH)return FLT_MAX;
+     float dr=radius-floor_radius;
+     if(dr!=0){
+@@ -115,10 +118,8 @@
+         return distance-R3_RADIUS;
+     }
+     r3_vec_t tangent=add(mul(b->radial_start,-sine),mul(b->sweep_axis,cosine));
+-    float slope_r=b->bank*sine*sine;
+-    float slope_a=((b->exit_z-b->origin.z)*.5f*sine+
+-        2*b->bank*sine*cosine*(radius-b->radius))/radius;
+-    r3_vec_t n=sub(sub((r3_vec_t){0,0,1},mul(radial,slope_r)),mul(tangent,slope_a));
++    r3_vec_t n=sub(sub((r3_vec_t){0,0,1},mul(radial,profile.radial_grade)),
++                   mul(tangent,profile.angular_rise/radius));
+     *normal=mul(n,1/length(n));
+     return (p.z-height)*normal->z-R3_RADIUS;
+ }
+--- a/src/roll3_renderer.c
++++ b/src/roll3_renderer.c
+@@ -242,12 +242,15 @@
+         {-0.923879533f,0.382683432f},{-0.965925826f,0.258819045f},{-0.991444861f,0.130526192f},
+         {-1.000000000f,0.000000000f},
+     };
+-    enum { lanes=4 };
++    enum { tile_lanes=4, max_lanes=8 };
++    const unsigned lanes=bend->trough_depth>0?max_lanes:tile_lanes;
++    const unsigned strips_per_tile=lanes/tile_lanes;
++    const bool has_rail=bend->rail_height>0;
+     const uint32_t rail=style?0xb964d1:0xa071bc;
+     const uint32_t light_tile=style?style->light_tile:0xf2e6d5;
+     r3_vec_t eye=add(focus,eye_offset);
+     for(unsigned i=0;i+1<sizeof(ring)/sizeof(*ring);++i){
+-        r3_vec_t floor[2][lanes+1],bottom[2][2],lip[2],rail_outer[2],rail_base[2];
++        r3_vec_t floor[2][max_lanes+1],bottom[2][2],lip[2],rail_outer[2],rail_base[2];
+         for(unsigned end=0;end<2;++end){
+             float c=ring[i+end][0],s=ring[i+end][1];
+             for(unsigned j=0;j<=lanes;++j){
+@@ -258,23 +261,29 @@
+                 bottom[end][edge]=sub(floor[end][edge*lanes],(r3_vec_t){0,0,R3_BEND_DEPTH});
+             if(style)
+                 for(unsigned edge=0;edge<2;++edge)bottom[end][edge].z=fminf(bottom[end][edge].z,style->skirt_z);
+-            lip[end]=add(floor[end][lanes],(r3_vec_t){0,0,bend->rail_height*s*s});
+-            float outer=bend->radius+bend->half_width+R3_BEND_RAIL_WIDTH;
+-            rail_outer[end]=r3_bend_point(bend,c,s,outer,lip[end].z);
+-            rail_base[end]=r3_bend_point(bend,c,s,outer,bottom[end][1].z);
++            if(has_rail){
++                lip[end]=add(floor[end][lanes],(r3_vec_t){0,0,bend->rail_height*s*s});
++                float outer=bend->radius+bend->half_width+R3_BEND_RAIL_WIDTH;
++                rail_outer[end]=r3_bend_point(bend,c,s,outer,lip[end].z);
++                rail_base[end]=r3_bend_point(bend,c,s,outer,bottom[end][1].z);
++            }
+         }
+         for(unsigned j=0;j<lanes;++j)
+             bend_quad(target,floor[0][j],floor[0][j+1],floor[1][j+1],floor[1][j],
+-                      (i+j)%2?bend->color:light_tile,focus);
++                      (i+j/strips_per_tile)%2?bend->color:light_tile,focus);
+         r3_vec_t radial=add(mul(bend->radial_start,ring[i][0]+ring[i+1][0]),
+                             mul(bend->sweep_axis,ring[i][1]+ring[i+1][1]));
+         if(!style||dot(sub(eye,floor[0][0]),radial)<0)
+             bend_quad(target,floor[0][0],floor[1][0],bottom[1][0],bottom[0][0],bend->color,focus);
+-        if(!style||dot(sub(eye,floor[0][lanes]),radial)<0)
+-            bend_quad(target,floor[0][lanes],floor[1][lanes],lip[1],lip[0],rail,focus);
+-        bend_quad(target,lip[0],lip[1],rail_outer[1],rail_outer[0],rail,focus);
+-        if(!style||dot(sub(eye,rail_outer[0]),radial)>0)
+-            bend_quad(target,rail_outer[0],rail_outer[1],rail_base[1],rail_base[0],rail,focus);
++        if(has_rail){
++            if(!style||dot(sub(eye,floor[0][lanes]),radial)<0)
++                bend_quad(target,floor[0][lanes],floor[1][lanes],lip[1],lip[0],rail,focus);
++            bend_quad(target,lip[0],lip[1],rail_outer[1],rail_outer[0],rail,focus);
++            if(!style||dot(sub(eye,rail_outer[0]),radial)>0)
++                bend_quad(target,rail_outer[0],rail_outer[1],rail_base[1],rail_base[0],rail,focus);
++        }else if(!style||dot(sub(eye,floor[0][lanes]),radial)>0){
++            bend_quad(target,floor[0][lanes],floor[1][lanes],bottom[1][1],bottom[0][1],bend->color,focus);
++        }
+     }
+ }
+ 
+--- a/src/roll3_scene.c
++++ b/src/roll3_scene.c
+@@ -95,7 +95,7 @@
+     .origin=LOCAL(2.225f,19.10f,1.25f),
+     .radial_start=LOCAL(1,0,0),.sweep_axis=LOCAL(0,1,0),
+     .radius=2.125f,.half_width=1.28f,.exit_z=.86f,
+-    .bank=.23f,.rail_height=.42f,.color=0xe399b7
++    .trough_depth=.50f,.color=0xe399b7
+ };
+ 
+ #include "roll3_stage_art.h"
+--- a/src/roll3_stage_art.h
++++ b/src/roll3_stage_art.h
+@@ -92,28 +92,6 @@
+     {{LOCAL(4.7400f,10.4300f,2.5650f),LOCAL(4.3500f,10.8200f,2.5650f),LOCAL(4.3500f,10.5800f,2.5650f),LOCAL(4.7400f,10.1900f,2.5650f)},0xc73a73},
+     {{LOCAL(4.3500f,10.8200f,2.5650f),LOCAL(3.9600f,10.4300f,2.5650f),LOCAL(3.9600f,10.1900f,2.5650f),LOCAL(4.3500f,10.5800f,2.5650f)},0xc73a73},
+ 
+-    /* Small centre pillar sits inside the open U, clear of the inner edge. */
+-    {{LOCAL(2.7750f,19.1000f,1.6300f),LOCAL(2.6700f,19.4233f,1.6300f),LOCAL(2.6700f,19.4233f,-0.6000f),LOCAL(2.7750f,19.1000f,-0.6000f)},0xc77dbd},
+-    {{LOCAL(2.2250f,19.1000f,1.6300f),LOCAL(2.7750f,19.1000f,1.6300f),LOCAL(2.6700f,19.4233f,1.6300f),LOCAL(2.6700f,19.4233f,1.6300f)},0xe2a2cf},
+-    {{LOCAL(2.6700f,19.4233f,1.6300f),LOCAL(2.3950f,19.6231f,1.6300f),LOCAL(2.3950f,19.6231f,-0.6000f),LOCAL(2.6700f,19.4233f,-0.6000f)},0xc77dbd},
+-    {{LOCAL(2.2250f,19.1000f,1.6300f),LOCAL(2.6700f,19.4233f,1.6300f),LOCAL(2.3950f,19.6231f,1.6300f),LOCAL(2.3950f,19.6231f,1.6300f)},0xe2a2cf},
+-    {{LOCAL(2.3950f,19.6231f,1.6300f),LOCAL(2.0550f,19.6231f,1.6300f),LOCAL(2.0550f,19.6231f,-0.6000f),LOCAL(2.3950f,19.6231f,-0.6000f)},0xc77dbd},
+-    {{LOCAL(2.2250f,19.1000f,1.6300f),LOCAL(2.3950f,19.6231f,1.6300f),LOCAL(2.0550f,19.6231f,1.6300f),LOCAL(2.0550f,19.6231f,1.6300f)},0xe2a2cf},
+-    {{LOCAL(2.0550f,19.6231f,1.6300f),LOCAL(1.7800f,19.4233f,1.6300f),LOCAL(1.7800f,19.4233f,-0.6000f),LOCAL(2.0550f,19.6231f,-0.6000f)},0xc77dbd},
+-    {{LOCAL(2.2250f,19.1000f,1.6300f),LOCAL(2.0550f,19.6231f,1.6300f),LOCAL(1.7800f,19.4233f,1.6300f),LOCAL(1.7800f,19.4233f,1.6300f)},0xe2a2cf},
+-    {{LOCAL(1.7800f,19.4233f,1.6300f),LOCAL(1.6750f,19.1000f,1.6300f),LOCAL(1.6750f,19.1000f,-0.6000f),LOCAL(1.7800f,19.4233f,-0.6000f)},0xc77dbd},
+-    {{LOCAL(2.2250f,19.1000f,1.6300f),LOCAL(1.7800f,19.4233f,1.6300f),LOCAL(1.6750f,19.1000f,1.6300f),LOCAL(1.6750f,19.1000f,1.6300f)},0xe2a2cf},
+-    {{LOCAL(1.6750f,19.1000f,1.6300f),LOCAL(1.7800f,18.7767f,1.6300f),LOCAL(1.7800f,18.7767f,-0.6000f),LOCAL(1.6750f,19.1000f,-0.6000f)},0xc77dbd},
+-    {{LOCAL(2.2250f,19.1000f,1.6300f),LOCAL(1.6750f,19.1000f,1.6300f),LOCAL(1.7800f,18.7767f,1.6300f),LOCAL(1.7800f,18.7767f,1.6300f)},0xe2a2cf},
+-    {{LOCAL(1.7800f,18.7767f,1.6300f),LOCAL(2.0550f,18.5769f,1.6300f),LOCAL(2.0550f,18.5769f,-0.6000f),LOCAL(1.7800f,18.7767f,-0.6000f)},0xc77dbd},
+-    {{LOCAL(2.2250f,19.1000f,1.6300f),LOCAL(1.7800f,18.7767f,1.6300f),LOCAL(2.0550f,18.5769f,1.6300f),LOCAL(2.0550f,18.5769f,1.6300f)},0xe2a2cf},
+-    {{LOCAL(2.0550f,18.5769f,1.6300f),LOCAL(2.3950f,18.5769f,1.6300f),LOCAL(2.3950f,18.5769f,-0.6000f),LOCAL(2.0550f,18.5769f,-0.6000f)},0xc77dbd},
+-    {{LOCAL(2.2250f,19.1000f,1.6300f),LOCAL(2.0550f,18.5769f,1.6300f),LOCAL(2.3950f,18.5769f,1.6300f),LOCAL(2.3950f,18.5769f,1.6300f)},0xe2a2cf},
+-    {{LOCAL(2.3950f,18.5769f,1.6300f),LOCAL(2.6700f,18.7767f,1.6300f),LOCAL(2.6700f,18.7767f,-0.6000f),LOCAL(2.3950f,18.5769f,-0.6000f)},0xc77dbd},
+-    {{LOCAL(2.2250f,19.1000f,1.6300f),LOCAL(2.3950f,18.5769f,1.6300f),LOCAL(2.6700f,18.7767f,1.6300f),LOCAL(2.6700f,18.7767f,1.6300f)},0xe2a2cf},
+-    {{LOCAL(2.6700f,18.7767f,1.6300f),LOCAL(2.7750f,19.1000f,1.6300f),LOCAL(2.7750f,19.1000f,-0.6000f),LOCAL(2.6700f,18.7767f,-0.6000f)},0xc77dbd},
+-    {{LOCAL(2.2250f,19.1000f,1.6300f),LOCAL(2.6700f,18.7767f,1.6300f),LOCAL(2.7750f,19.1000f,1.6300f),LOCAL(2.7750f,19.1000f,1.6300f)},0xe2a2cf},
+-
+     /* Checkpoint flag and goal gate. */
+     {{LOCAL(3.1200f,15.9800f,1.5500f),LOCAL(3.2200f,15.9800f,1.5500f),LOCAL(3.2200f,15.9800f,2.4300f),LOCAL(3.1200f,15.9800f,2.4300f)},0x7a3b9b},
+     {{LOCAL(3.1700f,15.9300f,1.5500f),LOCAL(3.1700f,16.0300f,1.5500f),LOCAL(3.1700f,16.0300f,2.4300f),LOCAL(3.1700f,15.9300f,2.4300f)},0x7a3b9b},
+--- a/src/roll3_selftest.c
++++ b/src/roll3_selftest.c
+@@ -403,9 +403,8 @@
+     return true;
+ }
+ 
+-static bool m2_crossings(void)
+-{
+-    const r3_world_t *w=r3_m2_world();
++static bool bend_crossings(const r3_world_t *w)
++{
+     const r3_bend_t *b=w->bend;
+     r3_vec_t origin=to_uv(b->origin);
+     for(unsigned end=0;end<2;++end){
+@@ -559,6 +558,51 @@
+     }
+     CHECK(arc==12&&grounded_arc>100&&g.s.state==R3_WON&&g.s.checkpoint==1&&g.s.falls==0);
+     return true;
++}
++
++static bool m3_trough_profile(void)
++{
++    const r3_world_t *w=r3_demo_world();
++    const r3_bend_t *b=w->bend;
++    CHECK(b&&b->bank==0&&b->rail_height==0);
++    r3_bend_profile_t center=r3_bend_profile(b,0,1,b->radius);
++    CHECK(near(center.radial_grade,0,.0001f));
++    for(int side=-1;side<=1;side+=2){
++        float r=b->radius+side*b->half_width;
++        r3_bend_profile_t edge=r3_bend_profile(b,0,1,r);
++        CHECK(near(edge.height-center.height,.50f,.001f));
++        CHECK(side*edge.radial_grade>.6f);
++    }
++    for(unsigned end=0;end<2;++end){
++        float c=end?-1.f:1.f,z=end?b->exit_z:b->origin.z;
++        for(int side=-1;side<=1;++side){
++            float r=b->radius+side*b->half_width;
++            r3_bend_profile_t sample=r3_bend_profile(b,c,0,r);
++            CHECK(near(sample.height,z,.001f)&&sample.radial_grade==0&&sample.angular_rise==0);
++            CHECK(top_point(&w->boxes[7+end],r3_bend_point(b,c,0,r,sample.height),1));
++        }
++    }
++    return true;
++}
++
++static bool m3_trough_returns(int side)
++{
++    r3_game_t g;CHECK(start(&g,r3_demo_world()));
++    const r3_bend_t *b=g.world->bend;
++    float lateral=.88f*side,r=b->radius+lateral;
++    r3_bend_profile_t profile=r3_bend_profile(b,0,1,r);
++    float z=profile.height+R3_RADIUS*sqrtf(1+profile.radial_grade*profile.radial_grade+
++                                           profile.angular_rise*profile.angular_rise/(r*r));
++    g.s.position=r3_bend_point(b,0,1,r,z+.008f);
++    for(unsigned i=0;i<240;++i){
++        CHECK(steps(&g,&gravity,1)&&g.s.state==R3_RUNNING&&!g.s.limited&&!g.s.speed_limited);
++        r3_vec_t p=to_uv(g.s.position),o=to_uv(b->origin);
++        float current=hypotf(p.x-o.x,p.y-o.y)-b->radius;
++        CHECK(fabsf(current)<b->half_width);
++        if(g.s.grounded&&fabsf(current)<.25f)
++            return g.s.position.z<z-.10f;
++    }
++    return false;
+ }
+ 
+ int r3_selftest_run(maze_test_report_t report) {
+@@ -602,11 +646,15 @@
+     RUN("TC-506 level-coast-stops-without-energy-gain",tuned_coast());
+     RUN("TC-517 smooth banked bend geometry and flush ends",m2_bend_geometry());
+     RUN("TC-517 curved outside rail contains the ball",m2_rail());
+-    RUN("TC-517 both bend joins cross in both directions",m2_crossings());
++    RUN("TC-517 both bend joins cross in both directions",bend_crossings(r3_m2_world()));
+     RUN("TC-517 continuous M2 checkpoint bend and goal",m2_route(false));
+     RUN("TC-517 auto respawn continues from checkpoint to M2 goal",m2_route(true));
+     RUN("TC-518 both M3 guide rails stop the ball",m3_guide_rails());
+     RUN("TC-518 M3 two turns landing checkpoint U bend and goal",m3_replay());
++    RUN("TC-519 symmetric trough with flat flush joins",m3_trough_profile());
++    RUN("TC-519 both trough joins cross in both directions",bend_crossings(r3_demo_world()));
++    RUN("TC-519 gravity returns ball from inner slope",m3_trough_returns(-1));
++    RUN("TC-519 gravity returns ball from outer slope",m3_trough_returns(1));
+ #undef RUN
+     return failures;
+ }

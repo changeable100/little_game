@@ -1,0 +1,17 @@
+TC-505 camera-center PASS
+TC-505 screen-right PASS
+TC-505 screen-forward PASS
+TC-505 near-guard PASS
+TC-526 framing-75pct FAIL
+TC-526 vertical-75pct FAIL
+TC-505 follow-translation PASS
+TC-505 ball-diameter-24px PASS
+TC-507 camera-sees-three-cube-faces PASS
+TC-507 antialias-rgb565-resolve PASS
+TC-509 edge-threshold-and-word-boundary PASS
+TC-516 play-edge-weight PASS
+TC-509 four-sample-resolve PASS
+TC-510 bounded-depth-rows PASS
+TC-506 camera-jitter-deadband PASS
+TC-506 camera-monotonic-follow PASS
+TC-506 camera-respawn-new-run PASS

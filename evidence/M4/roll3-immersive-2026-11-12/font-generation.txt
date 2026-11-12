@@ -1,0 +1,8 @@
+WARN `--no-project` was provided, but no project was found
+WARN fonttools==4.68.0 needs to be downloaded from a registry
+WARN pillow==12.3.0 needs to be downloaded from a registry
+WARN pillow needs to be downloaded from a registry
+error: No solution found when resolving `--with` dependencies
+  cause: Because pillow==12.3.0 needs to be downloaded from a registry and you require pillow==12.3.0, we can conclude that your requirements are unsatisfiable.
+
+hint: Packages were unavailable because the network was disabled. When the network is disabled, registry packages may only be read from the cache.

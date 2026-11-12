@@ -1,0 +1,31 @@
+Traceback (most recent call last):
+  File "<stdin>", line 4, in <module>
+  File "D:\course_starter\build\check_roll3_live_view.py", line 23, in <module>
+    runpy.run_path(driver, run_name="__main__")
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\course_starter\build\m2-bend-20261110\tests\render.py", line 69, in <module>
+    objects = list(pool.map(compile_one, enumerate(sources)))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\10436\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py", line 619, in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\10436\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py", line 317, in _result_or_cancel
+    return fut.result(timeout)
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\10436\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py", line 456, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\10436\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "C:\Users\10436\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\course_starter\build\m2-bend-20261110\tests\render.py", line 65, in compile_one
+    raise RuntimeError(result.stderr)
+RuntimeError: D:\course_starter\build\m2-bend-20261110\tests\roll3_view_test.c:325:18: error: call to undeclared function 'r3_world_validate'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+  325 |     assert(bend&&r3_world_validate(m2)==R3_OK);
+      |                  ^
+1 error generated.
+

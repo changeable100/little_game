@@ -1,0 +1,49 @@
+{
+  "board": "sf32lb52-lchspi-ulp",
+  "sdk": "SiFli SDK v2.5.1",
+  "b_scene_commit": "4ae63b221e521975d35b627c38eeb98f05c937fb",
+  "a_head": "1ab64e22b9066e1d8d95086a2855b19399398827",
+  "local_build": "D:/course_starter/build/m1-preview-20261110",
+  "download_script": "project/build_sf32lb52-lchspi-ulp_hcpu/uart_download.bat",
+  "previous_host_tested_project_and_source_files_matched": 111,
+  "physical_verified": false,
+  "a_overlay": [
+    {
+      "path": "src/roll3_session.c",
+      "sha256": "44d71360973d35f774a42747fdde8fad7fd05397cd98ac142fe25efa7b5d24e6"
+    },
+    {
+      "path": "src/roll3_session.h",
+      "sha256": "51daf27c840b5f86b0b5bfd05ee1b9cafdc3ff503c1489a6d557d1d0c6b395f3"
+    },
+    {
+      "path": "src/roll3_session_selftest.c",
+      "sha256": "b082e1069063478796209888ec01f0c757b3515a69bfce8ebdf6a44918dc252a"
+    },
+    {
+      "path": "src/roll3_runtime.c",
+      "sha256": "c300534b731d6e5323db1165c061aec0d04ca3321218ed29b7e4e7c4d32ca291"
+    },
+    {
+      "path": "src/roll3_view.c",
+      "sha256": "c52ee4b7ee509f3848d0ebb7114288531a22d1276293276f6818cdb564eb4cec"
+    }
+  ],
+  "images": [
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/bootloader/bootloader.bin",
+      "bytes": 58496,
+      "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/main.bin",
+      "bytes": 1231072,
+      "sha256": "00d03e711c52b69d2581de52d6448249256b7669b5bd35a6a6499530bdc418d2"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/ftab/ftab.bin",
+      "bytes": 11288,
+      "sha256": "b902ddd17504a14af0bd316f13d681f9d7b964e9501c1a170a0a94a125d1b17b"
+    }
+  ]
+}

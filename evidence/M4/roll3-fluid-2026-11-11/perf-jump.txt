@@ -1,0 +1,14 @@
+M3 pose=0 host_ms before=0.3953 after=0.2863 ratio=0.724
+ raw old=0.3210 new=0.2327
+M3 pose=1 host_ms before=0.6010 after=0.4262 ratio=0.709
+ raw old=0.4648 new=0.3223
+M3 pose=2 host_ms before=0.5515 after=0.4336 ratio=0.786
+ raw old=0.4571 new=0.3407
+M3 pose=3 host_ms before=0.5272 after=0.4171 ratio=0.791
+ raw old=0.4334 new=0.3231
+M3 pose=4 host_ms before=0.4746 after=0.4020 ratio=0.847
+ raw old=0.3581 new=0.3031
+M3 pose=5 host_ms before=0.3990 after=0.2823 ratio=0.707
+ raw old=0.3193 new=0.2139
+TC-521 direct A/B 42 frames changed_pixels=10 mean_ms before=0.4914 after=0.3746 ratio=0.762
+Assertion failed: differences==0, file tests/roll3_perf_compare.c, line 55

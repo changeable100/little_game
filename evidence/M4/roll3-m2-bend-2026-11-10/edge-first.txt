@@ -1,0 +1,13 @@
+frames=36 candidates=411821 coverage_match=411815 changed=75593
+dense_match=47999/48000
+mean_host_ms center=0.524 local_full_depth=1.762 full=2.066 rows100=1.866 rows50=2.045
+mean_host_ms play_center_rows100=0.532
+TC-512 play center bands match full-depth center output and guards PASS
+TC-510 100/50-row exact output, dense low-memory bands and scratch guards PASS
+TC-509 local coverage, unchanged interior, dense bands and guards PASS
+TC-516 M1 start top and both sides, two oblique top edges PASS
+TC-516 slow pan frame energy raw=1215047 filtered=378350 reduction=68.9%
+TC-516 slow pan mean host ms raw=0.431 filtered=0.562 ratio=1.31
+TC-516 motion edges, 100/50-row identity and guards PASS
+TC-517 36 bend frames mean host ms center=0.899 play=1.128
+TC-517 M2 bend 100/50-row output identity and guards PASS

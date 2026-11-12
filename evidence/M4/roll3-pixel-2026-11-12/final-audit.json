@@ -1,0 +1,37 @@
+{
+  "fingerprints_checked": 183,
+  "fingerprint_errors": [],
+  "git_checks": {
+    "diff": {
+      "exit_code": 0,
+      "output": ""
+    },
+    "protected": {
+      "exit_code": 0,
+      "output": ""
+    }
+  },
+  "previous_version_fingerprints_verified": true,
+  "patch_forward_check_exit_code": 0,
+  "patch_reverse_check_exit_code": 0,
+  "core_cases_pass": 162,
+  "renderer_selftests_pass": 17,
+  "font_glyphs_per_size": 196,
+  "real_lvgl_lifecycle_rounds": 20,
+  "strict_view_compile_exit_code": 0,
+  "sdk_build_exit_code": 0,
+  "trace": {
+    "exit_code": 0,
+    "requirements": 45
+  },
+  "course_all": {
+    "exit_code": 1,
+    "historical_invalid_commits": 8,
+    "historical_gap_days": 14,
+    "manifest_missing_fields": 4
+  },
+  "feature_commit_message_exit_code": 0,
+  "hardware_commit_message_exit_code": 0,
+  "physical_verification": "PENDING for m3-pixel; prior static photos archived separately",
+  "commit_or_push_performed": false
+}

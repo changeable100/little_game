@@ -1,0 +1,29 @@
+3D host view and production page adapter with fake runtime
+TC-505 camera-center PASS
+TC-505 screen-right PASS
+TC-505 screen-forward PASS
+TC-505 near-guard PASS
+TC-505 follow-translation PASS
+TC-505 ball-diameter-24px PASS
+TC-507 camera-sees-three-cube-faces PASS
+TC-507 antialias-rgb565-resolve PASS
+TC-509 edge-threshold-and-word-boundary PASS
+TC-516 play-edge-weight PASS
+TC-509 four-sample-resolve PASS
+TC-510 bounded-depth-rows PASS
+TC-506 camera-jitter-deadband PASS
+TC-506 camera-monotonic-follow PASS
+TC-506 camera-respawn-new-run PASS
+TC-501 perspective size, quaternion stripes, OBB slope axes, occlusion, clipping/canaries PASS
+TC-505 fallen checkpoint framing and immediate respawn focus PASS
+TC-506 invalid snapshot preserves camera PASS
+TC-507 three cube faces and subpixel edge coverage PASS
+TC-516 actual play smoothing and pause edge coverage PASS
+TC-501 seven Chinese states/glyphs, controls, allocation failure, 20 cycles PASS; persistent buffers=153600 bytes
+TC-513 four M1 preview poses captured with production camera direction
+TC-517 M2 start, long ramp, checkpoint, banked bend and goal captured
+TC-518 M3 six scene poses with standard view allocation PASS
+TC-510 split budget, compact fallback, partial cleanup and timer error PASS
+TC-504 live layout, buttons, duplicate guard, return, external delete PASS
+LVGL draw-buffer malloc attempts=0 largest=0 bytes (in addition to caller buffers)
+Host UI previews (simulated): D:\course_starter\build\m3-stage-20261110\build\roll3-live-view

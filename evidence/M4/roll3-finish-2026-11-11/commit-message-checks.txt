@@ -1,0 +1,11 @@
+commit-message-curve.txt
+
+exit_code=0
+
+commit-message-goal.txt
+
+exit_code=0
+
+commit-message-hw.txt
+
+exit_code=0

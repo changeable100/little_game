@@ -1,0 +1,805 @@
+--- /dev/null
++++ b/src/roll3_bend.h
+@@ -0,0 +1,26 @@
++#ifndef ROLL3_BEND_H
++#define ROLL3_BEND_H
++
++#include "roll3_contract.h"
++
++#define R3_BEND_RAIL_WIDTH .12f
++#define R3_BEND_DEPTH .34f
++
++/* sin(angle)^2 gives a flat cross section at both joins. */
++static inline float r3_bend_height(const r3_bend_t *bend, float cosine, float sine, float radius)
++{
++    return bend->origin.z + (bend->exit_z - bend->origin.z) * (.5f - .5f*cosine)
++        + bend->bank*sine*sine*(radius - bend->radius);
++}
++
++static inline r3_vec_t r3_bend_point(const r3_bend_t *bend, float cosine, float sine,
++    float radius, float height)
++{
++    return (r3_vec_t){
++        bend->origin.x + radius*(cosine*bend->radial_start.x + sine*bend->sweep_axis.x),
++        bend->origin.y + radius*(cosine*bend->radial_start.y + sine*bend->sweep_axis.y),
++        height
++    };
++}
++
++#endif
+--- a/src/roll3_contract.h
++++ b/src/roll3_contract.h
+@@ -21,11 +21,18 @@
+     uint32_t color; /* RGB888; renderer uses the exact same geometry. */
+ } r3_box_t;
+ typedef struct {
++    r3_vec_t origin, radial_start, sweep_axis;
++    float radius, half_width, exit_z, bank, rail_height;
++    uint32_t color;
++} r3_bend_t; /* Half-annulus; radial_start points to the entry. */
++
++typedef struct {
+     const r3_box_t *boxes; /* Immutable, borrowed for whole model lifetime. */
+     uint32_t box_count;
+     r3_vec_t spawn, checkpoint_spawn;
+     r3_zone_t checkpoint, goal;
+     float fall_z;
++    const r3_bend_t *bend; /* Optional; follows the same immutable lifetime. */
+ } r3_world_t;
+ typedef enum { R3_OK=0, R3_INVALID=-1, R3_WRONG_STATE=-2,
+                R3_STALE=-3, R3_EXHAUSTED=-4 } r3_result_t;
+--- a/src/roll3_physics.c
++++ b/src/roll3_physics.c
+@@ -1,4 +1,6 @@
+ #include "roll3_physics.h"
++#include "roll3_bend.h"
++#include <float.h>
+ #include <math.h>
+ #include <stddef.h>
+ #include <string.h>
+@@ -50,6 +52,77 @@
+     *normal=mul(b->axis[axis],pos[axis]<0?-1.0f:1.0f);
+     return -(half[axis]-fabsf(pos[axis]))-R3_RADIUS;
+ }
++typedef enum { BEND_FLOOR, BEND_RAIL, BEND_SURFACES } bend_surface_t;
++static const r3_box_t bend_materials[BEND_SURFACES] = {
++    [BEND_FLOOR] = {.restitution=.15f,.friction=.6f,.rolling_friction=.08f},
++    [BEND_RAIL] = {.restitution=.18f,.friction=.45f,.rolling_friction=.03f}
++};
++
++static bool bend_valid(const r3_bend_t *b)
++{
++    return bounded(b->origin)&&isfinite(b->exit_z)&&fabsf(b->exit_z)<=100&&b->exit_z<=b->origin.z&&
++        isfinite(b->radius)&&b->radius<=20&&isfinite(b->half_width)&&b->half_width>R3_RADIUS&&
++        b->radius-b->half_width>2*R3_RADIUS&&isfinite(b->bank)&&b->bank>=0&&b->bank<=.5f&&
++        isfinite(b->rail_height)&&b->rail_height>=0&&b->rail_height<=1&&b->color<=0xffffffu&&
++        finite_vec(b->radial_start)&&finite_vec(b->sweep_axis)&&
++        fabsf(b->radial_start.z)<.0001f&&fabsf(b->sweep_axis.z)<.0001f&&
++        fabsf(dot(b->radial_start,b->radial_start)-1)<.0001f&&
++        fabsf(dot(b->sweep_axis,b->sweep_axis)-1)<.0001f&&
++        fabsf(dot(b->radial_start,b->sweep_axis))<.0001f;
++}
++
++/* Signed gap of the sphere to the continuous floor or outer rail. The
++ * straight decks handle the opposite side of the common end line. */
++static float bend_gap(const r3_bend_t *b, bend_surface_t surface, r3_vec_t p, r3_vec_t *normal)
++{
++    r3_vec_t offset=sub(p,b->origin);
++    float outer=b->radius+b->half_width;
++    float bound=outer+R3_BEND_RAIL_WIDTH+R3_RADIUS;
++    if(fabsf(offset.x)>bound||fabsf(offset.y)>bound)return FLT_MAX;
++    float u=dot(offset,b->radial_start),v=dot(offset,b->sweep_axis);
++    float inner=b->radius-b->half_width;
++    float radius_squared=u*u+v*v;
++    if(v < -SKIN || radius_squared<(inner-R3_RADIUS)*(inner-R3_RADIUS) ||
++        radius_squared>bound*bound)return FLT_MAX;
++
++    float radius=sqrtf(radius_squared),cosine=u/radius,sine=fmaxf(v,0)/radius;
++    r3_vec_t radial=add(mul(b->radial_start,cosine),mul(b->sweep_axis,sine));
++    if(surface==BEND_RAIL){
++        float bottom=r3_bend_height(b,cosine,sine,outer)-R3_BEND_DEPTH;
++        float top=bottom+R3_BEND_DEPTH+b->rail_height*sine*sine;
++        float far_edge=outer+R3_BEND_RAIL_WIDTH;
++        float dr=radius-clamp(radius,outer,far_edge),dz=p.z-clamp(p.z,bottom,top);
++        float distance=sqrtf(dr*dr+dz*dz);
++        if(distance>1e-8f){
++            *normal=mul(add(mul(radial,dr),(r3_vec_t){0,0,dz}),1/distance);
++            return distance-R3_RADIUS;
++        }
++        float near=fminf(radius-outer,far_edge-radius);
++        float vertical=fminf(p.z-bottom,top-p.z);
++        if(near<=vertical)*normal=mul(radial,radius-outer<=far_edge-radius?-1.f:1.f);
++        else *normal=(r3_vec_t){0,0,p.z-bottom<=top-p.z?-1.f:1.f};
++        return -fminf(near,vertical)-R3_RADIUS;
++    }
++
++    float floor_radius=clamp(radius,inner,outer);
++    float height=r3_bend_height(b,cosine,sine,floor_radius);
++    if(p.z<height-R3_BEND_DEPTH)return FLT_MAX;
++    float dr=radius-floor_radius;
++    if(dr!=0){
++        float dz=fmaxf(0,p.z-height);
++        float distance=sqrtf(dr*dr+dz*dz);
++        *normal=mul(add(mul(radial,dr),(r3_vec_t){0,0,dz}),1/distance);
++        return distance-R3_RADIUS;
++    }
++    r3_vec_t tangent=add(mul(b->radial_start,-sine),mul(b->sweep_axis,cosine));
++    float slope_r=b->bank*sine*sine;
++    float slope_a=((b->exit_z-b->origin.z)*.5f*sine+
++        2*b->bank*sine*cosine*(radius-b->radius))/radius;
++    r3_vec_t n=sub(sub((r3_vec_t){0,0,1},mul(radial,slope_r)),mul(tangent,slope_a));
++    *normal=mul(n,1/length(n));
++    return (p.z-height)*normal->z-R3_RADIUS;
++}
++
+ static bool zone_valid(r3_zone_t z) {
+     return bounded(z.min)&&bounded(z.max)&&z.min.x<z.max.x&&z.min.y<z.max.y&&z.min.z<z.max.z;
+ }
+@@ -62,6 +135,13 @@
+        !zone_valid(w->goal)||!isfinite(w->fall_z)||fabsf(w->fall_z)>100||
+        w->spawn.z<=w->fall_z+R3_RADIUS||w->checkpoint_spawn.z<=w->fall_z+R3_RADIUS||
+        !inside(w->checkpoint,w->checkpoint_spawn))return R3_INVALID;
++    if(w->bend){
++        if(!bend_valid(w->bend))return R3_INVALID;
++        r3_vec_t n;
++        for(bend_surface_t i=BEND_FLOOR;i<BEND_SURFACES;++i)
++            if(bend_gap(w->bend,i,w->spawn,&n)<-SKIN||
++               bend_gap(w->bend,i,w->checkpoint_spawn,&n)<-SKIN)return R3_INVALID;
++    }
+     for(unsigned i=0;i<w->box_count;i++) {
+         const r3_box_t *b=&w->boxes[i];
+         if(!bounded(b->center)||!bounded(b->half)||b->half.x<=0||b->half.y<=0||b->half.z<=0||
+@@ -141,7 +221,7 @@
+     return R3_OK;
+ }
+ 
+-typedef struct { bool found; float t; r3_vec_t normal; unsigned box; } hit_t;
++typedef struct { bool found; float t; r3_vec_t normal; const r3_box_t *material; } hit_t;
+ /* Inflated AABB is only a broad phase; narrow phase is the rounded box. */
+ static bool broad(r3_vec_t p,r3_vec_t d,r3_vec_t half) {
+     float a[3]={p.x,p.y,p.z},v[3]={d.x,d.y,d.z},h[3]={half.x+R3_RADIUS,half.y+R3_RADIUS,half.z+R3_RADIUS};
+@@ -156,7 +236,7 @@
+     }
+     return true;
+ }
+-static void candidate(hit_t *hit,const r3_box_t *b,unsigned index,r3_vec_t p,r3_vec_t d,float t) {
++static void candidate(hit_t *hit,const r3_box_t *b,r3_vec_t p,r3_vec_t d,float t) {
+     if(t < -0.00001f||t>1|| (hit->found&&t>=hit->t))return;
+     t=t<0?0:t;
+     r3_vec_t delta=closest_delta(add(p,mul(d,t)),b->half);
+@@ -164,34 +244,53 @@
+     if(dist<1e-9f||fabsf(dist-R3_RADIUS)>0.0002f)return;
+     r3_vec_t n=mul(delta,1/dist);
+     if(dot(d,n)>=-1e-8f)return;
+-    hit->found=true;hit->t=t;hit->normal=world(b,n);hit->box=index;
+-}
+-static void root_candidate(hit_t *hit,const r3_box_t *b,unsigned i,r3_vec_t p,r3_vec_t d,float aa,float bb,float cc) {
++    hit->found=true;hit->t=t;hit->normal=world(b,n);hit->material=b;
++}
++static void root_candidate(hit_t *hit,const r3_box_t *b,r3_vec_t p,r3_vec_t d,float aa,float bb,float cc) {
+     if(aa<1e-14f)return;
+     float discriminant=bb*bb-4*aa*cc;
+     if(discriminant<0)return;
+-    candidate(hit,b,i,p,d,(-bb-sqrtf(discriminant))/(2*aa));
+-}
+-static void sweep_box(hit_t *hit,const r3_box_t *b,unsigned index,r3_vec_t start,r3_vec_t delta) {
++    candidate(hit,b,p,d,(-bb-sqrtf(discriminant))/(2*aa));
++}
++static void sweep_box(hit_t *hit,const r3_box_t *b,r3_vec_t start,r3_vec_t delta) {
+     r3_vec_t p=local(b,sub(start,b->center)),d=local(b,delta);
+     if(!broad(p,d,b->half))return;
+     float pos[3]={p.x,p.y,p.z},dir[3]={d.x,d.y,d.z},half[3]={b->half.x,b->half.y,b->half.z};
+     for(unsigned i=0;i<3;i++)for(int sign=-1;sign<=1;sign+=2) {
+-        if(fabsf(dir[i])>1e-10f)candidate(hit,b,index,p,d,(sign*(half[i]+R3_RADIUS)-pos[i])/dir[i]);
++        if(fabsf(dir[i])>1e-10f)candidate(hit,b,p,d,(sign*(half[i]+R3_RADIUS)-pos[i])/dir[i]);
+     }
+     for(unsigned free_axis=0;free_axis<3;free_axis++) {
+         unsigned a=(free_axis+1)%3,baxis=(free_axis+2)%3;
+         for(int sa=-1;sa<=1;sa+=2)for(int sb=-1;sb<=1;sb+=2) {
+             float u=pos[a]-sa*half[a],v=pos[baxis]-sb*half[baxis];
+-            root_candidate(hit,b,index,p,d,dir[a]*dir[a]+dir[baxis]*dir[baxis],
++            root_candidate(hit,b,p,d,dir[a]*dir[a]+dir[baxis]*dir[baxis],
+                 2*(u*dir[a]+v*dir[baxis]),u*u+v*v-R3_RADIUS*R3_RADIUS);
+         }
+     }
+     for(int sx=-1;sx<=1;sx+=2)for(int sy=-1;sy<=1;sy+=2)for(int sz=-1;sz<=1;sz+=2) {
+         r3_vec_t offset=sub(p,(r3_vec_t){sx*half[0],sy*half[1],sz*half[2]});
+-        root_candidate(hit,b,index,p,d,dot(d,d),2*dot(offset,d),dot(offset,offset)-R3_RADIUS*R3_RADIUS);
+-    }
+-}
++        root_candidate(hit,b,p,d,dot(d,d),2*dot(offset,d),dot(offset,offset)-R3_RADIUS*R3_RADIUS);
++    }
++}
++static void sweep_bend(hit_t *hit, const r3_bend_t *bend, bend_surface_t surface,
++    r3_vec_t start, r3_vec_t delta)
++{
++    r3_vec_t normal;
++    float high=hit->found?hit->t:1;
++    if(bend_gap(bend,surface,add(start,mul(delta,high)),&normal)>0)return;
++    float low=0;
++    if(bend_gap(bend,surface,start,&normal)<=0)high=0;
++    for(unsigned step=0;step<12&&high>low;++step){
++        float mid=(low+high)*.5f;
++        if(bend_gap(bend,surface,add(start,mul(delta,mid)),&normal)<=0)high=mid;
++        else low=mid;
++    }
++    if(hit->found&&high>=hit->t)return;
++    if(bend_gap(bend,surface,add(start,mul(delta,high)),&normal)==FLT_MAX||
++        dot(delta,normal)>=-1e-8f)return;
++    *hit=(hit_t){true,high,normal,&bend_materials[surface]};
++}
++
+ static void mark_contact(r3_snapshot_t *s,r3_vec_t n) {
+     if(s->contacts<UINT8_MAX)++s->contacts;
+     if(n.z>0.25f)s->grounded=true;
+@@ -236,6 +335,16 @@
+                 impulse(&g->s,&g->world->boxes[i],n);corrected=true;
+             } else if(gap<=2*SKIN)mark_contact(&g->s,n);
+         }
++        if(g->world->bend){
++            for(bend_surface_t i=BEND_FLOOR;i<BEND_SURFACES;++i){
++                r3_vec_t n;
++                float gap=bend_gap(g->world->bend,i,g->s.position,&n);
++                if(gap < -SKIN){
++                    g->s.position=add(g->s.position,mul(n,SKIN-gap));
++                    impulse(&g->s,&bend_materials[i],n);corrected=true;
++                }else if(gap<=2*SKIN)mark_contact(&g->s,n);
++            }
++        }
+         if(!corrected)return;
+     }
+     limited(&g->s);
+@@ -267,10 +376,13 @@
+     for(unsigned impact=0;impact<IMPACTS&&remaining>1e-8f;impact++) {
+         r3_vec_t delta=mul(g->s.velocity,remaining);
+         hit_t hit={false,1,{0,0,0},0};
+-        for(unsigned i=0;i<g->world->box_count;i++)sweep_box(&hit,&g->world->boxes[i],i,g->s.position,delta);
++        for(unsigned i=0;i<g->world->box_count;i++)sweep_box(&hit,&g->world->boxes[i],g->s.position,delta);
++        if(g->world->bend)
++            for(bend_surface_t i=BEND_FLOOR;i<BEND_SURFACES;++i)
++                sweep_bend(&hit,g->world->bend,i,g->s.position,delta);
+         if(!hit.found) {g->s.position=add(g->s.position,delta);remaining=0;break;}
+         g->s.position=add(add(g->s.position,mul(delta,hit.t)),mul(hit.normal,SKIN));
+-        remaining*=1-hit.t;impulse(&g->s,&g->world->boxes[hit.box],hit.normal);
++        remaining*=1-hit.t;impulse(&g->s,hit.material,hit.normal);
+     }
+     if(remaining>1e-8f)limited(&g->s);
+     depenetrate(g);cap_motion(&g->s);orientation(&g->s);
+--- a/src/roll3_scene.c
++++ b/src/roll3_scene.c
+@@ -40,4 +40,36 @@
+     .checkpoint=ZONE(0,5.5f,1.05f),.goal=ZONE(5.5f,11,.10f),.fall_z=-3
+ };
+ 
+-const r3_world_t *r3_demo_world(void) {return &scene;}
++const r3_world_t *r3_m1_world(void) {return &scene;}
++
++/* The short intro ramp, long ramp, and curve use the same checker road
++ * palette. The checkpoint sits on a flat landing before the curve. */
++static const r3_box_t m2_boxes[] = {
++    DECK(0,0,3.20f,1.25f,1,0x398fba),
++    SLOPE(0,2.70f,2.95f,0,1,1.718284028f,1.25f,0.989359135f,0.145493990f,0x36b49b),
++    DECK(2.175f,5.60f,2.70f,3.425f,1.20f,0x538cb9),
++    SLOPE(4.35f,9.20f,2.125f,0,1,2.467919164f,1.25f,0.972479178f,0.232989803f,0x36b49b),
++    DECK(4.35f,12.80f,1.55f,1.25f,1.20f,0xb78cca),
++    SLOPE(4.35f,14.70f,1.40f,0,1,0.715891053f,1.25f,0.977802414f,0.209529089f,0x36b49b),
++    SLOPE(.10f,14.70f,.97f,0,1,0.708590150f,1.25f,0.987877125f,0.155237834f,0x36b49b),
++    DECK(.10f,12.90f,1.08f,1.25f,1.10f,0xd6ab46),
++    DECK(.70f,6.75f,3.00f,1.95f,.06f,0xa071bc), /* Guide rail at first turn. */
++};
++_Static_assert(sizeof(m2_boxes)/sizeof(m2_boxes[0]) <= R3_MAX_BOXES, "M2 exceeds OBB budget");
++
++static const r3_bend_t m2_bend = {
++    .origin=LOCAL(2.225f,15.40f,1.25f),
++    .radial_start=LOCAL(1,0,0),.sweep_axis=LOCAL(0,1,0),
++    .radius=2.125f,.half_width=1.25f,.exit_z=.86f,
++    .bank=.23f,.rail_height=.42f,.color=0x7c90cd
++};
++
++static const r3_world_t m2_scene = {
++    .boxes=m2_boxes,.box_count=sizeof(m2_boxes)/sizeof(m2_boxes[0]),
++    .spawn=LOCAL(0,0,3.20f+R3_RADIUS),
++    .checkpoint_spawn=LOCAL(4.35f,12.80f,1.55f+R3_RADIUS),
++    .checkpoint=ZONE(4.35f,12.80f,1.55f),.goal=ZONE(.10f,12.90f,1.08f),
++    .fall_z=-3,.bend=&m2_bend
++};
++
++const r3_world_t *r3_demo_world(void) {return &m2_scene;}
+--- a/src/roll3_scene.h
++++ b/src/roll3_scene.h
+@@ -6,4 +6,5 @@
+ #define R3_M1_COS .5f
+ #define R3_M1_SIN .8660254038f
+ const r3_world_t *r3_demo_world(void);
++const r3_world_t *r3_m1_world(void);
+ #endif
+--- a/src/roll3_renderer.c
++++ b/src/roll3_renderer.c
+@@ -1,4 +1,5 @@
+ #include "roll3_renderer.h"
++#include "roll3_bend.h"
+ #include "roll3_camera_basis.h"
+ #include "roll3_physics.h"
+ #include <math.h>
+@@ -216,6 +217,53 @@
+     for(unsigned i=0;i<rows*R3_VIEW_W;++i){
+         target->color[i]=background;
+         target->depth[i]=65535;
++    }
++}
++
++static void bend_quad(r3_raster_t *target, r3_vec_t a, r3_vec_t b, r3_vec_t c, r3_vec_t d,
++    uint32_t color, r3_vec_t focus)
++{
++    triangle(target,a,b,c,color,focus);
++    triangle(target,a,c,d,color,focus);
++}
++
++static void draw_bend(r3_raster_t *target, const r3_bend_t *bend, r3_vec_t focus)
++{
++    static const float ring[][2]={
++        {1.000000000f,0.000000000f},{0.991444861f,0.130526192f},{0.965925826f,0.258819045f},
++        {0.923879533f,0.382683432f},{0.866025404f,0.500000000f},{0.793353340f,0.608761429f},
++        {0.707106781f,0.707106781f},{0.608761429f,0.793353340f},{0.500000000f,0.866025404f},
++        {0.382683432f,0.923879533f},{0.258819045f,0.965925826f},{0.130526192f,0.991444861f},
++        {0.000000000f,1.000000000f},{-0.130526192f,0.991444861f},{-0.258819045f,0.965925826f},
++        {-0.382683432f,0.923879533f},{-0.500000000f,0.866025404f},{-0.608761429f,0.793353340f},
++        {-0.707106781f,0.707106781f},{-0.793353340f,0.608761429f},{-0.866025404f,0.500000000f},
++        {-0.923879533f,0.382683432f},{-0.965925826f,0.258819045f},{-0.991444861f,0.130526192f},
++        {-1.000000000f,0.000000000f},
++    };
++    enum { lanes=4 };
++    const uint32_t rail=0xa071bc;
++    for(unsigned i=0;i+1<sizeof(ring)/sizeof(*ring);++i){
++        r3_vec_t floor[2][lanes+1],bottom[2][2],lip[2],rail_outer[2],rail_base[2];
++        for(unsigned end=0;end<2;++end){
++            float c=ring[i+end][0],s=ring[i+end][1];
++            for(unsigned j=0;j<=lanes;++j){
++                float r=bend->radius+bend->half_width*(2.0f*j/lanes-1.0f);
++                floor[end][j]=r3_bend_point(bend,c,s,r,r3_bend_height(bend,c,s,r));
++            }
++            for(unsigned edge=0;edge<2;++edge)
++                bottom[end][edge]=sub(floor[end][edge*lanes],(r3_vec_t){0,0,R3_BEND_DEPTH});
++            lip[end]=add(floor[end][lanes],(r3_vec_t){0,0,bend->rail_height*s*s});
++            float outer=bend->radius+bend->half_width+R3_BEND_RAIL_WIDTH;
++            rail_outer[end]=r3_bend_point(bend,c,s,outer,lip[end].z);
++            rail_base[end]=r3_bend_point(bend,c,s,outer,bottom[end][1].z);
++        }
++        for(unsigned j=0;j<lanes;++j)
++            bend_quad(target,floor[0][j],floor[0][j+1],floor[1][j+1],floor[1][j],
++                      (i+j)%2?bend->color:0xf2e6d5,focus);
++        bend_quad(target,floor[0][0],floor[1][0],bottom[1][0],bottom[0][0],bend->color,focus);
++        bend_quad(target,floor[0][lanes],floor[1][lanes],lip[1],lip[0],rail,focus);
++        bend_quad(target,lip[0],lip[1],rail_outer[1],rail_outer[0],rail,focus);
++        bend_quad(target,rail_outer[0],rail_outer[1],rail_base[1],rail_base[0],rail,focus);
+     }
+ }
+ 
+@@ -244,6 +292,7 @@
+             triangle(target,q[0],q[2],q[3],paint,focus);
+         }
+     }
++    if(world->bend)draw_bend(target,world->bend,focus);
+     for(unsigned lat=0;lat<6;++lat)for(unsigned lon=0;lon<12;++lon){
+         r3_vec_t a=sphere_point(lat,lon,s->radius,q,s->position),b=sphere_point(lat+1,lon,s->radius,q,s->position);
+         r3_vec_t c=sphere_point(lat+1,lon+1,s->radius,q,s->position),d=sphere_point(lat,lon+1,s->radius,q,s->position);
+--- a/src/roll3_selftest.c
++++ b/src/roll3_selftest.c
+@@ -1,6 +1,8 @@
+ #include "roll3_selftest.h"
+ #include "roll3_physics.h"
+ #include "roll3_scene.h"
++#include "roll3_bend.h"
++#include "roll3_session.h"
+ #include <math.h>
+ #include <stddef.h>
+ #include <string.h>
+@@ -11,7 +13,7 @@
+ static const r3_box_t floor_box={{0,0,-0.2f},{20,20,0.2f},BASIS,0,0.6f,0,0x123456};
+ static r3_world_t test_world(const r3_box_t *b,unsigned count) {
+     r3_world_t w={b,count,{0,0,R3_RADIUS},{-3,-3,R3_RADIUS},
+-        {{-4,-4,0},{-2,-2,2}},{{9,9,0},{10,10,2}},-3};
++        {{-4,-4,0},{-2,-2,2}},{{9,9,0},{10,10,2}},-3,NULL};
+     return w;
+ }
+ static r3_result_t act(r3_game_t *g,r3_action_kind_t kind) {
+@@ -51,7 +53,7 @@
+ }
+ static bool scene(void) {
+     r3_game_t g;r3_snapshot_t s;
+-    CHECK(r3_world_validate(r3_demo_world())==R3_OK&&start(&g,r3_demo_world()));
++    CHECK(r3_world_validate(r3_m1_world())==R3_OK&&start(&g,r3_m1_world()));
+     CHECK(r3_snapshot(&g,&s)==R3_OK&&s.version==1&&s.radius==R3_RADIUS);
+     const r3_world_t *w=g.world;
+     CHECK(w->box_count==7&&w->fall_z==-3);
+@@ -81,7 +83,7 @@
+     return true;
+ }
+ static bool guards(void) {
+-    r3_game_t g,before;CHECK(start(&g,r3_demo_world()));before=g;
++    r3_game_t g,before;CHECK(start(&g,r3_m1_world()));before=g;
+     r3_action_t a={R3_RESTART,g.s.run-1,g.last_request+1};
+     CHECK(r3_action(&g,&a)==R3_STALE&&memcmp(&g,&before,sizeof(g))==0);
+     a.expected_run=g.s.run;a.request=g.last_request;CHECK(r3_action(&g,&a)==R3_STALE);
+@@ -93,7 +95,7 @@
+     return true;
+ }
+ static bool lifecycle(void) {
+-    r3_game_t g;CHECK(r3_init(&g,r3_demo_world())==R3_OK);
++    r3_game_t g;CHECK(r3_init(&g,r3_m1_world())==R3_OK);
+     CHECK(r3_step(&g,&zero,5)==R3_WRONG_STATE);
+     CHECK(act(&g,R3_START)==R3_OK&&g.s.state==R3_CALIBRATING);
+     CHECK(r3_step(&g,&zero,5)==R3_WRONG_STATE&&r3_calibrated(&g,g.s.run)==R3_OK);
+@@ -113,7 +115,7 @@
+     return true;
+ }
+ static bool flight(void) {
+-    r3_game_t g;CHECK(start(&g,r3_demo_world()));
++    r3_game_t g;CHECK(start(&g,r3_m1_world()));
+     g.s.position=(r3_vec_t){0,0,2};g.s.velocity=(r3_vec_t){1,2,3};g.s.omega=(r3_vec_t){0,4,0};
+     CHECK(steps(&g,&zero,1));
+     CHECK(near(g.s.position.x,0.005f,1e-6f)&&near(g.s.position.y,0.01f,1e-6f)&&near(g.s.position.z,2.015f,1e-5f));
+@@ -121,7 +123,7 @@
+     return true;
+ }
+ static bool freefall(void) {
+-    r3_game_t g;CHECK(start(&g,r3_demo_world()));g.s.position.z=2;
++    r3_game_t g;CHECK(start(&g,r3_m1_world()));g.s.position.z=2;
+     CHECK(steps(&g,&gravity,10));
+     CHECK(near(g.s.velocity.z,-0.4905f,1e-5f)&&near(g.s.position.z,2-9.81f*0.000025f*55,1e-5f));
+     return true;
+@@ -200,7 +202,7 @@
+     return true;
+ }
+ static bool respawn(void) {
+-    r3_game_t g;CHECK(start(&g,r3_demo_world()));
++    r3_game_t g;CHECK(start(&g,r3_m1_world()));
+     g.s.position=g.world->checkpoint_spawn;CHECK(steps(&g,&gravity,1)&&g.s.checkpoint==1);
+     uint32_t run=g.s.run;g.s.position=from_uv(-2,5.5f,g.world->fall_z+.001f);g.s.velocity.z=-2;
+     CHECK(steps(&g,&gravity,1)&&g.s.state==R3_FALLEN&&g.s.falls==1);
+@@ -214,14 +216,14 @@
+ }
+ static bool win(void) {
+     /* Single transition only; demo_route exercises the continuous run. */
+-    r3_game_t g;CHECK(start(&g,r3_demo_world()));g.s.position=from_uv(5.5f,11,.10f+R3_RADIUS);
++    r3_game_t g;CHECK(start(&g,r3_m1_world()));g.s.position=from_uv(5.5f,11,.10f+R3_RADIUS);
+     CHECK(steps(&g,&gravity,1)&&g.s.state==R3_WON&&g.s.checkpoint==0);
+     r3_snapshot_t before=g.s;CHECK(r3_step(&g,&gravity,5)==R3_WRONG_STATE&&memcmp(&before,&g.s,sizeof(before))==0);
+     CHECK(act(&g,R3_RESTART)==R3_OK&&g.s.elapsed_ms==0);return true;
+ }
+ static bool invalid_input(void) {
+     for(unsigned i=0;i<4;i++) {
+-        r3_game_t g;CHECK(start(&g,r3_demo_world()));r3_input_t input=gravity;
++        r3_game_t g;CHECK(start(&g,r3_m1_world()));r3_input_t input=gravity;
+         if(i==0)input.valid=false;if(i==1)input.acceleration.x=NAN;
+         if(i==2)input.acceleration.z=INFINITY;if(i==3)input.acceleration.x=21;
+         CHECK(r3_step(&g,&input,5)==R3_INVALID&&g.s.state==R3_ERROR&&g.s.error==R3_INPUT_ERROR&&g.s.elapsed_ms==0);
+@@ -229,18 +231,18 @@
+     return true;
+ }
+ static bool counters(void) {
+-    r3_game_t g;CHECK(start(&g,r3_demo_world()));g.s.elapsed_ms=UINT32_MAX-3;
++    r3_game_t g;CHECK(start(&g,r3_m1_world()));g.s.elapsed_ms=UINT32_MAX-3;
+     CHECK(steps(&g,&gravity,1)&&g.s.elapsed_ms==UINT32_MAX);
+     g.s.revision=UINT32_MAX;r3_game_t before=g;
+     CHECK(r3_step(&g,&gravity,5)==R3_EXHAUSTED&&memcmp(&before,&g,sizeof(g))==0);
+     CHECK(act(&g,R3_RESTART)==R3_EXHAUSTED);
+     g.s.revision=10;g.s.run=UINT32_MAX;CHECK(act(&g,R3_RESTART)==R3_EXHAUSTED);
+-    CHECK(start(&g,r3_demo_world()));g.s.falls=UINT32_MAX;g.s.position=(r3_vec_t){10,0,-3};g.s.velocity.z=-2;
++    CHECK(start(&g,r3_m1_world()));g.s.falls=UINT32_MAX;g.s.position=(r3_vec_t){10,0,-3};g.s.velocity.z=-2;
+     CHECK(steps(&g,&gravity,1)&&g.s.falls==UINT32_MAX&&g.s.state==R3_FALLEN);
+     return true;
+ }
+ static bool quaternion(void) {
+-    r3_game_t g;CHECK(start(&g,r3_demo_world()));g.s.omega.z=40;
++    r3_game_t g;CHECK(start(&g,r3_m1_world()));g.s.omega.z=40;
+     CHECK(steps(&g,&zero,2000));r3_quat_t q=g.s.orientation;
+     CHECK(near(q.w*q.w+q.x*q.x+q.y*q.y+q.z*q.z,1,0.00001f)&&near(g.s.omega.z,40,0.00001f));
+     return true;
+@@ -261,14 +263,14 @@
+     return true;
+ }
+ static bool speed_budget(void) {
+-    r3_game_t g;CHECK(start(&g,r3_demo_world()));
++    r3_game_t g;CHECK(start(&g,r3_m1_world()));
+     g.s.position.z=2;g.s.velocity.x=100;g.s.omega.z=100;
+     CHECK(steps(&g,&zero,1)&&g.s.speed_limited&&!g.s.limited);
+     CHECK(near(g.s.velocity.x,8,1e-6f)&&near(g.s.omega.z,80,1e-6f));
+     CHECK(near(g.s.position.x,0.04f,1e-6f));return true;
+ }
+ static bool tuned_coast(void) {
+-    r3_box_t b=floor_box;b.rolling_friction=r3_demo_world()->boxes[0].rolling_friction;
++    r3_box_t b=floor_box;b.rolling_friction=r3_m1_world()->boxes[0].rolling_friction;
+     r3_world_t w=test_world(&b,1);r3_game_t g;CHECK(start(&g,&w));
+     g.s.velocity.x=1;g.s.omega.y=1/R3_RADIUS;
+     float previous=energy(&g);
+@@ -280,7 +282,7 @@
+ }
+ static bool deck_geometry(void)
+ {
+-    const r3_box_t *b=r3_demo_world()->boxes;
++    const r3_box_t *b=r3_m1_world()->boxes;
+     /* u edges, v edges and high/low z, independent of the production box math. */
+     static const float limits[7][6]={
+         {-1.1f,1.1f,-1,1,1.50f,1.50f},{-1.1f,1.1f,1,4.5f,1.50f,1.05f},
+@@ -297,7 +299,7 @@
+ 
+ static bool deck_seam(unsigned i)
+ {
+-    const r3_box_t *b=r3_demo_world()->boxes;
++    const r3_box_t *b=r3_m1_world()->boxes;
+     static const float edges[6][5]={
+         {-1.1f,1,1.1f,1,1.50f},{-1.1f,4.5f,1.1f,4.5f,1.05f},
+         {1.1f,4.5f,1.1f,6.5f,1.05f},{4.3f,4.5f,4.3f,6.5f,.60f},
+@@ -313,7 +315,7 @@
+ 
+ static bool safe_zones(void)
+ {
+-    const r3_world_t *w=r3_demo_world();
++    const r3_world_t *w=r3_m1_world();
+     for(unsigned i=0;i<2;++i){
+         r3_zone_t z=i?w->goal:w->checkpoint;
+         const r3_box_t *b=&w->boxes[i?6:2];
+@@ -329,7 +331,7 @@
+ 
+ static float clamp_input(float x){return fmaxf(-4,fminf(4,x));}
+ static bool demo_route(void) {
+-    r3_game_t g;CHECK(start(&g,r3_demo_world()));
++    r3_game_t g;CHECK(start(&g,r3_m1_world()));
+     /* Synthetic feedback only: no writes to model pose after spawning. Stop
+      * near each turn center before steering along the next segment. */
+     static const r3_vec_t route[]={{0,5.5f,0},{5.5f,5.5f,0},{5.5f,11,0}};
+@@ -358,6 +360,137 @@
+     CHECK(seams==6&&next==2&&g.s.state==R3_WON&&g.s.checkpoint==1&&g.s.falls==0);
+     return true;
+ }
++static bool m2_bend_geometry(void)
++{
++    const r3_world_t *w=r3_demo_world();
++    CHECK(r3_world_validate(w)==R3_OK&&w->bend);
++    const r3_bend_t *b=w->bend;
++    for(unsigned end=0;end<2;++end){
++        float c=end?-1.f:1.f,z=end?b->exit_z:b->origin.z;
++        for(int side=-1;side<=1;++side){
++            float r=b->radius+side*b->half_width;
++            CHECK(near(r3_bend_height(b,c,0,r),z,.001f));
++            r3_vec_t point=r3_bend_point(b,c,0,r,z);
++            CHECK(top_point(&w->boxes[5+end],point,1));
++        }
++    }
++    CHECK(r3_bend_height(b,0,1,b->radius+b->half_width)>
++          r3_bend_height(b,0,1,b->radius-b->half_width)+.5f);
++    r3_bend_t invalid=*b;
++    r3_world_t invalid_world=*w;
++    invalid_world.bend=&invalid;
++    invalid.sweep_axis=invalid.radial_start;
++    CHECK(r3_world_validate(&invalid_world)==R3_INVALID);
++    return true;
++}
++
++static bool m2_rail(void)
++{
++    r3_game_t g;CHECK(start(&g,r3_demo_world()));
++    const r3_bend_t *b=g.world->bend;
++    float outer=b->radius+b->half_width,r=outer-.34f;
++    g.s.position=r3_bend_point(b,0,1,r,r3_bend_height(b,0,1,r)+R3_RADIUS+.02f);
++    g.s.velocity=from_uv(0,2,0);
++    bool stopped=false;
++    for(unsigned i=0;i<100;++i){
++        CHECK(steps(&g,&gravity,1)&&g.s.state==R3_RUNNING&&!g.s.limited);
++        r3_vec_t local=to_uv(g.s.position),origin=to_uv(b->origin);
++        float radius=hypotf(local.x-origin.x,local.y-origin.y);
++        CHECK(radius<=outer-R3_RADIUS+.025f);
++        stopped=stopped||to_uv(g.s.velocity).y<=0;
++    }
++    CHECK(stopped);
++    return true;
++}
++
++static bool m2_crossings(void)
++{
++    const r3_world_t *w=r3_demo_world();
++    const r3_bend_t *b=w->bend;
++    r3_vec_t origin=to_uv(b->origin);
++    for(unsigned end=0;end<2;++end){
++        float u=origin.x+(end?-b->radius:b->radius),z=end?b->exit_z:b->origin.z;
++        for(int direction=-1;direction<=1;direction+=2){
++            r3_game_t g;CHECK(start(&g,w));
++            float offset=-.25f*direction;
++            float rise=end?.22f:.30f;
++            g.s.position=from_uv(u,origin.y+offset,z-fminf(0,offset)*rise/1.4f+R3_RADIUS+.005f);
++            g.s.velocity=from_uv(0,1.35f*direction,0);
++            for(unsigned i=0;i<90;++i){
++                r3_vec_t v=to_uv(g.s.velocity),p=to_uv(g.s.position);
++                /* Target the same approach speed against either straight slope. */
++                float grade=p.y<origin.y?9.81f*rise/1.4f:0;
++                r3_input_t input={from_uv(-3*v.x,3*(1.40f*direction-v.y)-grade,-9.81f),true};
++                CHECK(steps(&g,&input,1)&&g.s.state==R3_RUNNING&&!g.s.limited);
++            }
++            CHECK(direction*(to_uv(g.s.position).y-origin.y)>.18f&&g.s.grounded);
++        }
++    }
++    return true;
++}
++
++static bool m2_route(bool respawn_first)
++{
++    const r3_world_t *w=r3_demo_world();
++    const r3_bend_t *b=w->bend;
++    roll3_session_t session={0};
++    r3_game_t *g=&session.game;
++    CHECK(start(g,w));
++    unsigned next=0,arc=0,grounded_arc=0;
++    if(respawn_first){
++        g->s.position=w->checkpoint_spawn;
++        CHECK(steps(g,&gravity,4)&&g->s.checkpoint==1);
++        g->s.position.z=w->fall_z-.1f;
++        CHECK(steps(g,&gravity,1)&&g->s.state==R3_FALLEN);
++        uint32_t elapsed=g->s.elapsed_ms;
++        session.fallen_at=100;
++        session.stamp=700;
++        session.sequence=1;
++        CHECK(roll3_session_try_auto_respawn(&session,700)&&g->s.elapsed_ms==elapsed&&
++              g->s.falls==1&&g->s.checkpoint==1&&near(g->s.position.z,w->checkpoint_spawn.z,.001f));
++        next=3;
++    }
++    const r3_vec_t turns[]={{0,5.60f,0},{4.35f,5.60f,0},{4.35f,12.80f,0},{4.35f,15.42f,0}};
++    r3_vec_t center=to_uv(b->origin);
++    for(unsigned i=0;i<18000&&g->s.state==R3_RUNNING;++i){
++        r3_vec_t p=to_uv(g->s.position),v=to_uv(g->s.velocity);
++        r3_vec_t target={.10f,12.90f,0};
++        if(next<4){
++            target=turns[next];
++            float du=target.x-p.x,dv=target.y-p.y;
++            if(du*du+dv*dv<.055f&&(next>=2||norm2(v)<.16f)){
++                ++next;
++                if(next<4)target=turns[next];
++            }
++        }
++        if(next==4&&arc<12){
++            float angle=(arc+1)*.2617993878f;
++            target=(r3_vec_t){center.x+b->radius*cosf(angle),center.y+b->radius*sinf(angle),0};
++            float du=target.x-p.x,dv=target.y-p.y;
++            if(du*du+dv*dv<.073f)++arc;
++        }
++        float gu=0,gv=0;
++        if(p.y>=center.y&&next==4){
++            float u=p.x-center.x,vv=p.y-center.y,r=hypotf(u,vv);
++            if(r>.6f){
++                float c=u/r,s=vv/r,dr=b->bank*s*s;
++                float da=((b->exit_z-b->origin.z)*.5f*s+
++                    2*b->bank*s*c*(r-b->radius))/r;
++                gu=9.81f*(dr*c-da*s);gv=9.81f*(dr*s+da*c);
++                if(g->s.grounded)++grounded_arc;
++            }
++        }else if(p.y>1&&p.y<4.4f)gv=-9.81f*.5f/3.4f;
++        else if(next>=2&&p.x>3.1f&&p.y>6.8f&&p.y<11.6f)gv=-9.81f*1.15f/4.8f;
++        else if(p.y>14&&p.y<center.y)gv=-9.81f*(p.x>center.x?.30f:.22f)/1.4f;
++        r3_input_t input={from_uv(clamp_input(3.6f*(target.x-p.x)-3.5f*v.x+gu),
++            clamp_input(3.6f*(target.y-p.y)-3.5f*v.y+gv),-9.81f),true};
++        CHECK(steps(g,&input,1)&&!g->s.limited&&!g->s.speed_limited);
++    }
++    CHECK(arc==12&&grounded_arc>100&&g->s.state==R3_WON&&g->s.checkpoint==1&&
++          g->s.falls==(respawn_first?1u:0u));
++    return true;
++}
++
+ int r3_selftest_run(maze_test_report_t report) {
+     int failures=0;
+ #define RUN(name,expr) do {bool passed=(expr);if(!passed)++failures;if(report)report(name,passed);}while(0)
+@@ -397,6 +530,11 @@
+     RUN("TC-513 checkpoint-goal-clearance",safe_zones());
+     RUN("TC-513 continuous-six-seam-checkpoint-route",demo_route());
+     RUN("TC-506 level-coast-stops-without-energy-gain",tuned_coast());
++    RUN("TC-517 smooth banked bend geometry and flush ends",m2_bend_geometry());
++    RUN("TC-517 curved outside rail contains the ball",m2_rail());
++    RUN("TC-517 both bend joins cross in both directions",m2_crossings());
++    RUN("TC-517 continuous M2 checkpoint bend and goal",m2_route(false));
++    RUN("TC-517 auto respawn continues from checkpoint to M2 goal",m2_route(true));
+ #undef RUN
+     return failures;
+ }
+--- a/tests/roll3_view_test.c
++++ b/tests/roll3_view_test.c
+@@ -2,6 +2,8 @@
+  * Never steps/calibrates a model or reads a device. */
+ #include "roll3_view.h"
+ #include "roll3_renderer.h"
++#include "roll3_bend.h"
++#include "roll3_physics.h"
+ #include "roll3_camera_basis.h"
+ #include "roll3_scene.h"
+ #include "roll3_font.h"
+@@ -152,7 +154,7 @@
+     puts("3D host view and production page adapter with fake runtime");
+     color[0]=color[R3_VIEW_PIXELS+1]=depth[0]=depth[R3_VIEW_PIXELS+1]=0xabcd;
+     assert(roll3_renderer_selftest(math_report)==0);
+-    const r3_world_t *world=r3_demo_world();
++    const r3_world_t *world=r3_m1_world();
+     r3_snapshot_t s={.version=ROLL3_CONTRACT_VERSION,.radius=.2f,.orientation={1,0,0,0},.position={3,0,1}};
+     r3_box_t distant=world->boxes[0];distant.center=(r3_vec_t){30,20,0};
+     r3_world_t lone=*world;lone.boxes=&distant;lone.box_count=1;
+@@ -319,6 +321,25 @@
+     }
+     assert(buffer_live==0&&objects(lv_layer_top())==base&&timers()==clock_base);
+     puts("TC-513 four M1 preview poses captured with production camera direction");
++    const r3_world_t *m2=r3_demo_world();
++    const r3_bend_t *bend=m2->bend;
++    assert(bend&&r3_world_validate(m2)==R3_OK);
++    const r3_vec_t m2_positions[]={
++        m2->spawn,from_uv(4.35f,9.20f,2.325f),m2->checkpoint_spawn,
++        r3_bend_point(bend,0,1,bend->radius,r3_bend_height(bend,0,1,bend->radius)+R3_RADIUS),
++        from_uv(.10f,12.90f,1.08f+R3_RADIUS)
++    };
++    const char *m2_views[]={"M2-S.ppm","M2-RAMP.ppm","M2-CP.ppm","M2-BEND.ppm","M2-G.ppm"};
++    for(unsigned i=0;i<sizeof(m2_positions)/sizeof(*m2_positions);++i){
++        assert(roll3_view_create()==0);
++        s=(r3_snapshot_t){.version=ROLL3_CONTRACT_VERSION,.radius=R3_RADIUS,.orientation={1,0,0,0},
++            .position=m2_positions[i],.state=i==0?R3_READY:i==4?R3_WON:R3_RUNNING,.checkpoint=i>=2};
++        roll3_view_render(&s,m2);
++        assert(!find(lv_layer_top(),"三维数据无效"));
++        screenshot(m2_views[i]);roll3_view_destroy();
++    }
++    assert(buffer_live==0&&objects(lv_layer_top())==base&&timers()==clock_base);
++    puts("TC-517 M2 start, long ramp, checkpoint, banked bend and goal captured");
+     fail_buffer = true;
+     assert(roll3_page_open() == -103 && !live_open && closes == 1);
+     fail_buffer = false;
+--- a/tests/roll3_edge_compare.c
++++ b/tests/roll3_edge_compare.c
+@@ -2,6 +2,7 @@
+  * Build with roll3_scene.c and roll3_physics.c; the include exposes band internals. */
+ #include "../src/roll3_renderer.c"
+ #include "roll3_scene.h"
++#include "roll3_bend.h"
+ #ifdef NDEBUG
+ #undef NDEBUG
+ #endif
+@@ -175,10 +176,39 @@
+     puts("TC-516 motion edges, 100/50-row identity and guards PASS");
+ }
+ 
++static void m2_curve_buffers(void)
++{
++    const r3_world_t *world=r3_demo_world();
++    const r3_bend_t *bend=world->bend;
++    double center_ms=0,play_ms=0;
++    for(unsigned i=0;i<FRAME_COUNT;++i){
++        float theta=3.141592654f*i/(FRAME_COUNT-1),c=cosf(theta),s=sinf(theta);
++        r3_snapshot_t pose={
++            .version=ROLL3_CONTRACT_VERSION,.radius=R3_RADIUS,.state=R3_RUNNING,
++            .position=r3_bend_point(bend,c,s,bend->radius,
++                r3_bend_height(bend,c,s,bend->radius)+R3_RADIUS),.orientation={1,0,0,0}
++        };
++        double start=time_ms();
++        assert(roll3_renderer_render_edges(baseline,regular+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&pose,world,NULL,NULL)==0);
++        center_ms+=time_ms()-start;
++        start=time_ms();
++        assert(roll3_renderer_render_play(banded,regular+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&pose,world,NULL)==0);
++        play_ms+=time_ms()-start;
++        assert(roll3_renderer_render_play(local+1,compact+1,R3_VIEW_LOW_DEPTH_ROWS,&pose,world,NULL)==0);
++        assert(memcmp(banded,local+1,sizeof(banded))==0);
++        check_guards();
++        assert(regular[0]==0xdada&&regular[sizeof(regular)/sizeof(*regular)-1]==0x1cad);
++        assert(compact[0]==0xdada&&compact[sizeof(compact)/sizeof(*compact)-1]==0x1cad);
++    }
++    printf("TC-517 %u bend frames mean host ms center=%.3f play=%.3f\n",
++           FRAME_COUNT,center_ms/FRAME_COUNT,play_ms/FRAME_COUNT);
++    puts("TC-517 M2 bend 100/50-row output identity and guards PASS");
++}
++
+ int main(int argc,char **argv)
+ {
+     (void)argv;
+-    const r3_world_t *world=r3_demo_world();
++    const r3_world_t *world=r3_m1_world();
+     local[0]=0x7be1;local[R3_VIEW_PIXELS+1]=0xc473;
+     scratch[0]=0x174d;scratch[R3_VIEW_PIXELS+1]=0xfe18;
+     unsigned candidates=0,matched=0,modified=0;
+@@ -266,5 +296,6 @@
+     puts("TC-510 100/50-row exact output, dense low-memory bands and scratch guards PASS");
+     puts("TC-509 local coverage, unchanged interior, dense bands and guards PASS");
+     m1_motion(world,argc>1);
++    m2_curve_buffers();
+     return 0;
+ }

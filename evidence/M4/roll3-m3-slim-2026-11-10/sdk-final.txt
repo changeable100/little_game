@@ -1,0 +1,92 @@
+在工程目录 project/ 中执行：scons --board=sf32lb52-lchspi-ulp -j8
+scons: Reading SConscript files ...
+Board: sf32lb52-lchspi-ulp_hcpu
+-----
+Adding ftab subproject for chip: SF32LB52X (ptab v1/v2)
+========
+Multi-Project Info
+--------
+full_name       main.bootloader
+parent          main
+bsp_root        D:\SiFli-SDK\v2.5.1\example\boot_loader\project\butterflmicro\ram_v2
+build_dir       build_sf32lb52-lchspi-ulp_hcpu/bootloader
+link_script     D:\SiFli-SDK\v2.5.1\example/boot_loader/project/butterflmicro/ram_v2\link
+ptab            D:\SiFli-SDK\v2.5.1\customer\boards\sf32lb52-lchspi-ulp\ptab.json
+embedded:       False
+--------
+full_name       main.lcpu
+parent          main
+bsp_root        D:\SiFli-SDK\v2.5.1\example\ble\lcpu_general\project\common
+build_dir       build_sf32lb52-lchspi-ulp_hcpu/lcpu
+link_script     D:\SiFli-SDK\v2.5.1\drivers/cmsis/sf32lb52x/Templates/gcc/lcpu/link
+ptab            D:\SiFli-SDK\v2.5.1\customer\boards\sf32lb52-lchspi-ulp\ptab.json
+embedded:       True
+--------
+full_name       main
+parent          
+bsp_root        D:\course_starter\build\m3-slim-20261110\project
+build_dir       build_sf32lb52-lchspi-ulp_hcpu/
+link_script     D:\SiFli-SDK\v2.5.1\drivers/cmsis/sf32lb52x/Templates/gcc/hcpu/link
+ptab            D:\SiFli-SDK\v2.5.1\customer\boards\sf32lb52-lchspi-ulp\ptab.json
+--------
+full_name       main.ftab
+parent          main
+bsp_root        D:\SiFli-SDK\v2.5.1\example\flash_table\sf32lb52x_common_v2
+build_dir       build_sf32lb52-lchspi-ulp_hcpu/ftab
+link_script     D:\SiFli-SDK\v2.5.1\drivers/cmsis/sf32lb52x/Templates/gcc/hcpu/link
+ptab            D:\SiFli-SDK\v2.5.1\customer\boards\sf32lb52-lchspi-ulp\ptab.json
+embedded:       False
+========
+scons: done reading SConscript files.
+scons: Building targets ...
+scons: building associated VariantDir targets: build_sf32lb52-lchspi-ulp_hcpu
+Generating build_sf32lb52-lchspi-ulp_hcpu\bootloader\link_copy.lds ...
+Generating build_sf32lb52-lchspi-ulp_hcpu\lcpu\link_copy.lds ...
+Building compilation database build_sf32lb52-lchspi-ulp_hcpu\compile_commands.json
+Building compilation database build_sf32lb52-lchspi-ulp_hcpu\bootloader\compile_commands.json
+Generating build_sf32lb52-lchspi-ulp_hcpu\link_copy.lds ...
+Generating build_sf32lb52-lchspi-ulp_hcpu\ftab\link_copy.lds ...
+Building compilation database build_sf32lb52-lchspi-ulp_hcpu\ftab\compile_commands.json
+Building compilation database build_sf32lb52-lchspi-ulp_hcpu\lcpu\compile_commands.json
+scons: done building targets.
+
+================================================================================
+Memory Usage Analysis
+================================================================================
+
+                                              main                             
+┌──────────────────────────┬──────────────────┬──────────────────┬─────────────
+│ Region / Section         │            Total │             Used │             
+├──────────────────────────┼──────────────────┼──────────────────┼─────────────
+│ ROM                      │      8,388,608 B │      1,355,630 B │      7,032,9
+│   .rodata                │        679,190 B │                  │             
+│   .text                  │        645,796 B │                  │             
+│   other                  │            568 B │                  │             
+│ RAM                      │        523,264 B │        290,460 B │        232,8
+│   other                  │        197,088 B │                  │             
+│   .bss                   │         89,008 B │                  │             
+│   .data                  │          4,364 B │                  │             
+└──────────────────────────┴──────────────────┴──────────────────┴─────────────
+  Binary size: 1,250,632 B
+
+                                              lcpu                             
+┌──────────────────────────┬──────────────────┬──────────────────┬─────────────
+│ Region / Section         │            Total │             Used │             
+├──────────────────────────┼──────────────────┼──────────────────┼─────────────
+│ ROM                      │         12,288 B │          6,597 B │          5,6
+│   .text                  │          4,784 B │                  │             
+│   .rodata                │            717 B │                  │             
+│   other                  │              8 B │                  │             
+│ RAM                      │         23,552 B │          1,872 B │         21,6
+│   other                  │          1,028 B │                  │             
+│   .bss                   │            784 B │                  │             
+│   .data                  │             60 B │                  │             
+└──────────────────────────┴──────────────────┴──────────────────┴─────────────
+  Binary size: 6,368 B
+================================================================================
+
+
+✓ 编译成功
+  输出目录：project\build_sf32lb52-lchspi-ulp_hcpu
+  下载（板子用 USB 连到 USB-to-UART 口）：project\build_sf32lb52-lchspi-ulp_hcpu\uart_download.bat
+  下载后用串口助手（波特率 1000000）查看日志，按 docs/guides/agent-collaboration.md 第 4 节留证。

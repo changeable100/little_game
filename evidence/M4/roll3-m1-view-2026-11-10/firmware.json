@@ -1,0 +1,120 @@
+{
+  "board": "sf32lb52-lchspi-ulp",
+  "sdk": "2.5.1",
+  "m1_base": "4ae63b221e521975d35b627c38eeb98f05c937fb",
+  "a_base": "1ab64e22b9066e1d8d95086a2855b19399398827",
+  "local_build": "D:/course_starter/build/m1-view-20261110",
+  "physical_verified": false,
+  "download_script": "project/build_sf32lb52-lchspi-ulp_hcpu/uart_download.bat",
+  "patch": {
+    "path": "m1-view.patch",
+    "sha256": "6e9110536ca3a676d68d053b42370ac109f2777e2dc235d54f58f216fda61396"
+  },
+  "images": [
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/main.bin",
+      "bytes": 1231472,
+      "sha256": "7a88486e84947342864db678dd6b0cfcb344c470f3ae72785f7bc7f6cf749ab5"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/bootloader/bootloader.bin",
+      "bytes": 58496,
+      "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21"
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/ftab/ftab.bin",
+      "bytes": 11288,
+      "sha256": "9c0ad920d048803534db6180f9d7d47bcb97ff839350ad323fe773d156f7f51c"
+    }
+  ],
+  "sources": [
+    {
+      "path": "src/roll3_camera_basis.h",
+      "sha256": "9629b08a2df5929da7e6a98c7568b9daff5bb228cb5f6841898274f40eabe689"
+    },
+    {
+      "path": "src/roll3_contract.h",
+      "sha256": "a46c42dc9484c2f18da625e973ddc262ee255b954d12aa410f57a90e104f08c6"
+    },
+    {
+      "path": "src/roll3_font.h",
+      "sha256": "4b855910927924f79a991ed352c9c0529952ad6f0b2ed38fb1b71eab249302e4"
+    },
+    {
+      "path": "src/roll3_font_16.c",
+      "sha256": "28e85c4d264221fe627d819bc23dd9c780abb6f4618f80697ec8d5d1d9257d00"
+    },
+    {
+      "path": "src/roll3_font_20.c",
+      "sha256": "83b0ee8d8a52f904d4ffa2c053c381a7772080e792381841c2f15279456e547a"
+    },
+    {
+      "path": "src/roll3_page.c",
+      "sha256": "ee609d10c79228af447b0beb250c9a526f73ad2d5ef04fdf5a7166d3e4b26a16"
+    },
+    {
+      "path": "src/roll3_page.h",
+      "sha256": "8e0a1d34da23e70392332ecb51acd12324d0a164b242f6c9e4213360b3479d53"
+    },
+    {
+      "path": "src/roll3_physics.c",
+      "sha256": "e21b0ccd8c2a5601d03bc072732af9f33e248c063782c4d2697c3e83a310535e"
+    },
+    {
+      "path": "src/roll3_physics.h",
+      "sha256": "ea3bd40e7fef86a710b10b208ac9cb1fed7b702ac6b489b3d75eef0dc6f62feb"
+    },
+    {
+      "path": "src/roll3_renderer.c",
+      "sha256": "28541e7040734f3e76157bc366f4b549e37b19150bcdc8682cbb180fa5f04f08"
+    },
+    {
+      "path": "src/roll3_renderer.h",
+      "sha256": "318d513f329a89d47a38117815719ba35688717b4d028eec0d45d6633cc366b2"
+    },
+    {
+      "path": "src/roll3_runtime.c",
+      "sha256": "c300534b731d6e5323db1165c061aec0d04ca3321218ed29b7e4e7c4d32ca291"
+    },
+    {
+      "path": "src/roll3_runtime.h",
+      "sha256": "ddc8514e777fe011aa6c63e5e845cd5c77bab527461ff0e8c985029c385750d4"
+    },
+    {
+      "path": "src/roll3_scene.c",
+      "sha256": "0f32470bfbb56779f30d3b8b9789fba3dbbb5bddfcfb451aadb22107cfaf8fe4"
+    },
+    {
+      "path": "src/roll3_scene.h",
+      "sha256": "daeb55dfb0e1935cff613fa70c371228e1790780d50a05e5d72f014ec7e8b9d2"
+    },
+    {
+      "path": "src/roll3_selftest.c",
+      "sha256": "9d8f81b7af9bc757a130437efdb654be74c7f1dccd1d604ea843520707b79eb0"
+    },
+    {
+      "path": "src/roll3_selftest.h",
+      "sha256": "a1d4be908d0e3562097bc0c406ccf6056bd337f85c2391bd5fa418201a46af53"
+    },
+    {
+      "path": "src/roll3_session.c",
+      "sha256": "44d71360973d35f774a42747fdde8fad7fd05397cd98ac142fe25efa7b5d24e6"
+    },
+    {
+      "path": "src/roll3_session.h",
+      "sha256": "51daf27c840b5f86b0b5bfd05ee1b9cafdc3ff503c1489a6d557d1d0c6b395f3"
+    },
+    {
+      "path": "src/roll3_session_selftest.c",
+      "sha256": "b082e1069063478796209888ec01f0c757b3515a69bfce8ebdf6a44918dc252a"
+    },
+    {
+      "path": "src/roll3_view.c",
+      "sha256": "23b727e1b29585761da35eb41803c2b4871080aea5b145ebdad6423e0918f85c"
+    },
+    {
+      "path": "src/roll3_view.h",
+      "sha256": "e3867454c5f2aecb0a7df1b2abe35fcfb921842f5f3822badeca7e1a000686bc"
+    }
+  ]
+}

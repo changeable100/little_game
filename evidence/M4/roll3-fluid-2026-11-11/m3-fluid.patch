@@ -1,0 +1,692 @@
+--- a/src/roll3_page.h
++++ b/src/roll3_page.h
+@@ -1,7 +1,7 @@
+ #ifndef ROLL3_PAGE_H
+ #define ROLL3_PAGE_H
+ 
+-#define ROLL3_PAGE_REFRESH_MS 50u
++#define ROLL3_PAGE_REFRESH_MS 33u
+ 
+ /* LVGL owner only. */
+ int roll3_page_open(void);
+--- a/src/roll3_physics.c
++++ b/src/roll3_physics.c
+@@ -291,6 +291,26 @@
+         root_candidate(hit,b,p,d,dot(d,d),2*dot(offset,d),dot(offset,offset)-R3_RADIUS*R3_RADIUS);
+     }
+ }
++/* Shallow persistent support is integrated on the smooth manifold, then
++ * projected by depenetrate. Subdivide its travel (not the collision budget)
++ * until endpoint correction is <=1mm and the normal changes by <6 degrees.
++ * Normal impacts, lips, and large penetrations retain continuous sweeps. */
++static bool bend_support_move(const r3_bend_t *bend,r3_vec_t start,r3_vec_t velocity,float *duration)
++{
++    r3_vec_t n;
++    float gap=bend_gap(bend,BEND_FLOOR,start,&n);
++    if(gap < -SKIN||gap>.001f||n.z<=.25f||fabsf(dot(velocity,n))>.15f)return false;
++    float span=*duration;
++    for(unsigned split=0;split<5;++split){
++        r3_vec_t end_normal;
++        float end_gap=bend_gap(bend,BEND_FLOOR,add(start,mul(velocity,span)),&end_normal);
++        if(end_gap>0)return false;
++        if(end_gap>=-.001f&&dot(n,end_normal)>.995f){*duration=span;return true;}
++        span*=.5f;
++    }
++    return false;
++}
++
+ static void sweep_bend(hit_t *hit, const r3_bend_t *bend, bend_surface_t surface,
+     r3_vec_t start, r3_vec_t delta)
+ {
+@@ -393,15 +413,21 @@
+     depenetrate(g);
+     float remaining=DT;
+     for(unsigned impact=0;impact<IMPACTS&&remaining>1e-8f;impact++) {
+-        r3_vec_t delta=mul(g->s.velocity,remaining);
++        float span=remaining;
++        bool support=g->world->bend&&bend_support_move(g->world->bend,g->s.position,g->s.velocity,&span);
++        r3_vec_t delta=mul(g->s.velocity,span);
+         hit_t hit={false,1,{0,0,0},0};
+         for(unsigned i=0;i<g->world->box_count;i++)sweep_box(&hit,&g->world->boxes[i],g->s.position,delta);
+         if(g->world->bend)
+             for(bend_surface_t i=BEND_FLOOR;i<BEND_SURFACES;++i)
+-                sweep_bend(&hit,g->world->bend,i,g->s.position,delta);
+-        if(!hit.found) {g->s.position=add(g->s.position,delta);remaining=0;break;}
++                if(i!=BEND_FLOOR||!support)sweep_bend(&hit,g->world->bend,i,g->s.position,delta);
++        if(!hit.found) {
++            g->s.position=add(g->s.position,delta);remaining-=span;
++            if(remaining>1e-8f)depenetrate(g);
++            continue;
++        }
+         g->s.position=add(add(g->s.position,mul(delta,hit.t)),mul(hit.normal,SKIN));
+-        remaining*=1-hit.t;impulse(&g->s,hit.material,hit.normal);
++        remaining-=span*hit.t;impulse(&g->s,hit.material,hit.normal);
+     }
+     if(remaining>1e-8f)limited(&g->s);
+     depenetrate(g);cap_motion(&g->s);orientation(&g->s);
+--- a/src/roll3_renderer.c
++++ b/src/roll3_renderer.c
+@@ -3,6 +3,7 @@
+ #include "roll3_camera_basis.h"
+ #include "roll3_physics.h"
+ #include <math.h>
++#include <float.h>
+ #include <stddef.h>
+ #include <string.h>
+ 
+@@ -80,6 +81,23 @@
+ 
+ enum { EDGE_SAMPLES = 4 };
+ 
++/* Conservative homogeneous frustum planes, including the active depth band.
++ * Test before lighting/clipping or generating hundreds of offscreen tiles.
++ * The one-pixel guard retains the rasterizer's inclusive bounds/edge epsilon. */
++static unsigned outside_planes(const r3_raster_t *target,r3_vec_t p)
++{
++    float top=target->end_row?(float)target->first_row:0;
++    float bottom=target->end_row?(float)target->end_row:R3_VIEW_H;
++    unsigned mask=0;
++    if(p.z<NEAR_Z-.001f)mask|=1;
++    if(p.z>FAR_Z+.001f)mask|=2;
++    if(p.x<-(R3_VIEW_W*.5f+1)/FOCAL*p.z-.001f)mask|=4;
++    if(p.x> (R3_VIEW_W*.5f+1)/FOCAL*p.z+.001f)mask|=8;
++    if(p.y>(R3_VIEW_H*.5f-top+1)/FOCAL*p.z+.001f)mask|=16;
++    if(p.y<(R3_VIEW_H*.5f-bottom-1)/FOCAL*p.z-.001f)mask|=32;
++    return mask;
++}
++
+ static bool valid_depth_rows(unsigned rows)
+ {
+     return rows>=2*EDGE_SAMPLES&&rows<=R3_VIEW_H;
+@@ -93,19 +111,41 @@
+     return (bits * 0x01010101u) >> 24;
+ }
+ 
+-static inline void shade_sample(r3_raster_t *target, unsigned index, float u, float v,
+-    const float iz[3], uint16_t paint)
+-{
+-    float w=1-u-v;
+-    if(u<-.00001f||v<-.00001f||w<-.00001f)return;
++static inline __attribute__((always_inline)) void depth_value(r3_raster_t *target,unsigned index,float invz,uint16_t paint)
++{
+     const float inv_far=1.0f/FAR_Z;
+     const float depth_scale=65534.0f/(1.0f/NEAR_Z-inv_far);
+-    float invz=u*iz[0]+v*iz[1]+w*iz[2];
+-    uint16_t d=(uint16_t)fmaxf(0,fminf(65534,65534.0f-(invz-inv_far)*depth_scale));
++    /* Clipped, finite vertices make invz finite. A plain clamp avoids the
++     * libm NaN handling path in this per-covered-pixel operation. */
++    float value=65534.0f-(invz-inv_far)*depth_scale;
++    if(value<0)value=0;
++    if(value>65534)value=65534;
++    uint16_t d=(uint16_t)value;
+     if(d<target->depth[index]){
+         target->depth[index]=d;
+         target->color[index]=paint;
+     }
++}
++
++static inline __attribute__((always_inline)) void depth_sample(r3_raster_t *target,unsigned index,float u,float v,
++    const float iz[3],uint16_t paint)
++{depth_value(target,index,iz[2]+u*iz[0]+v*iz[1],paint);}
++
++static inline __attribute__((always_inline)) void shade_sample(r3_raster_t *target, unsigned index, float u, float v,
++    const float iz[3], uint16_t paint)
++{
++    float w=1-u-v;
++    if(u<-.00001f||v<-.00001f||w<-.00001f)return;
++    depth_sample(target,index,u,v,iz,paint);
++}
++
++static void coverage_span(float value,float gradient,float inverse,int width,float threshold,int guard,int *first,int *last)
++{
++    if(fabsf(gradient)<1e-12f){if(guard<0&&value<threshold)*first=width+1;return;}
++    float crossing=(threshold-value)*inverse;
++    crossing=fmaxf(-2,fminf((float)width+2,crossing));
++    if(gradient>0){int bound=(int)floorf(crossing)-guard;if(bound>*first)*first=bound;}
++    else{int bound=(int)ceilf(crossing)+guard;if(bound<*last)*last=bound;}
+ }
+ 
+ static void raster(r3_raster_t *target,r3_vec_t a,r3_vec_t b,r3_vec_t c,uint16_t paint)
+@@ -118,6 +158,7 @@
+         y[i]=R3_VIEW_H*.5f-FOCAL*v[i].y*iz[i];
+         if(!isfinite(x[i])||!isfinite(y[i]))return;
+     }
++    iz[0]-=iz[2];iz[1]-=iz[2];
+     float area=edge(x[0],y[0],x[1],y[1],x[2],y[2]);
+     if(!isfinite(area)||fabsf(area)<1e-5f)return;
+     float minx=fminf(x[0],fminf(x[1],x[2])),maxx=fmaxf(x[0],fmaxf(x[1],x[2]));
+@@ -132,6 +173,10 @@
+     }
+     float inv_area=1.0f/area;
+     float du=(y[2]-y[1])*inv_area,dv=(y[0]-y[2])*inv_area;
++    float dw=-du-dv;
++    float inverse_du=fabsf(du)>1e-12f?1/du:0;
++    float inverse_dv=fabsf(dv)>1e-12f?1/dv:0;
++    float inverse_dw=fabsf(dw)>1e-12f?1/dw:0;
+     const float ux=.5f*du, vx=.5f*dv;
+     const float uy=.5f*(x[1]-x[2])*inv_area, vy=.5f*(x[2]-x[0])*inv_area;
+     for(int py=top;py<=bottom;++py){
+@@ -139,8 +184,35 @@
+         float u=edge(x[1],y[1],x[2],y[2],sx,sy)*inv_area;
+         float v0=edge(x[2],y[2],x[0],y[0],sx,sy)*inv_area;
+         if(!target->edges){
+-            unsigned index=(unsigned)(py-target->first_row)*R3_VIEW_W+(unsigned)left;
+-            for(int px=left;px<=right;++px,++index,u+=du,v0+=dv)
++            int first=0,last=right-left;
++            int inner_first=right-left+1,inner_last=-1;
++            if(last>=12){
++                coverage_span(u,du,inverse_du,last,-.0001f,2,&first,&last);
++                coverage_span(v0,dv,inverse_dv,right-left,-.0001f,2,&first,&last);
++                coverage_span(1-u-v0,dw,inverse_dw,right-left,-.0001f,2,&first,&last);
++                if(first>last)continue;
++                /* Inside all three half-planes, omit per-pixel coverage tests.
++                 * Bound the error from the original sequential float adds;
++                 * near edges still run the exact original comparisons. */
++                float error=.0001f+4*FLT_EPSILON*(right-left+1)*
++                    (1+fabsf(u)+fabsf(v0)+(fabsf(du)+fabsf(dv))*(right-left));
++                inner_first=first;inner_last=last;
++                coverage_span(u,du,inverse_du,right-left,error,-2,&inner_first,&inner_last);
++                coverage_span(v0,dv,inverse_dv,right-left,error,-2,&inner_first,&inner_last);
++                coverage_span(1-u-v0,dw,inverse_dw,right-left,error,-2,&inner_first,&inner_last);
++                /* Preserve the original additions exactly: a direct jump
++                 * u += first*du changes float rounding at shared edges. */
++                for(int skipped=0;skipped<first;++skipped){u+=du;v0+=dv;}
++            }
++            unsigned index=(unsigned)(py-target->first_row)*R3_VIEW_W+(unsigned)(left+first);
++            int px=first;
++            for(;px<=last&&px<inner_first;++px,++index,u+=du,v0+=dv)
++                shade_sample(target,index,u,v0,iz,paint);
++            float inverse_depth=iz[2]+u*iz[0]+v0*iz[1];
++            float depth_increment=du*iz[0]+dv*iz[1];
++            for(;px<=inner_last;++px,++index,u+=du,v0+=dv,inverse_depth+=depth_increment)
++                depth_value(target,index,inverse_depth,paint);
++            for(;px<=last;++px,++index,u+=du,v0+=dv)
+                 shade_sample(target,index,u,v0,iz,paint);
+             continue;
+         }
+@@ -183,18 +255,30 @@
+     }
+     return count;
+ }
+-static void triangle(r3_raster_t *target,r3_vec_t a,r3_vec_t b,r3_vec_t c,uint32_t paint,r3_vec_t focus)
+-{
++static bool triangle_visible(const r3_raster_t *target,r3_vec_t pa,r3_vec_t pb,r3_vec_t pc)
++{
++    if(!finite_vec(pa)||!finite_vec(pb)||!finite_vec(pc))return false;
++    unsigned outside=outside_planes(target,pa);
++    return !(outside&&(outside&=outside_planes(target,pb))&&(outside&outside_planes(target,pc)));
++}
++static void clipped_triangle(r3_raster_t *target,r3_vec_t pa,r3_vec_t pb,r3_vec_t pc,uint16_t shade)
++{
++    r3_vec_t p[8]={pa,pb,pc},temp[8];
++    unsigned n=clip(p,3,temp,NEAR_Z,true);if(n<3)return;
++    n=clip(temp,n,p,FAR_Z,false);if(n<3)return;
++    for(unsigned i=1;i+1<n;++i)raster(target,p[0],p[i],p[i+1],shade);
++}
++static void triangle_view(r3_raster_t *target,r3_vec_t a,r3_vec_t b,r3_vec_t c,uint32_t paint,
++    r3_vec_t pa,r3_vec_t pb,r3_vec_t pc)
++{
++    if(!triangle_visible(target,pa,pb,pc))return;
+     r3_vec_t normal=cross(sub(b,a),sub(c,a));float length=sqrtf(dot(normal,normal));
+     if(!isfinite(length)||length<1e-8f)return;
+     float light=.35f+.65f*fabsf(dot(mul(normal,1/length),(r3_vec_t){.3f,-.4f,.8660254f}));
+-    r3_vec_t p[8]={camera(a,focus),camera(b,focus),camera(c,focus)},temp[8];
+-    if(!finite_vec(p[0])||!finite_vec(p[1])||!finite_vec(p[2]))return;
+-    unsigned n=clip(p,3,temp,NEAR_Z,true);if(n<3)return;
+-    n=clip(temp,n,p,FAR_Z,false);if(n<3)return;
+-    uint16_t shade=rgb(paint,light);
+-    for(unsigned i=1;i+1<n;++i)raster(target,p[0],p[i],p[i+1],shade);
+-}
++    clipped_triangle(target,pa,pb,pc,rgb(paint,light));
++}
++static void triangle(r3_raster_t *target,r3_vec_t a,r3_vec_t b,r3_vec_t c,uint32_t paint,r3_vec_t focus)
++{triangle_view(target,a,b,c,paint,camera(a,focus),camera(b,focus),camera(c,focus));}
+ static r3_vec_t rotate(r3_quat_t q,r3_vec_t p)
+ {
+     r3_vec_t u={q.x,q.y,q.z};r3_vec_t t=mul(cross(u,p),2);
+@@ -251,11 +335,12 @@
+     const uint32_t rail=style?0xb964d1:0xa071bc;
+     const uint32_t light_tile=style?style->light_tile:0xf2e6d5;
+     r3_vec_t eye=add(focus,eye_offset);
++    r3_vec_t floor[2][max_lanes+1];
+     for(unsigned i=0;i+1<sizeof(ring)/sizeof(*ring);++i){
+-        r3_vec_t floor[2][max_lanes+1],bottom[2][2],lip[2],rail_outer[2],rail_base[2];
++        r3_vec_t bottom[2][2],lip[2],rail_outer[2],rail_base[2];
+         for(unsigned end=0;end<2;++end){
+             float c=ring[i+end][0],s=ring[i+end][1];
+-            for(unsigned j=0;j<=lanes;++j){
++            for(unsigned j=0;j<=lanes&&(i==0||end==1);++j){
+                 float r=bend->radius+bend->half_width*(2.0f*j/lanes-1.0f);
+                 floor[end][j]=r3_bend_point(bend,c,s,r,r3_bend_height(bend,c,s,r));
+             }
+@@ -286,6 +371,7 @@
+         }else if(!style||dot(sub(eye,floor[0][lanes]),radial)>0){
+             bend_quad(target,floor[0][lanes],floor[1][lanes],bottom[1][1],bottom[0][1],bend->color,focus);
+         }
++        memcpy(floor[0],floor[1],sizeof(floor[0]));
+     }
+ }
+ 
+@@ -303,6 +389,9 @@
+             v[j]=add(v[j],mul(b->axis[k],(j&(1u<<k))?h:-h));}}
+         if(style&&!solid&&!(style->thin_road_mask&(1u<<i)))
+             for(unsigned j=0;j<4;++j)v[j].z=fminf(v[j].z,style->skirt_z);
++        unsigned outside=63;
++        for(unsigned j=0;j<8&&outside;++j)outside&=outside_planes(target,camera(v[j],focus));
++        if(outside)continue;
+         /* Road tops use checker cells; rails are drawn as solid boxes. */
+         for(unsigned j=0;j<12;j+=2){
+             if(!solid&&j==2)continue;
+@@ -312,18 +401,31 @@
+             triangle(target,v[faces[j+1][0]],v[faces[j+1][1]],v[faces[j+1][2]],b->color,focus);
+         }
+         if(solid)continue;
++        /* The tall skirt can be visible while the entire checker top is off
++         * screen. Cull that plane separately before generating the tile grid. */
++        outside=63;
++        for(unsigned j=4;j<8&&outside;++j)outside&=outside_planes(target,camera(v[j],focus));
++        if(outside)continue;
+         unsigned nx=(unsigned)fmaxf(1,fminf(16,ceilf(b->half.x*4)));
+         unsigned ny=(unsigned)fmaxf(1,fminf(16,ceilf(b->half.y*4)));
+-        for(unsigned cy=0;cy<ny;++cy)for(unsigned cx=0;cx<nx;++cx){
+-            r3_vec_t q[4];
+-            for(unsigned k=0;k<4;++k){
+-                float u=-b->half.x+2*b->half.x*(cx+(k==1||k==2))/(float)nx;
+-                float v0=-b->half.y+2*b->half.y*(cy+(k>=2))/(float)ny;
+-                q[k]=add(add(add(b->center,mul(b->axis[2],b->half.z)),mul(b->axis[0],u)),mul(b->axis[1],v0));
+-            }
+-            uint32_t paint=(cx+cy)%2?b->color:light_tile;
+-            triangle(target,q[0],q[1],q[2],paint,focus);
+-            triangle(target,q[0],q[2],q[3],paint,focus);
++        float normal_length=sqrtf(dot(b->axis[2],b->axis[2]));
++        float light=.35f+.65f*fabsf(dot(mul(b->axis[2],1/normal_length),(r3_vec_t){.3f,-.4f,.8660254f}));
++        uint16_t tile_colors[]={rgb(light_tile,light),rgb(b->color,light)};
++        r3_vec_t tile_rows[2][17];
++        for(unsigned cy=0;cy<ny;++cy){
++            for(unsigned row=cy?1:0;row<2;++row)for(unsigned cx=0;cx<=nx;++cx){
++                float u=-b->half.x+2*b->half.x*cx/(float)nx;
++                float v0=-b->half.y+2*b->half.y*(cy+row)/(float)ny;
++                r3_vec_t point=add(add(add(b->center,mul(b->axis[2],b->half.z)),mul(b->axis[0],u)),mul(b->axis[1],v0));
++                tile_rows[row][cx]=camera(point,focus);
++            }
++            for(unsigned cx=0;cx<nx;++cx){
++                uint16_t paint=tile_colors[(cx+cy)%2];
++                r3_vec_t a=tile_rows[0][cx],b0=tile_rows[0][cx+1],c=tile_rows[1][cx+1],d=tile_rows[1][cx];
++                if(triangle_visible(target,a,b0,c))clipped_triangle(target,a,b0,c,paint);
++                if(triangle_visible(target,a,c,d))clipped_triangle(target,a,c,d,paint);
++            }
++            memcpy(tile_rows[0],tile_rows[1],sizeof(tile_rows[0]));
+         }
+     }
+     if(world->bend)draw_bend(target,world->bend,focus,style);
+@@ -333,11 +435,17 @@
+             const r3_vec_t *v=face->vertices;
+             bend_quad(target,v[0],v[1],v[2],v[3],face->color,focus);
+         }
+-    for(unsigned lat=0;lat<6;++lat)for(unsigned lon=0;lon<12;++lon){
+-        r3_vec_t a=sphere_point(lat,lon,s->radius,q,s->position),b=sphere_point(lat+1,lon,s->radius,q,s->position);
+-        r3_vec_t c=sphere_point(lat+1,lon+1,s->radius,q,s->position),d=sphere_point(lat,lon+1,s->radius,q,s->position);
+-        uint32_t paint=(lon/3)%2?0xffe6aa:0xee648b;
+-        triangle(target,a,b,c,paint,focus);triangle(target,a,c,d,paint,focus);
++    r3_vec_t sphere_rows[2][13];
++    for(unsigned lon=0;lon<=12;++lon)sphere_rows[0][lon]=sphere_point(0,lon,s->radius,q,s->position);
++    for(unsigned lat=0;lat<6;++lat){
++        for(unsigned lon=0;lon<=12;++lon)sphere_rows[1][lon]=sphere_point(lat+1,lon,s->radius,q,s->position);
++        for(unsigned lon=0;lon<12;++lon){
++            r3_vec_t a=sphere_rows[0][lon],b=sphere_rows[1][lon];
++            r3_vec_t c=sphere_rows[1][lon+1],d=sphere_rows[0][lon+1];
++            uint32_t paint=(lon/3)%2?0xffe6aa:0xee648b;
++            triangle(target,a,b,c,paint,focus);triangle(target,a,c,d,paint,focus);
++        }
++        memcpy(sphere_rows[0],sphere_rows[1],sizeof(sphere_rows[0]));
+     }
+ }
+ static uint16_t average_rgb565(uint16_t first,uint16_t second)
+@@ -360,22 +468,42 @@
+ static uint16_t mix_play_edge(uint16_t center, uint16_t left, uint16_t right,
+     uint16_t above, uint16_t below)
+ {
+-    unsigned red=4u*(center>>11)+(left>>11)+(right>>11)+(above>>11)+(below>>11);
+-    unsigned green=4u*((center>>5)&63u)+((left>>5)&63u)+((right>>5)&63u)+
+-        ((above>>5)&63u)+((below>>5)&63u);
+-    unsigned blue=4u*(center&31u)+(left&31u)+(right&31u)+(above&31u)+(below&31u);
+-    return (uint16_t)((((red+4u)>>3)<<11)|(((green+4u)>>3)<<5)|((blue+4u)>>3));
++    /* The six unused bits between B and R keep the weighted sums separate. */
++    unsigned rb=4u*(center&0xf81fu)+(left&0xf81fu)+(right&0xf81fu)+
++        (above&0xf81fu)+(below&0xf81fu)+0x2004u;
++    unsigned g=4u*(center&0x07e0u)+(left&0x07e0u)+(right&0x07e0u)+
++        (above&0x07e0u)+(below&0x07e0u)+0x80u;
++    return (uint16_t)(((rb>>3)&0xf81fu)|((g>>3)&0x07e0u));
++}
++
++typedef struct {unsigned first,last;} row_bounds_t;
++static row_bounds_t row_bounds(const uint16_t *row,uint16_t background)
++{
++    row_bounds_t bounds={0,R3_VIEW_W};
++    while(bounds.first<bounds.last&&row[bounds.first]==background)++bounds.first;
++    while(bounds.last>bounds.first&&row[bounds.last-1]==background)--bounds.last;
++    return bounds;
+ }
+ 
+ static void smooth_play_edges(uint16_t *color, uint16_t *scratch)
+ {
+     uint16_t *above=scratch,*current=scratch+R3_VIEW_W;
+     memcpy(above,color,R3_VIEW_W*sizeof(*color));
++    uint16_t background=color[0];
++    row_bounds_t previous_bounds=row_bounds(color,background),current_bounds=previous_bounds;
+     for(unsigned y=0;y<R3_VIEW_H;++y){
+         uint16_t *row=color+y*R3_VIEW_W;
+         memcpy(current,row,R3_VIEW_W*sizeof(*color));
+         const uint16_t *below=y+1<R3_VIEW_H?row+R3_VIEW_W:current;
+-        for(unsigned x=0;x<R3_VIEW_W;++x){
++        row_bounds_t next_bounds=y+1<R3_VIEW_H?row_bounds(below,background):current_bounds;
++        unsigned first=previous_bounds.first,last=previous_bounds.last;
++        if(current_bounds.first<first)first=current_bounds.first;
++        if(next_bounds.first<first)first=next_bounds.first;
++        if(current_bounds.last>last)last=current_bounds.last;
++        if(next_bounds.last>last)last=next_bounds.last;
++        if(first) --first;
++        if(last<R3_VIEW_W) ++last;
++        for(unsigned x=first;x<last;++x){
+             uint16_t center=current[x];
+             uint16_t left=x?current[x-1]:center,right=x+1<R3_VIEW_W?current[x+1]:center;
+             uint16_t top=above[x],bottom=below[x];
+@@ -387,6 +515,7 @@
+         uint16_t *previous=above;
+         above=current;
+         current=previous;
++        previous_bounds=current_bounds;current_bounds=next_bounds;
+     }
+ }
+ 
+--- a/src/roll3_runtime.c
++++ b/src/roll3_runtime.c
+@@ -12,6 +12,7 @@
+ static struct {
+     r3_snapshot_t snapshot;
+     uint32_t heartbeat, action_run, sample_stamp;
++    uint32_t cycle_max_ms, steps_max;
+     r3_action_kind_t action;
+     r3_result_t result;
+     bool occupied, page, pending, failed, have_sample;
+@@ -77,6 +78,8 @@
+     if (!occupied) return;
+ 
+     uint32_t now = now_ms();
++    uint32_t cycle_started=now;
++    uint32_t previous_elapsed=session.game.s.elapsed_ms;
+     r3_state_t previous_state = session.game.s.state;
+     uint32_t previous_run = session.game.s.run;
+     r3_result_t result = R3_OK;
+@@ -101,6 +104,11 @@
+             automatically_respawned = roll3_session_try_auto_respawn(&session, respawn_now);
+     }
+     mailbox.snapshot = session.game.s;
++    uint32_t cycle_ms=now_ms()-cycle_started;
++    uint32_t steps=previous_run==session.game.s.run&&session.game.s.elapsed_ms>=previous_elapsed?
++        (session.game.s.elapsed_ms-previous_elapsed)/R3_STEP_MS:0;
++    if(cycle_ms>mailbox.cycle_max_ms)mailbox.cycle_max_ms=cycle_ms;
++    if(steps>mailbox.steps_max)mailbox.steps_max=steps;
+     mailbox.have_sample = session.sequence != 0;
+     mailbox.sample_stamp = session.stamp;
+     if (pending && mailbox.page) {
+@@ -178,6 +186,7 @@
+         mailbox.occupied = mailbox.page = true;
+         mailbox.pending = false;
+         mailbox.result = R3_OK;
++        mailbox.cycle_max_ms=mailbox.steps_max=0;
+         mailbox.heartbeat = now_ms();
+     }
+     release();
+@@ -213,13 +222,17 @@
+ void roll3_runtime_report_frame(uint32_t frames, uint32_t sample_age_ms,
+                                 uint32_t draw_ms, uint32_t frame_gap_ms)
+ {
+-    rt_kprintf("[roll3:frame] frames=%u sample_age_max_ms=%u draw_max_ms=%u gap_max_ms=%u\n",
+-               frames, sample_age_ms, draw_ms, frame_gap_ms);
++    acquire();
++    uint32_t cycle=mailbox.cycle_max_ms,steps=mailbox.steps_max,limited_steps=mailbox.snapshot.limited_steps;
++    mailbox.cycle_max_ms=mailbox.steps_max=0;
++    release();
++    rt_kprintf("[roll3:frame] frames=%u sample_age_max_ms=%u draw_max_ms=%u gap_max_ms=%u cycle_max_ms=%u catchup_steps_max=%u limited_steps=%u\n",
++               frames, sample_age_ms, draw_ms, frame_gap_ms,cycle,steps,limited_steps);
+ }
+ 
+ void roll3_runtime_report_open(int result,unsigned depth_rows)
+ {
+-    rt_kprintf("[roll3:open] result=%d depth_rows=%u\n",result,depth_rows);
++    rt_kprintf("[roll3:open] result=%d depth_rows=%u build=m3-fluid-20261111 refresh_ms=33\n",result,depth_rows);
+ }
+ 
+ bool roll3_runtime_submit(r3_action_kind_t kind, uint32_t run)
+--- a/src/roll3_selftest.c
++++ b/src/roll3_selftest.c
+@@ -612,6 +612,31 @@
+             return g.s.position.z<z-.10f;
+     }
+     return false;
++}
++
++/* A real M3 approach which exhausted eight microscopic floor recontacts. */
++static bool m3_fast_bend_contact(float speed,float angle) {
++    r3_game_t g;CHECK(start(&g,r3_demo_world()));
++    const r3_box_t *b=&g.world->boxes[7];
++    g.s.position=b->center;
++    const float offsets[]={b->half.x-.25f,0,b->half.z+R3_RADIUS+.00002f};
++    for(unsigned j=0;j<3;++j){
++        g.s.position.x+=b->axis[j].x*offsets[j];
++        g.s.position.y+=b->axis[j].y*offsets[j];
++        g.s.position.z+=b->axis[j].z*offsets[j];
++    }
++    float forward=speed*cosf(angle),sideways=speed*sinf(angle);
++    g.s.velocity=(r3_vec_t){b->axis[0].x*forward+b->axis[1].x*sideways,
++        b->axis[0].y*forward+b->axis[1].y*sideways,b->axis[0].z*forward+b->axis[1].z*sideways};
++    r3_vec_t n=b->axis[2],v=g.s.velocity;
++    g.s.omega=(r3_vec_t){(n.y*v.z-n.z*v.y)/R3_RADIUS,
++        (n.z*v.x-n.x*v.z)/R3_RADIUS,(n.x*v.y-n.y*v.x)/R3_RADIUS};
++    for(unsigned i=0;i<150;++i){
++        float before=norm2(g.s.velocity);
++        CHECK(steps(&g,&gravity,1)&&g.s.state==R3_RUNNING&&!g.s.limited);
++        CHECK(norm2(g.s.velocity)>=before*.75f*.75f);
++    }
++    return true;
+ }
+ 
+ int r3_selftest_run(maze_test_report_t report) {
+@@ -664,6 +689,10 @@
+     RUN("TC-519 both trough joins cross in both directions",bend_crossings(r3_demo_world()));
+     RUN("TC-519 gravity returns ball from inner slope",m3_trough_returns(-1));
+     RUN("TC-519 gravity returns ball from outer slope",m3_trough_returns(1));
++    RUN("TC-521 M3 5mps smooth floor keeps moving",m3_fast_bend_contact(5,0));
++    RUN("TC-521 M3 7.5mps smooth floor keeps moving",m3_fast_bend_contact(7.5f,0));
++    RUN("TC-521 M3 fast negative-angle curve keeps moving",m3_fast_bend_contact(7.5f,-.261799388f));
++    RUN("TC-521 M3 fast positive-angle curve keeps moving",m3_fast_bend_contact(7.5f,.261799388f));
+ #undef RUN
+     return failures;
+ }
+--- /dev/null
++++ b/tests/roll3_edge_probe.c
+@@ -0,0 +1,58 @@
++/* Diagnostic sweep of the unmodified production solver; no device access. */
++#include "../src/roll3_physics.c"
++#include "roll3_scene.h"
++#include <stdio.h>
++#ifdef NDEBUG
++#undef NDEBUG
++#endif
++#include <assert.h>
++
++static r3_vec_t along(const r3_box_t *b,float x,float y,float z)
++{return add(b->center,add(mul(b->axis[0],x),add(mul(b->axis[1],y),mul(b->axis[2],z))));}
++
++int main(void)
++{
++    const r3_world_t *original=r3_demo_world();
++    const float speeds[]={.5f,2,5,7.5f},angles[]={0,-.087266463f,.087266463f,-.261799388f,.261799388f};
++    unsigned cases=0,stops=0,limited_cases=0,printed=0,isolated_stops=0;
++    for(unsigned isolated=0;isolated<2;++isolated)
++    for(unsigned index=1;index<=8;++index){
++        const r3_box_t *b=&original->boxes[index];
++        if(b->axis[0].z>=0)continue;
++        for(unsigned edge_axis=0;edge_axis<2;++edge_axis)
++        for(int side=-1;side<=1;side+=2)
++        for(unsigned ai=0;ai<5;++ai)for(unsigned si=0;si<4;++si){
++            r3_world_t w=*original;
++            if(isolated){w.boxes=b;w.box_count=1;w.bend=NULL;w.style=NULL;}
++            /* r3_init validates original spawn, so start before narrowing world. */
++            r3_game_t g;
++            if(r3_init(&g,original)!=R3_OK)return 2;
++            g.world=&w;g.s.state=R3_RUNNING;
++            float coordinate[2]={0,0};
++            coordinate[edge_axis]=side*((edge_axis?b->half.y:b->half.x)-.25f);
++            g.s.position=along(b,coordinate[0],coordinate[1],b->half.z+R3_RADIUS+2*SKIN);
++            r3_vec_t dir=add(mul(b->axis[edge_axis],side*cosf(angles[ai])),mul(b->axis[1-edge_axis],sinf(angles[ai])));
++            g.s.velocity=mul(dir,speeds[si]);g.s.omega=mul(cross(b->axis[2],g.s.velocity),1/R3_RADIUS);
++            bool stopped=false,was_limited=false;
++            for(unsigned step=0;step<160&&g.s.state==R3_RUNNING;++step){
++                r3_snapshot_t before=g.s;
++                r3_input_t in={{0,0,-9.81f},true};
++                if(r3_step(&g,&in,R3_STEP_MS)!=R3_OK)return 3;
++                float old_speed=length(before.velocity),speed=length(g.s.velocity);
++                bool drop=g.s.state==R3_RUNNING&&old_speed>.3f&&speed<old_speed*.75f;
++                stopped|=drop;was_limited|=g.s.limited;
++                if((drop||g.s.limited)&&printed++<24)
++                    printf("isolated=%u box=%u axis=%u side=%d angle=%g v0=%g step=%u speed=%g->%g limited=%u contacts=%u pos=(%.9g,%.9g,%.9g) before=(%.9g,%.9g,%.9g) velocity=(%.9g,%.9g,%.9g) omega=(%.9g,%.9g,%.9g)\n",
++                        isolated,index,edge_axis,side,angles[ai],speeds[si],step,old_speed,speed,g.s.limited,g.s.contacts,
++                        g.s.position.x,g.s.position.y,g.s.position.z,before.position.x,before.position.y,before.position.z,
++                        before.velocity.x,before.velocity.y,before.velocity.z,before.omega.x,before.omega.y,before.omega.z);
++                if(g.s.limited)break;
++            }
++            ++cases;stops+=stopped;limited_cases+=was_limited;isolated_stops+=isolated&&stopped;
++        }
++    }
++    printf("edge probe cases=%u sudden_drop_cases=%u limited_cases=%u (includes real joins/obstacles in non-isolated sweep)\n",cases,stops,limited_cases);
++    printf("TC-521 isolated open edges sudden_drop_cases=%u\n",isolated_stops);
++    assert(limited_cases==0&&isolated_stops==0);
++    return 0;
++}
+--- /dev/null
++++ b/tests/roll3_perf_compare.c
+@@ -0,0 +1,57 @@
++/* Link with a prefixed, untouched m3-slim renderer for a direct A/B comparison. */
++#include "roll3_renderer.h"
++#include "roll3_scene.h"
++#include "roll3_bend.h"
++#ifdef NDEBUG
++#undef NDEBUG
++#endif
++#include <assert.h>
++#include <stdio.h>
++#include <time.h>
++#include <string.h>
++int baseline_renderer_render_play(uint16_t *,uint16_t *,unsigned,const r3_snapshot_t *,const r3_world_t *,r3_camera_follow_t *);
++int baseline_renderer_render_edges(uint16_t *,uint16_t *,unsigned,const r3_snapshot_t *,const r3_world_t *,r3_camera_follow_t *,r3_edge_aa_t *);
++static uint16_t old_color[R3_VIEW_PIXELS],new_color[R3_VIEW_PIXELS],low_color[R3_VIEW_PIXELS];
++static uint16_t old_depth[R3_VIEW_W*100+2],new_depth[R3_VIEW_W*100+2],low_depth[R3_VIEW_W*50+2];
++static r3_vec_t uv(float u,float v,float z)
++{return (r3_vec_t){u*R3_M1_COS-v*R3_M1_SIN,-u*R3_M1_SIN-v*R3_M1_COS,z};}
++static double now(void){struct timespec ts;timespec_get(&ts,TIME_UTC);return ts.tv_sec*1000.0+ts.tv_nsec/1e6;}
++int main(void)
++{
++    setvbuf(stdout,NULL,_IONBF,0);
++    const r3_world_t *w=r3_demo_world();const r3_bend_t *b=w->bend;
++    r3_vec_t p[]={w->spawn,uv(1.4f,5.09f,3.25f),uv(4.35f,10.3f,2.75f),w->checkpoint_spawn,
++        r3_bend_point(b,0,1,b->radius,r3_bend_height(b,0,1,b->radius)+R3_RADIUS),uv(.1f,16.6f,1.28f)};
++    double old_ms=0,new_ms=0;unsigned differences=0;
++    new_depth[0]=low_depth[0]=0x4321;new_depth[240*100+1]=low_depth[240*50+1]=0x7654;
++    for(unsigned frame=0;frame<42;++frame){
++        r3_snapshot_t s={.version=1,.state=R3_RUNNING,.radius=R3_RADIUS,.orientation={1,0,0,0}};
++        if(frame<6)s.position=p[frame];
++        else{float t=3.141592654f*(frame-6)/35,c=cosf(t),si=sinf(t);
++            s.position=r3_bend_point(b,c,si,b->radius,r3_bend_height(b,c,si,b->radius)+R3_RADIUS);}
++        assert(baseline_renderer_render_play(old_color,old_depth+1,100,&s,w,NULL)==0);
++        assert(roll3_renderer_render_play(new_color,new_depth+1,100,&s,w,NULL)==0);
++        assert(roll3_renderer_render_play(low_color,low_depth+1,50,&s,w,NULL)==0);
++        for(unsigned i=0;i<R3_VIEW_PIXELS;++i)differences+=old_color[i]!=new_color[i];
++        assert(memcmp(low_color,new_color,sizeof(new_color))==0);
++        assert(new_depth[0]==0x4321&&new_depth[240*100+1]==0x7654&&low_depth[0]==0x4321&&low_depth[240*50+1]==0x7654);
++        if(frame<6){
++            const unsigned rounds=40;
++            double t=now();
++            for(unsigned k=0;k<rounds;++k)assert(baseline_renderer_render_play(old_color,old_depth+1,100,&s,w,NULL)==0);
++            double before=(now()-t)/rounds;t=now();
++            for(unsigned k=0;k<rounds;++k)assert(roll3_renderer_render_play(new_color,new_depth+1,100,&s,w,NULL)==0);
++            double after=(now()-t)/rounds;
++            old_ms+=before;new_ms+=after;
++            printf("M3 pose=%u host_ms before=%.4f after=%.4f ratio=%.3f\n",frame,before,after,after/before);
++            t=now();
++            for(unsigned k=0;k<rounds;++k)assert(baseline_renderer_render_edges(old_color,old_depth+1,100,&s,w,NULL,NULL)==0);
++            double old_raw=(now()-t)/rounds;t=now();
++            for(unsigned k=0;k<rounds;++k)assert(roll3_renderer_render_edges(new_color,new_depth+1,100,&s,w,NULL,NULL)==0);
++            printf(" raw old=%.4f new=%.4f\n",old_raw,(now()-t)/rounds);
++        }
++    }
++    printf("TC-521 direct A/B 42 frames changed_pixels=%u mean_ms before=%.4f after=%.4f ratio=%.3f\n",differences,old_ms/6,new_ms/6,new_ms/old_ms);
++    assert(differences==0);assert(new_ms<=.75*old_ms);
++    puts("TC-521 identical old/new and 100/50 rows, guards, >=25% faster host draw PASS");
++}
+--- /dev/null
++++ b/tests/roll3_physics_compare.c
+@@ -0,0 +1,34 @@
++/* Compare one identical pre-stall state, not two diverging playthroughs. */
++#include "roll3_physics.h"
++#include "roll3_scene.h"
++#ifdef NDEBUG
++#undef NDEBUG
++#endif
++#include <assert.h>
++#include <math.h>
++#include <stdio.h>
++#include <time.h>
++r3_result_t baseline_r3_step(r3_game_t *,const r3_input_t *,uint32_t);
++static double now(void){struct timespec ts;timespec_get(&ts,TIME_UTC);return ts.tv_sec*1000.0+ts.tv_nsec/1e6;}
++static float speed(r3_vec_t v){return sqrtf(v.x*v.x+v.y*v.y+v.z*v.z);}
++int main(void)
++{
++    r3_game_t before;assert(r3_init(&before,r3_demo_world())==R3_OK);before.s.state=R3_RUNNING;
++    before.s.position=(r3_vec_t){-16.3191166f,-14.4330492f,1.44221234f};
++    before.s.velocity=(r3_vec_t){-4.06930923f,-2.23306346f,.170459092f};
++    before.s.omega=(r3_vec_t){11.2264566f,-20.4604053f,-.0320382901f};
++    r3_game_t old_game=before,new_game=before;
++    const r3_input_t gravity={{0,0,-9.81f},true};
++    assert(baseline_r3_step(&old_game,&gravity,5)==R3_OK);
++    assert(r3_step(&new_game,&gravity,5)==R3_OK);
++    printf("TC-521 identical snapshot speed %.6f old=%.6f limited=%u new=%.6f limited=%u\n",
++        speed(before.s.velocity),speed(old_game.s.velocity),old_game.s.limited,speed(new_game.s.velocity),new_game.s.limited);
++    assert(old_game.s.limited&&speed(old_game.s.velocity)==0&&!new_game.s.limited&&speed(new_game.s.velocity)>4.6f);
++    const unsigned rounds=20000;volatile unsigned sink=0;
++    double t=now();
++    for(unsigned k=0;k<rounds;++k){old_game=before;assert(baseline_r3_step(&old_game,&gravity,5)==R3_OK);sink+=old_game.s.contacts;}
++    double old_ms=(now()-t)/rounds;t=now();
++    for(unsigned k=0;k<rounds;++k){new_game=before;assert(r3_step(&new_game,&gravity,5)==R3_OK);sink+=new_game.s.contacts;}
++    double new_ms=(now()-t)/rounds;
++    printf("TC-521 same-state host physics us old=%.3f new=%.3f ratio=%.3f sink=%u; NOT board timing\n",old_ms*1000,new_ms*1000,new_ms/old_ms,sink);
++}
+--- /dev/null
++++ b/tests/run_roll3_sdk_view.py
+@@ -0,0 +1,25 @@
++"""Use installed Zig cc to run the real SDK LVGL checks for this snapshot."""
++import os
++from pathlib import Path
++import runpy
++import subprocess
++import sys
++
++root = Path(__file__).resolve().parent.parent
++zig = Path(sys.executable).parent.parent / "Lib/site-packages/ziglang/zig.exe"
++if not zig.is_file():
++    raise SystemExit("Run with the Python environment containing ziglang")
++original_run = subprocess.run
++
++def run(command, *args, **kwargs):
++    if isinstance(command, (list, tuple)) and command and command[0] == str(zig):
++        command = [str(zig), "cc", *command[1:]]
++    return original_run(command, *args, **kwargs)
++
++subprocess.run = run
++os.environ["CC"] = str(zig)
++os.environ["CFLAGS"] = ""
++driver = root / "tests/render.py"
++sys.argv = [str(driver), "--sdk", "D:/SiFli-SDK/v2.5.1", "--roll3-view",
++            "--out", str(root / "build/roll3-live-view")]
++runpy.run_path(str(driver), run_name="__main__")

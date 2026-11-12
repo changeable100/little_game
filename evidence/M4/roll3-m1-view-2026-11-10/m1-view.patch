@@ -1,0 +1,278 @@
+--- a/src/roll3_scene.c
++++ b/src/roll3_scene.c
+@@ -1,10 +1,8 @@
+ #include "roll3_scene.h"
+-#include "roll3_camera_basis.h"
+ 
+-/* Local coordinates: u right, v down. These rotate with the existing camera
+- * basis, so the world geometry and the player's tilt directions agree. */
+-#define X(u,v) ((u)*R3_CAM_COS-(v)*R3_CAM_SIN)
+-#define Y(u,v) (-(u)*R3_CAM_SIN-(v)*R3_CAM_COS)
++/* Local coordinates: u across the course, v toward the first slope. */
++#define X(u,v) ((u)*R3_M1_COS-(v)*R3_M1_SIN)
++#define Y(u,v) (-(u)*R3_M1_SIN-(v)*R3_M1_COS)
+ #define LOCAL(u,v,z) {X(u,v),Y(u,v),(z)}
+ #define TOP_HALF .15f
+ #define MATERIAL(color) .25f,.6f,.08f,(color)
+--- a/src/roll3_scene.h
++++ b/src/roll3_scene.h
+@@ -1,5 +1,9 @@
+ #ifndef ROLL3_SCENE_H
+ #define ROLL3_SCENE_H
+ #include "roll3_contract.h"
++
++/* M1 course yaw (60 degrees), independent of the camera and tilt axes. */
++#define R3_M1_COS .5f
++#define R3_M1_SIN .8660254038f
+ const r3_world_t *r3_demo_world(void);
+ #endif
+--- a/src/roll3_selftest.c
++++ b/src/roll3_selftest.c
+@@ -1,7 +1,6 @@
+ #include "roll3_selftest.h"
+ #include "roll3_physics.h"
+ #include "roll3_scene.h"
+-#include "roll3_camera_basis.h"
+ #include <math.h>
+ #include <stddef.h>
+ #include <string.h>
+@@ -29,10 +28,10 @@
+ static float energy(const r3_game_t *g) {return 0.5f*norm2(g->s.velocity)+0.2f*R3_RADIUS*R3_RADIUS*norm2(g->s.omega);}
+ static bool near(float a,float b,float eps) {return fabsf(a-b)<=eps;}
+ static r3_vec_t from_uv(float u,float v,float z) {
+-    return (r3_vec_t){u*R3_CAM_COS-v*R3_CAM_SIN,-u*R3_CAM_SIN-v*R3_CAM_COS,z};
++    return (r3_vec_t){u*R3_M1_COS-v*R3_M1_SIN,-u*R3_M1_SIN-v*R3_M1_COS,z};
+ }
+ static r3_vec_t to_uv(r3_vec_t p) {
+-    return (r3_vec_t){p.x*R3_CAM_COS-p.y*R3_CAM_SIN,-p.x*R3_CAM_SIN-p.y*R3_CAM_COS,p.z};
++    return (r3_vec_t){p.x*R3_M1_COS-p.y*R3_M1_SIN,-p.x*R3_M1_SIN-p.y*R3_M1_COS,p.z};
+ }
+ static float projection(r3_vec_t v,r3_vec_t axis) {
+     return v.x*axis.x+v.y*axis.y+v.z*axis.z;
+--- a/src/roll3_renderer.c
++++ b/src/roll3_renderer.c
+@@ -268,6 +268,39 @@
+     return red>=2||red<=-2||green>=3||green<=-3||blue>=2||blue<=-2;
+ }
+ 
++static uint16_t mix_play_edge(uint16_t center, uint16_t left, uint16_t right,
++    uint16_t above, uint16_t below)
++{
++    unsigned red=4u*(center>>11)+(left>>11)+(right>>11)+(above>>11)+(below>>11);
++    unsigned green=4u*((center>>5)&63u)+((left>>5)&63u)+((right>>5)&63u)+
++        ((above>>5)&63u)+((below>>5)&63u);
++    unsigned blue=4u*(center&31u)+(left&31u)+(right&31u)+(above&31u)+(below&31u);
++    return (uint16_t)((((red+4u)>>3)<<11)|(((green+4u)>>3)<<5)|((blue+4u)>>3));
++}
++
++static void smooth_play_edges(uint16_t *color, uint16_t *scratch)
++{
++    uint16_t *above=scratch,*current=scratch+R3_VIEW_W;
++    memcpy(above,color,R3_VIEW_W*sizeof(*color));
++    for(unsigned y=0;y<R3_VIEW_H;++y){
++        uint16_t *row=color+y*R3_VIEW_W;
++        memcpy(current,row,R3_VIEW_W*sizeof(*color));
++        const uint16_t *below=y+1<R3_VIEW_H?row+R3_VIEW_W:current;
++        for(unsigned x=0;x<R3_VIEW_W;++x){
++            uint16_t center=current[x];
++            uint16_t left=x?current[x-1]:center,right=x+1<R3_VIEW_W?current[x+1]:center;
++            uint16_t top=above[x],bottom=below[x];
++            if(center==left&&center==right&&center==top&&center==bottom)continue;
++            if(color_edge(center,left)||color_edge(center,right)||
++               color_edge(center,top)||color_edge(center,bottom))
++                row[x]=mix_play_edge(center,left,right,top,bottom);
++        }
++        uint16_t *previous=above;
++        above=current;
++        current=previous;
++    }
++}
++
+ static uint32_t expand_word(uint32_t left, uint32_t center, uint32_t right)
+ {
+     return center | (center<<1) | (center>>1) | (left>>31) | (right<<31);
+@@ -427,6 +460,14 @@
+ int roll3_renderer_render_edges(uint16_t *color,uint16_t *depth,unsigned depth_rows,const r3_snapshot_t *s,
+     const r3_world_t *w,r3_camera_follow_t *follow,r3_edge_aa_t *edges)
+ {return render_frame(color,depth,depth_rows,s,w,follow,NULL,edges);}
++int roll3_renderer_render_play(uint16_t *color,uint16_t *depth,unsigned depth_rows,
++    const r3_snapshot_t *s,const r3_world_t *w,r3_camera_follow_t *follow)
++{
++    int result=render_frame(color,depth,depth_rows,s,w,follow,NULL,NULL);
++    if(result==0)smooth_play_edges(color,depth);
++    return result;
++}
++
+ int roll3_renderer_selftest(void (*report)(const char *,bool))
+ {
+     float x,y,z,x2,y2,z2;int failures=0;
+@@ -445,6 +486,9 @@
+     CHECK("TC-509 edge-threshold-and-word-boundary",
+           color_edge(0,2)&&!color_edge(0,1)&&color_edge(0,3u<<5)&&
+           expand_word(0x80000000u,0,1)==0x80000001u&&count_bits(0x80000001u)==2);
++    CHECK("TC-516 play-edge-weight",
++          mix_play_edge(0xffff,0,0,0,0)==0x8410&&
++          mix_play_edge(0x34ba,0x34ba,0x34ba,0x34ba,0x34ba)==0x34ba);
+     const uint16_t coverage[EDGE_SAMPLES]={0xffff,0xffff,0,0};
+     CHECK("TC-509 four-sample-resolve",resolve_four(coverage)==0x8410);
+     CHECK("TC-510 bounded-depth-rows",
+--- a/src/roll3_renderer.h
++++ b/src/roll3_renderer.h
+@@ -32,6 +32,9 @@
+ int roll3_renderer_render_edges(uint16_t *color, uint16_t *depth, unsigned depth_rows,
+     const r3_snapshot_t *snapshot, const r3_world_t *world, r3_camera_follow_t *follow,
+     r3_edge_aa_t *edge_aa);
++/* One depth pass followed by a bounded RGB565 edge filter for play. */
++int roll3_renderer_render_play(uint16_t *color, uint16_t *depth, unsigned depth_rows,
++    const r3_snapshot_t *snapshot, const r3_world_t *world, r3_camera_follow_t *follow);
+ r3_vec_t roll3_renderer_focus(const r3_snapshot_t *snapshot, const r3_world_t *world);
+ bool roll3_renderer_project_focus(r3_vec_t p, r3_vec_t focus, float *x, float *y, float *depth);
+ int roll3_renderer_render(uint16_t *color, uint16_t *depth,
+--- a/src/roll3_view.c
++++ b/src/roll3_view.c
+@@ -162,9 +162,11 @@
+ void roll3_view_render(const r3_snapshot_t *s,const r3_world_t *world)
+ {
+     if(!page)return;
+-    /* Keep expensive geometric coverage on quiet states, off the play loop. */
+-    r3_edge_aa_t *edges=s&&s->state==R3_RUNNING?NULL:&workspace->edges;
+-    int result=roll3_renderer_render_edges(frame_color,workspace->depth,depth_rows,s,world,&camera_follow,edges);
++    int result;
++    if(s&&s->state==R3_RUNNING)
++        result=roll3_renderer_render_play(frame_color,workspace->depth,depth_rows,s,world,&camera_follow);
++    else
++        result=roll3_renderer_render_edges(frame_color,workspace->depth,depth_rows,s,world,&camera_follow,&workspace->edges);
+     lv_image_cache_drop(&image);lv_obj_invalidate(image_obj);
+     bool state_changed=!valid_frame||!s||view_state!=s->state;
+     valid_frame = result == 0;
+--- a/tests/roll3_edge_compare.c
++++ b/tests/roll3_edge_compare.c
+@@ -32,7 +32,7 @@
+                       .60f-.50f*fminf(1,fmaxf(0,(v-6.5f)/3.5f));
+     return (r3_snapshot_t){
+         .version=ROLL3_CONTRACT_VERSION,.radius=R3_RADIUS,.state=R3_RUNNING,
+-        .position={u*R3_CAM_COS-v*R3_CAM_SIN,-u*R3_CAM_SIN-v*R3_CAM_COS,z+R3_RADIUS},
++        .position={u*R3_M1_COS-v*R3_M1_SIN,-u*R3_M1_SIN-v*R3_M1_COS,z+R3_RADIUS},
+         .orientation={cosf(rotation),sinf(rotation),0,0}
+     };
+ }
+@@ -99,6 +99,80 @@
+     struct timespec t;
+     assert(timespec_get(&t,TIME_UTC)==TIME_UTC);
+     return (double)t.tv_sec*1000.0+(double)t.tv_nsec/1e6;
++}
++
++static uint64_t frame_change(const uint16_t *previous, const uint16_t *current)
++{
++    uint64_t energy=0;
++    for(unsigned i=0;i<R3_VIEW_PIXELS;++i){
++        int delta=(int)((previous[i]>>5)&63u)-(int)((current[i]>>5)&63u);
++        energy+=(unsigned)(delta*delta);
++    }
++    return energy;
++}
++
++static void m1_motion(const r3_world_t *world, bool save)
++{
++    const r3_box_t *deck=&world->boxes[0];
++    r3_vec_t view=sub(add(world->spawn,eye_offset),deck->center);
++    assert(dot(view,deck->axis[2])>deck->half.z);
++    assert(fabsf(dot(view,deck->axis[0]))>deck->half.x);
++    assert(fabsf(dot(view,deck->axis[1]))>deck->half.y);
++    r3_vec_t top=add(deck->center,mul(deck->axis[2],deck->half.z));
++    float x,y,z,x1,y1,z1;
++    assert(roll3_renderer_project_focus(top,world->spawn,&x,&y,&z));
++    for(unsigned axis=0;axis<2;++axis){
++        assert(roll3_renderer_project_focus(add(top,mul(deck->axis[axis],.5f)),
++            world->spawn,&x1,&y1,&z1));
++        assert(fabsf(y-y1)>4.0f);
++    }
++    puts("TC-516 M1 start top and both sides, two oblique top edges PASS");
++
++    uint64_t raw_energy=0,filtered_energy=0;
++    double raw_ms=0,filtered_ms=0;
++    for(unsigned repeat=0;repeat<3;++repeat){
++        r3_camera_follow_t raw={0},filtered={0},low={0};
++        for(unsigned i=0;i<FRAME_COUNT;++i){
++            const float v=1.9f+.0045f*(float)i;
++            r3_snapshot_t s={
++                .version=ROLL3_CONTRACT_VERSION,.radius=R3_RADIUS,.state=R3_RUNNING,.run=1,
++                .elapsed_ms=i*50,.position={-v*R3_M1_SIN,-v*R3_M1_COS,
++                    1.50f-.45f*(v-1.0f)/3.5f+R3_RADIUS},
++                .orientation={1,0,0,0}
++            };
++            double start=time_ms();
++            assert(roll3_renderer_render_edges(baseline,regular+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&s,world,&raw,NULL)==0);
++            raw_ms+=time_ms()-start;
++            start=time_ms();
++            assert(roll3_renderer_render_play(banded,regular+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&s,world,&filtered)==0);
++            filtered_ms+=time_ms()-start;
++            if(repeat==0){
++                assert(roll3_renderer_render_play(local+1,compact+1,R3_VIEW_LOW_DEPTH_ROWS,&s,world,&low)==0);
++                assert(memcmp(banded,local+1,sizeof(banded))==0);
++                if(i){
++                    raw_energy+=frame_change(full_color[0],baseline);
++                    filtered_energy+=frame_change(full_color[1],banded);
++                }
++                memcpy(full_color[0],baseline,sizeof(baseline));
++                memcpy(full_color[1],banded,sizeof(banded));
++                if(save){
++                    save_ppm("motion-raw",i,baseline);
++                    save_ppm("motion-smoothed",i,banded);
++                }
++                check_guards();
++                assert(regular[0]==0xdada&&regular[sizeof(regular)/sizeof(*regular)-1]==0x1cad);
++                assert(compact[0]==0xdada&&compact[sizeof(compact)/sizeof(*compact)-1]==0x1cad);
++            }
++        }
++    }
++    printf("TC-516 slow pan frame energy raw=%llu filtered=%llu reduction=%.1f%%\n",
++           (unsigned long long)raw_energy,(unsigned long long)filtered_energy,
++           100.0*(1.0-(double)filtered_energy/raw_energy));
++    printf("TC-516 slow pan mean host ms raw=%.3f filtered=%.3f ratio=%.2f\n",
++           raw_ms/(3*FRAME_COUNT),filtered_ms/(3*FRAME_COUNT),filtered_ms/raw_ms);
++    assert(raw_energy>0&&filtered_energy*100<=85*raw_energy);
++    assert(raw_ms>0&&filtered_ms<=1.5*raw_ms);
++    puts("TC-516 motion edges, 100/50-row identity and guards PASS");
+ }
+ 
+ int main(int argc,char **argv)
+@@ -191,5 +265,6 @@
+     puts("TC-512 play center bands match full-depth center output and guards PASS");
+     puts("TC-510 100/50-row exact output, dense low-memory bands and scratch guards PASS");
+     puts("TC-509 local coverage, unchanged interior, dense bands and guards PASS");
++    m1_motion(world,argc>1);
+     return 0;
+ }
+--- a/tests/roll3_view_test.c
++++ b/tests/roll3_view_test.c
+@@ -142,7 +142,7 @@
+ }
+ static void math_report(const char *name,bool ok){printf("%s %s\n",name,ok?"PASS":"FAIL");}
+ static r3_vec_t from_uv(float u,float v,float z)
+-{return (r3_vec_t){u*R3_CAM_COS-v*R3_CAM_SIN,-u*R3_CAM_SIN-v*R3_CAM_COS,z};}
++{return (r3_vec_t){u*R3_M1_COS-v*R3_M1_SIN,-u*R3_M1_SIN-v*R3_M1_COS,z};}
+ static void render(const r3_snapshot_t *s,const r3_world_t *w)
+ {assert(roll3_renderer_render(color+1,depth+1,s,w)==0);assert(color[0]==0xabcd&&color[R3_VIEW_PIXELS+1]==0xabcd);
+  assert(depth[0]==0xabcd&&depth[R3_VIEW_PIXELS+1]==0xabcd);}
+@@ -271,8 +271,10 @@
+     lv_obj_t *quality_page=lv_obj_get_child(lv_layer_top(),-1);
+     lv_obj_t *quality_image=lv_obj_get_child(quality_page,0);
+     const lv_image_dsc_t *quality=lv_image_get_src(quality_image);
+-    assert(roll3_renderer_render_edges(color+1,depth+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&s,world,NULL,NULL)==0);
++    assert(roll3_renderer_render_play(color+1,depth+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&s,world,NULL)==0);
+     assert(memcmp(quality->data,color+1,R3_VIEW_COLOR_BYTES)==0);
++    assert(roll3_renderer_render_edges(saved,depth+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&s,world,NULL,NULL)==0);
++    assert(memcmp(quality->data,saved,R3_VIEW_COLOR_BYTES)!=0);
+     s.state=R3_PAUSED;
+     roll3_view_render(&s,world);
+     assert(roll3_renderer_render_edges(saved,depth+1,R3_VIEW_DEFAULT_DEPTH_ROWS,&s,world,NULL,&expected_edges)==0);
+@@ -280,7 +282,7 @@
+     assert(memcmp(color+1,saved,R3_VIEW_COLOR_BYTES)!=0);
+     roll3_view_destroy();
+     assert(buffer_live==0&&objects(lv_layer_top())==base&&timers()==clock_base);
+-    puts("TC-512 actual play center and pause edge coverage PASS");
++    puts("TC-516 actual play smoothing and pause edge coverage PASS");
+     const char *names[]={"READY","CALIBRATING","RUNNING","PAUSED","FALLEN","WON","ERROR"};
+     for(unsigned round=0;round<20;++round){assert(roll3_view_create()==0);assert(roll3_view_create()==-100);
+         unsigned count=objects(lv_layer_top()),allocations=buffer_attempts;

@@ -1,0 +1,114 @@
+{
+  "base": "1ab64e22b9066e1d8d95086a2855b19399398827",
+  "branch": "codex/roll3-downhill-a",
+  "uncommitted": true,
+  "physical_verified": false,
+  "map": "A existing course",
+  "images": [
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/main.bin",
+      "sha256": "5d14749db4684d5692ae4a077988d62cd69461da8e8333545759831184ae877b",
+      "bytes": 1229320
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/bootloader/bootloader.bin",
+      "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21",
+      "bytes": 58496
+    },
+    {
+      "path": "project/build_sf32lb52-lchspi-ulp_hcpu/ftab/ftab.bin",
+      "sha256": "88b311803a368d5709b775a18f5061f7c0e97ac3a83075f85415b45922e8f6a7",
+      "bytes": 11288
+    }
+  ],
+  "sources": [
+    {
+      "path": "src/roll3_camera_basis.h",
+      "sha256": "9629b08a2df5929da7e6a98c7568b9daff5bb228cb5f6841898274f40eabe689"
+    },
+    {
+      "path": "src/roll3_contract.h",
+      "sha256": "e23f9f2c15c86e439e548d307fa0b67dad2121fc575b5b558d27e65038ea3017"
+    },
+    {
+      "path": "src/roll3_font.h",
+      "sha256": "4b855910927924f79a991ed352c9c0529952ad6f0b2ed38fb1b71eab249302e4"
+    },
+    {
+      "path": "src/roll3_font_16.c",
+      "sha256": "28e85c4d264221fe627d819bc23dd9c780abb6f4618f80697ec8d5d1d9257d00"
+    },
+    {
+      "path": "src/roll3_font_20.c",
+      "sha256": "83b0ee8d8a52f904d4ffa2c053c381a7772080e792381841c2f15279456e547a"
+    },
+    {
+      "path": "src/roll3_page.c",
+      "sha256": "ee609d10c79228af447b0beb250c9a526f73ad2d5ef04fdf5a7166d3e4b26a16"
+    },
+    {
+      "path": "src/roll3_page.h",
+      "sha256": "8e0a1d34da23e70392332ecb51acd12324d0a164b242f6c9e4213360b3479d53"
+    },
+    {
+      "path": "src/roll3_physics.c",
+      "sha256": "7c044522c179d802dd5e6422ace469018f86f3421b434176c062aa81a1a80ff8"
+    },
+    {
+      "path": "src/roll3_physics.h",
+      "sha256": "9f8718a586429c2573005655102aa889974575551e7bfec97368e946044ddcae"
+    },
+    {
+      "path": "src/roll3_renderer.c",
+      "sha256": "7db34f2908a162c03f0028984833048a318afc9e8c94ee57bb70c5b847eefb06"
+    },
+    {
+      "path": "src/roll3_renderer.h",
+      "sha256": "77a1fa46cea009b4045063cb8e75de23cd9165b081ff2f50e4123765c83f139b"
+    },
+    {
+      "path": "src/roll3_runtime.c",
+      "sha256": "c300534b731d6e5323db1165c061aec0d04ca3321218ed29b7e4e7c4d32ca291"
+    },
+    {
+      "path": "src/roll3_runtime.h",
+      "sha256": "ddc8514e777fe011aa6c63e5e845cd5c77bab527461ff0e8c985029c385750d4"
+    },
+    {
+      "path": "src/roll3_scene.c",
+      "sha256": "fe350ee375ac3cf3a5bdf9f223d0d869c9e15009a8182f9dcf60c3f2ddb98896"
+    },
+    {
+      "path": "src/roll3_scene.h",
+      "sha256": "dde8361c33f98b86aa4ec08eec5643c23061f22fb677bd1c2089d9573be43b17"
+    },
+    {
+      "path": "src/roll3_selftest.c",
+      "sha256": "bf8630433b5dde73352e3e449d6d41467f8829ccdddf08956c0aa6de39c92f17"
+    },
+    {
+      "path": "src/roll3_selftest.h",
+      "sha256": "8eacf52e7dd3ab31e4b7e642912d3b2a44e20f934000f8e71d04d68f471faa89"
+    },
+    {
+      "path": "src/roll3_session.c",
+      "sha256": "44d71360973d35f774a42747fdde8fad7fd05397cd98ac142fe25efa7b5d24e6"
+    },
+    {
+      "path": "src/roll3_session.h",
+      "sha256": "51daf27c840b5f86b0b5bfd05ee1b9cafdc3ff503c1489a6d557d1d0c6b395f3"
+    },
+    {
+      "path": "src/roll3_session_selftest.c",
+      "sha256": "b082e1069063478796209888ec01f0c757b3515a69bfce8ebdf6a44918dc252a"
+    },
+    {
+      "path": "src/roll3_view.c",
+      "sha256": "c52ee4b7ee509f3848d0ebb7114288531a22d1276293276f6818cdb564eb4cec"
+    },
+    {
+      "path": "src/roll3_view.h",
+      "sha256": "e3867454c5f2aecb0a7df1b2abe35fcfb921842f5f3822badeca7e1a000686bc"
+    }
+  ]
+}

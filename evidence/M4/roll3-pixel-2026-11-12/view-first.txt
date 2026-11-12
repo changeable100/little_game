@@ -1,0 +1,15 @@
+Assertion failed: coverage()==near_count, file D:\course_starter\build\m3-pixel-20261112\tests\roll3_view_test.c, line 181
+Traceback (most recent call last):
+  File "D:\course_starter\build\m3-pixel-20261112\tests\run_roll3_sdk_view.py", line 25, in <module>
+    runpy.run_path(str(driver), run_name="__main__")
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\course_starter\build\m3-pixel-20261112\tests\render.py", line 77, in <module>
+    subprocess.run([str(exe)], cwd=out, check=True, timeout=30)
+  File "D:\course_starter\build\m3-pixel-20261112\tests\run_roll3_sdk_view.py", line 17, in run
+    return original_run(command, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\10436\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['D:\\course_starter\\build\\m3-pixel-20261112\\build\\roll3-live-view\\ui-test']' returned non-zero exit status 3221226505.

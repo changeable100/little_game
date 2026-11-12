@@ -1,0 +1,3281 @@
+
+D:\course_starter\build\m3-slim-20261110\project\build_sf32lb52-lchspi-ulp_hcpu\src\roll3_renderer.o:     file format elf32-littlearm
+
+
+Disassembly of section .text.finite_vec:
+
+00000000 <finite_vec>:
+   0:	eeb0 0ac0 	vabs.f32	s0, s0
+   4:	eddf 7a0d 	vldr	s15, [pc, #52]	@ 3c <finite_vec+0x3c>
+   8:	eeb4 0a67 	vcmp.f32	s0, s15
+   c:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  10:	b084      	sub	sp, #16
+  12:	d811      	bhi.n	38 <finite_vec+0x38>
+  14:	eef0 0ae0 	vabs.f32	s1, s1
+  18:	eef4 0a67 	vcmp.f32	s1, s15
+  1c:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  20:	d80a      	bhi.n	38 <finite_vec+0x38>
+  22:	eeb0 1ac1 	vabs.f32	s2, s2
+  26:	eeb4 1a67 	vcmp.f32	s2, s15
+  2a:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  2e:	bf94      	ite	ls
+  30:	2001      	movls	r0, #1
+  32:	2000      	movhi	r0, #0
+  34:	b004      	add	sp, #16
+  36:	4770      	bx	lr
+  38:	2000      	movs	r0, #0
+  3a:	e7fb      	b.n	34 <finite_vec+0x34>
+  3c:	7f7fffff 	.word	0x7f7fffff
+
+Disassembly of section .text.camera:
+
+00000000 <camera>:
+   0:	ee30 0a61 	vsub.f32	s0, s0, s3
+   4:	eddf 7a17 	vldr	s15, [pc, #92]	@ 64 <camera+0x64>
+   8:	ee70 0ac2 	vsub.f32	s1, s1, s4
+   c:	ee30 7a27 	vadd.f32	s14, s0, s15
+  10:	eddf 7a15 	vldr	s15, [pc, #84]	@ 68 <camera+0x68>
+  14:	ee31 1a62 	vsub.f32	s2, s2, s5
+  18:	ee70 0aa7 	vadd.f32	s1, s1, s15
+  1c:	eddf 5a13 	vldr	s11, [pc, #76]	@ 6c <camera+0x6c>
+  20:	eddf 7a13 	vldr	s15, [pc, #76]	@ 70 <camera+0x70>
+  24:	ee20 6aa5 	vmul.f32	s12, s1, s11
+  28:	ee71 6a67 	vsub.f32	s13, s2, s15
+  2c:	ed9f 5a11 	vldr	s10, [pc, #68]	@ 74 <camera+0x74>
+  30:	eeb6 0a00 	vmov.f32	s0, #96	@ 0x3f000000  0.5
+  34:	eea7 6a00 	vfma.f32	s12, s14, s0
+  38:	ee20 0a60 	vnmul.f32	s0, s0, s1
+  3c:	ee66 0a85 	vmul.f32	s1, s13, s10
+  40:	eee6 0a27 	vfma.f32	s1, s12, s15
+  44:	ee67 7ae6 	vnmul.f32	s15, s15, s13
+  48:	ed9f 1a0b 	vldr	s2, [pc, #44]	@ 78 <camera+0x78>
+  4c:	eee6 7a05 	vfma.f32	s15, s12, s10
+  50:	eec0 0a81 	vdiv.f32	s1, s1, s2
+  54:	eea7 0a25 	vfma.f32	s0, s14, s11
+  58:	ee87 1a81 	vdiv.f32	s2, s15, s2
+  5c:	b08e      	sub	sp, #56	@ 0x38
+  5e:	b00e      	add	sp, #56	@ 0x38
+  60:	4770      	bx	lr
+  62:	bf00      	nop
+  64:	3fcccccd 	.word	0x3fcccccd
+  68:	40315cac 	.word	0x40315cac
+  6c:	3f5db3d7 	.word	0x3f5db3d7
+  70:	40266666 	.word	0x40266666
+  74:	404ccccd 	.word	0x404ccccd
+  78:	4083f07b 	.word	0x4083f07b
+
+Disassembly of section .text.rgb:
+
+00000000 <rgb>:
+   0:	f3c0 4307 	ubfx	r3, r0, #16, #8
+   4:	ee07 3a90 	vmov	s15, r3
+   8:	eef8 7ae7 	vcvt.f32.s32	s15, s15
+   c:	ee67 7a80 	vmul.f32	s15, s15, s0
+  10:	eefc 7ae7 	vcvt.u32.f32	s15, s15
+  14:	f3c0 2307 	ubfx	r3, r0, #8, #8
+  18:	ee17 2a90 	vmov	r2, s15
+  1c:	ee07 3a90 	vmov	s15, r3
+  20:	eef8 7ae7 	vcvt.f32.s32	s15, s15
+  24:	ee67 7a80 	vmul.f32	s15, s15, s0
+  28:	eefc 7ae7 	vcvt.u32.f32	s15, s15
+  2c:	b2c0      	uxtb	r0, r0
+  2e:	ee17 3a90 	vmov	r3, s15
+  32:	ee07 0a90 	vmov	s15, r0
+  36:	eef8 7ae7 	vcvt.f32.s32	s15, s15
+  3a:	ee27 0a80 	vmul.f32	s0, s15, s0
+  3e:	eebc 0ac0 	vcvt.u32.f32	s0, s0
+  42:	089b      	lsrs	r3, r3, #2
+  44:	08d2      	lsrs	r2, r2, #3
+  46:	015b      	lsls	r3, r3, #5
+  48:	ea43 23c2 	orr.w	r3, r3, r2, lsl #11
+  4c:	ee10 2a10 	vmov	r2, s0
+  50:	ea43 00d2 	orr.w	r0, r3, r2, lsr #3
+  54:	b280      	uxth	r0, r0
+  56:	4770      	bx	lr
+
+Disassembly of section .text.count_bits:
+
+00000000 <count_bits>:
+   0:	0843      	lsrs	r3, r0, #1
+   2:	f003 3355 	and.w	r3, r3, #1431655765	@ 0x55555555
+   6:	1ac0      	subs	r0, r0, r3
+   8:	f000 3333 	and.w	r3, r0, #858993459	@ 0x33333333
+   c:	0880      	lsrs	r0, r0, #2
+   e:	f000 3033 	and.w	r0, r0, #858993459	@ 0x33333333
+  12:	4418      	add	r0, r3
+  14:	f04f 3301 	mov.w	r3, #16843009	@ 0x1010101
+  18:	eb00 1010 	add.w	r0, r0, r0, lsr #4
+  1c:	f000 300f 	and.w	r0, r0, #252645135	@ 0xf0f0f0f
+  20:	4358      	muls	r0, r3
+  22:	0e00      	lsrs	r0, r0, #24
+  24:	4770      	bx	lr
+
+Disassembly of section .text.clip:
+
+00000000 <clip>:
+   0:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
+   4:	2700      	movs	r7, #0
+   6:	4680      	mov	r8, r0
+   8:	468e      	mov	lr, r1
+   a:	4691      	mov	r9, r2
+   c:	4604      	mov	r4, r0
+   e:	463d      	mov	r5, r7
+  10:	f04f 0a0c 	mov.w	sl, #12
+  14:	b085      	sub	sp, #20
+  16:	f10d 0c04 	add.w	ip, sp, #4
+  1a:	3701      	adds	r7, #1
+  1c:	fbb7 f6fe 	udiv	r6, r7, lr
+  20:	e894 0007 	ldmia.w	r4, {r0, r1, r2}
+  24:	fb0e 7616 	mls	r6, lr, r6, r7
+  28:	fb0a 8606 	mla	r6, sl, r6, r8
+  2c:	ed96 7a02 	vldr	s14, [r6, #8]
+  30:	ed94 6a00 	vldr	s12, [r4]
+  34:	edd4 6a01 	vldr	s13, [r4, #4]
+  38:	edd4 7a02 	vldr	s15, [r4, #8]
+  3c:	edd6 4a00 	vldr	s9, [r6]
+  40:	ed96 5a01 	vldr	s10, [r6, #4]
+  44:	eeb4 0ac7 	vcmpe.f32	s0, s14
+  48:	e88c 0007 	stmia.w	ip, {r0, r1, r2}
+  4c:	b36b      	cbz	r3, aa <clip+0xaa>
+  4e:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  52:	eeb4 0ae7 	vcmpe.f32	s0, s15
+  56:	bf94      	ite	ls
+  58:	2601      	movls	r6, #1
+  5a:	2600      	movhi	r6, #0
+  5c:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  60:	d92d      	bls.n	be <clip+0xbe>
+  62:	2200      	movs	r2, #0
+  64:	4296      	cmp	r6, r2
+  66:	d018      	beq.n	9a <clip+0x9a>
+  68:	ee37 7a67 	vsub.f32	s14, s14, s15
+  6c:	ee30 4a67 	vsub.f32	s8, s0, s15
+  70:	ee35 5a66 	vsub.f32	s10, s10, s13
+  74:	eec4 5a07 	vdiv.f32	s11, s8, s14
+  78:	ee74 4ac6 	vsub.f32	s9, s9, s12
+  7c:	eee5 6a85 	vfma.f32	s13, s11, s10
+  80:	eea5 6aa4 	vfma.f32	s12, s11, s9
+  84:	eee7 7a25 	vfma.f32	s15, s14, s11
+  88:	fb0a 9205 	mla	r2, sl, r5, r9
+  8c:	ed82 6a00 	vstr	s12, [r2]
+  90:	edc2 6a01 	vstr	s13, [r2, #4]
+  94:	edc2 7a02 	vstr	s15, [r2, #8]
+  98:	3501      	adds	r5, #1
+  9a:	4577      	cmp	r7, lr
+  9c:	f104 040c 	add.w	r4, r4, #12
+  a0:	d1bb      	bne.n	1a <clip+0x1a>
+  a2:	4628      	mov	r0, r5
+  a4:	b005      	add	sp, #20
+  a6:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
+  aa:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  ae:	eeb4 0ae7 	vcmpe.f32	s0, s15
+  b2:	bfac      	ite	ge
+  b4:	2601      	movge	r6, #1
+  b6:	2600      	movlt	r6, #0
+  b8:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  bc:	db08      	blt.n	d0 <clip+0xd0>
+  be:	e89c 0007 	ldmia.w	ip, {r0, r1, r2}
+  c2:	fb0a 9b05 	mla	fp, sl, r5, r9
+  c6:	3501      	adds	r5, #1
+  c8:	e88b 0007 	stmia.w	fp, {r0, r1, r2}
+  cc:	2201      	movs	r2, #1
+  ce:	e7c9      	b.n	64 <clip+0x64>
+  d0:	461a      	mov	r2, r3
+  d2:	e7c7      	b.n	64 <clip+0x64>
+
+Disassembly of section .text.sphere_point:
+
+00000000 <sphere_point>:
+   0:	230c      	movs	r3, #12
+   2:	fbb1 f2f3 	udiv	r2, r1, r3
+   6:	fb02 1113 	mls	r1, r2, r3, r1
+   a:	4b28      	ldr	r3, [pc, #160]	@ (ac <sphere_point+0xac>)
+   c:	b090      	sub	sp, #64	@ 0x40
+   e:	eb03 0380 	add.w	r3, r3, r0, lsl #2
+  12:	ed93 7a00 	vldr	s14, [r3]
+  16:	4b26      	ldr	r3, [pc, #152]	@ (b0 <sphere_point+0xb0>)
+  18:	ee20 7a07 	vmul.f32	s14, s0, s14
+  1c:	eb03 0381 	add.w	r3, r3, r1, lsl #2
+  20:	ed93 5a00 	vldr	s10, [r3]
+  24:	4b23      	ldr	r3, [pc, #140]	@ (b4 <sphere_point+0xb4>)
+  26:	ee27 5a05 	vmul.f32	s10, s14, s10
+  2a:	eb03 0381 	add.w	r3, r3, r1, lsl #2
+  2e:	edd3 7a00 	vldr	s15, [r3]
+  32:	4b21      	ldr	r3, [pc, #132]	@ (b8 <sphere_point+0xb8>)
+  34:	ee27 7a27 	vmul.f32	s14, s14, s15
+  38:	eb03 0380 	add.w	r3, r3, r0, lsl #2
+  3c:	edd3 7a00 	vldr	s15, [r3]
+  40:	ee60 7a27 	vmul.f32	s15, s0, s15
+  44:	ee61 6ac5 	vnmul.f32	s13, s3, s10
+  48:	ee21 6a67 	vnmul.f32	s12, s2, s15
+  4c:	ee62 5a47 	vnmul.f32	s11, s4, s14
+  50:	eea5 6a02 	vfma.f32	s12, s10, s4
+  54:	eee7 6a01 	vfma.f32	s13, s14, s2
+  58:	ee36 6a06 	vadd.f32	s12, s12, s12
+  5c:	ee76 6aa6 	vadd.f32	s13, s13, s13
+  60:	eee7 5aa1 	vfma.f32	s11, s15, s3
+  64:	ee26 4ac1 	vnmul.f32	s8, s13, s2
+  68:	ee75 5aa5 	vadd.f32	s11, s11, s11
+  6c:	ee66 4a42 	vnmul.f32	s9, s12, s4
+  70:	eea2 4a25 	vfma.f32	s8, s4, s11
+  74:	eee1 4aa6 	vfma.f32	s9, s3, s13
+  78:	ee65 1ae1 	vnmul.f32	s3, s11, s3
+  7c:	eee0 4aa5 	vfma.f32	s9, s1, s11
+  80:	eee1 1a06 	vfma.f32	s3, s2, s12
+  84:	eef0 5a44 	vmov.f32	s11, s8
+  88:	eee0 1aa6 	vfma.f32	s3, s1, s13
+  8c:	eee0 5a86 	vfma.f32	s11, s1, s12
+  90:	ee77 7aa1 	vadd.f32	s15, s15, s3
+  94:	ee37 7a25 	vadd.f32	s14, s14, s11
+  98:	ee35 5a24 	vadd.f32	s10, s10, s9
+  9c:	ee77 0a03 	vadd.f32	s1, s14, s6
+  a0:	ee32 0a85 	vadd.f32	s0, s5, s10
+  a4:	ee37 1aa3 	vadd.f32	s2, s15, s7
+  a8:	b010      	add	sp, #64	@ 0x40
+  aa:	4770      	bx	lr
+	...
+			ac: R_ARM_ABS32	.rodata.sin_lat.3
+			b0: R_ARM_ABS32	.rodata.cos_lon.2
+			b4: R_ARM_ABS32	.rodata.sin_lon.1
+			b8: R_ARM_ABS32	.rodata.cos_lat.0
+
+Disassembly of section .text.clear_target:
+
+00000000 <clear_target>:
+   0:	b538      	push	{r3, r4, r5, lr}
+   2:	69c3      	ldr	r3, [r0, #28]
+   4:	4601      	mov	r1, r0
+   6:	b183      	cbz	r3, 2a <clear_target+0x2a>
+   8:	68d8      	ldr	r0, [r3, #12]
+   a:	eeb7 0a00 	vmov.f32	s0, #112	@ 0x3f800000  1.0
+   e:	f7ff fffe 	bl	0 <clear_target>
+			e: R_ARM_THM_CALL	rgb
+  12:	698b      	ldr	r3, [r1, #24]
+  14:	b15b      	cbz	r3, 2e <clear_target+0x2e>
+  16:	694a      	ldr	r2, [r1, #20]
+  18:	1a9b      	subs	r3, r3, r2
+  1a:	22f0      	movs	r2, #240	@ 0xf0
+  1c:	f64f 74ff 	movw	r4, #65535	@ 0xffff
+  20:	4353      	muls	r3, r2
+  22:	2200      	movs	r2, #0
+  24:	4293      	cmp	r3, r2
+  26:	d804      	bhi.n	32 <clear_target+0x32>
+  28:	bd38      	pop	{r3, r4, r5, pc}
+  2a:	4806      	ldr	r0, [pc, #24]	@ (44 <clear_target+0x44>)
+  2c:	e7ed      	b.n	a <clear_target+0xa>
+  2e:	23c8      	movs	r3, #200	@ 0xc8
+  30:	e7f3      	b.n	1a <clear_target+0x1a>
+  32:	680d      	ldr	r5, [r1, #0]
+  34:	f825 0012 	strh.w	r0, [r5, r2, lsl #1]
+  38:	684d      	ldr	r5, [r1, #4]
+  3a:	f825 4012 	strh.w	r4, [r5, r2, lsl #1]
+  3e:	3201      	adds	r2, #1
+  40:	e7f0      	b.n	24 <clear_target+0x24>
+  42:	bf00      	nop
+  44:	000c1220 	.word	0x000c1220
+
+Disassembly of section .text.color_edge:
+
+00000000 <color_edge>:
+   0:	4288      	cmp	r0, r1
+   2:	d01a      	beq.n	3a <color_edge+0x3a>
+   4:	0acb      	lsrs	r3, r1, #11
+   6:	ebc3 23d0 	rsb	r3, r3, r0, lsr #11
+   a:	3301      	adds	r3, #1
+   c:	2b02      	cmp	r3, #2
+   e:	d812      	bhi.n	36 <color_edge+0x36>
+  10:	f3c0 1345 	ubfx	r3, r0, #5, #6
+  14:	f3c1 1245 	ubfx	r2, r1, #5, #6
+  18:	1a9b      	subs	r3, r3, r2
+  1a:	3302      	adds	r3, #2
+  1c:	2b04      	cmp	r3, #4
+  1e:	d80a      	bhi.n	36 <color_edge+0x36>
+  20:	f001 011f 	and.w	r1, r1, #31
+  24:	f000 001f 	and.w	r0, r0, #31
+  28:	1a40      	subs	r0, r0, r1
+  2a:	3001      	adds	r0, #1
+  2c:	2802      	cmp	r0, #2
+  2e:	bf94      	ite	ls
+  30:	2000      	movls	r0, #0
+  32:	2001      	movhi	r0, #1
+  34:	4770      	bx	lr
+  36:	2001      	movs	r0, #1
+  38:	4770      	bx	lr
+  3a:	2000      	movs	r0, #0
+  3c:	4770      	bx	lr
+
+Disassembly of section .text.mark_edge:
+
+00000000 <mark_edge>:
+   0:	2201      	movs	r2, #1
+   2:	b510      	push	{r4, lr}
+   4:	094c      	lsrs	r4, r1, #5
+   6:	f850 3024 	ldr.w	r3, [r0, r4, lsl #2]
+   a:	f001 011f 	and.w	r1, r1, #31
+   e:	408a      	lsls	r2, r1
+  10:	4313      	orrs	r3, r2
+  12:	f840 3024 	str.w	r3, [r0, r4, lsl #2]
+  16:	bd10      	pop	{r4, pc}
+
+Disassembly of section .text.resolve_four:
+
+00000000 <resolve_four>:
+   0:	2300      	movs	r3, #0
+   2:	461a      	mov	r2, r3
+   4:	4619      	mov	r1, r3
+   6:	b570      	push	{r4, r5, r6, lr}
+   8:	1e85      	subs	r5, r0, #2
+   a:	3006      	adds	r0, #6
+   c:	f835 4f02 	ldrh.w	r4, [r5, #2]!
+  10:	f3c4 1645 	ubfx	r6, r4, #5, #6
+  14:	eb01 21d4 	add.w	r1, r1, r4, lsr #11
+  18:	42a8      	cmp	r0, r5
+  1a:	f004 041f 	and.w	r4, r4, #31
+  1e:	4432      	add	r2, r6
+  20:	4423      	add	r3, r4
+  22:	d1f3      	bne.n	c <resolve_four+0xc>
+  24:	1c98      	adds	r0, r3, #2
+  26:	3102      	adds	r1, #2
+  28:	0889      	lsrs	r1, r1, #2
+  2a:	0880      	lsrs	r0, r0, #2
+  2c:	3202      	adds	r2, #2
+  2e:	ea40 20c1 	orr.w	r0, r0, r1, lsl #11
+  32:	0892      	lsrs	r2, r2, #2
+  34:	ea40 1042 	orr.w	r0, r0, r2, lsl #5
+  38:	b280      	uxth	r0, r0
+  3a:	bd70      	pop	{r4, r5, r6, pc}
+
+Disassembly of section .text.r3_bend_point:
+
+00000000 <r3_bend_point>:
+   0:	edd0 7a0f 	vldr	s15, [r0, #60]	@ 0x3c
+   4:	eef5 7ac0 	vcmpe.f32	s15, #0.0
+   8:	b510      	push	{r4, lr}
+   a:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+   e:	ed2d 8b06 	vpush	{d8-d10}
+  12:	eeb0 9a40 	vmov.f32	s18, s0
+  16:	eeb7 0a00 	vmov.f32	s0, #112	@ 0x3f800000  1.0
+  1a:	eebf 7a00 	vmov.f32	s14, #240	@ 0xbf800000 -1.0
+  1e:	fe77 7a80 	vselgt.f32	s15, s15, s0
+  22:	eea7 7aa7 	vfma.f32	s14, s15, s15
+  26:	ee20 8aa7 	vmul.f32	s16, s1, s15
+  2a:	ee60 7a87 	vmul.f32	s15, s1, s14
+  2e:	4604      	mov	r4, r0
+  30:	ed90 aa09 	vldr	s20, [r0, #36]	@ 0x24
+  34:	b088      	sub	sp, #32
+  36:	eea0 0aa7 	vfma.f32	s0, s1, s15
+  3a:	ee71 8a4a 	vsub.f32	s17, s2, s20
+  3e:	eef0 9a61 	vmov.f32	s19, s3
+  42:	f7ff fffe 	bl	0 <sqrtf>
+			42: R_ARM_THM_CALL	sqrtf
+  46:	edd4 7a06 	vldr	s15, [r4, #24]
+  4a:	edd4 6a03 	vldr	s13, [r4, #12]
+  4e:	ee68 7a27 	vmul.f32	s15, s16, s15
+  52:	eee6 7a89 	vfma.f32	s15, s13, s18
+  56:	edd4 6a07 	vldr	s13, [r4, #28]
+  5a:	ee88 7a80 	vdiv.f32	s14, s17, s0
+  5e:	ee28 8a26 	vmul.f32	s16, s16, s13
+  62:	edd4 6a04 	vldr	s13, [r4, #16]
+  66:	ee37 7a0a 	vadd.f32	s14, s14, s20
+  6a:	ed94 0a00 	vldr	s0, [r4]
+  6e:	edd4 0a01 	vldr	s1, [r4, #4]
+  72:	eea6 8a89 	vfma.f32	s16, s13, s18
+  76:	eea7 0a87 	vfma.f32	s0, s15, s14
+  7a:	eee8 0a07 	vfma.f32	s1, s16, s14
+  7e:	eeb0 1a69 	vmov.f32	s2, s19
+  82:	b008      	add	sp, #32
+  84:	ecbd 8b06 	vpop	{d8-d10}
+  88:	bd10      	pop	{r4, pc}
+
+Disassembly of section .text.follow_axis:
+
+00000000 <follow_axis>:
+   0:	ee70 0ac0 	vsub.f32	s1, s1, s0
+   4:	eef0 7ae0 	vabs.f32	s15, s1
+   8:	eef4 7ae1 	vcmpe.f32	s15, s3
+   c:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  10:	d90b      	bls.n	2a <follow_axis+0x2a>
+  12:	ee10 3a90 	vmov	r3, s1
+  16:	eef0 1ae1 	vabs.f32	s3, s3
+  1a:	2b00      	cmp	r3, #0
+  1c:	bfb8      	it	lt
+  1e:	eef1 1a61 	vneglt.f32	s3, s3
+  22:	ee70 0ae1 	vsub.f32	s1, s1, s3
+  26:	eea0 0a81 	vfma.f32	s0, s1, s2
+  2a:	4770      	bx	lr
+
+Disassembly of section .text.shade_sample:
+
+00000000 <shade_sample>:
+   0:	ed9f 7a22 	vldr	s14, [pc, #136]	@ 8c <shade_sample+0x8c>
+   4:	eeb4 0ac7 	vcmpe.f32	s0, s14
+   8:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+   c:	b530      	push	{r4, r5, lr}
+   e:	d43c      	bmi.n	8a <shade_sample+0x8a>
+  10:	eef4 0ac7 	vcmpe.f32	s1, s14
+  14:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  18:	d437      	bmi.n	8a <shade_sample+0x8a>
+  1a:	eef7 7a00 	vmov.f32	s15, #112	@ 0x3f800000  1.0
+  1e:	ee77 7ac0 	vsub.f32	s15, s15, s0
+  22:	ee77 7ae0 	vsub.f32	s15, s15, s1
+  26:	eef4 7ac7 	vcmpe.f32	s15, s14
+  2a:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  2e:	d42c      	bmi.n	8a <shade_sample+0x8a>
+  30:	ed92 7a01 	vldr	s14, [r2, #4]
+  34:	ee60 0a87 	vmul.f32	s1, s1, s14
+  38:	ed92 7a00 	vldr	s14, [r2]
+  3c:	eee7 0a00 	vfma.f32	s1, s14, s0
+  40:	ed92 7a02 	vldr	s14, [r2, #8]
+  44:	eee7 0a27 	vfma.f32	s1, s14, s15
+  48:	ed9f 7a11 	vldr	s14, [pc, #68]	@ 90 <shade_sample+0x90>
+  4c:	eddf 7a11 	vldr	s15, [pc, #68]	@ 94 <shade_sample+0x94>
+  50:	eddf 6a11 	vldr	s13, [pc, #68]	@ 98 <shade_sample+0x98>
+  54:	ee70 0ae7 	vsub.f32	s1, s1, s15
+  58:	eef0 7a47 	vmov.f32	s15, s14
+  5c:	eee0 7ae6 	vfms.f32	s15, s1, s13
+  60:	fec7 7ac7 	vminnm.f32	s15, s15, s14
+  64:	ed9f 7a0d 	vldr	s14, [pc, #52]	@ 9c <shade_sample+0x9c>
+  68:	fec7 7a87 	vmaxnm.f32	s15, s15, s14
+  6c:	eefc 7ae7 	vcvt.u32.f32	s15, s15
+  70:	ee17 2a90 	vmov	r2, s15
+  74:	6844      	ldr	r4, [r0, #4]
+  76:	b292      	uxth	r2, r2
+  78:	f834 5011 	ldrh.w	r5, [r4, r1, lsl #1]
+  7c:	4295      	cmp	r5, r2
+  7e:	bf82      	ittt	hi
+  80:	f824 2011 	strhhi.w	r2, [r4, r1, lsl #1]
+  84:	6802      	ldrhi	r2, [r0, #0]
+  86:	f822 3011 	strhhi.w	r3, [r2, r1, lsl #1]
+  8a:	bd30      	pop	{r4, r5, pc}
+  8c:	b727c5ac 	.word	0xb727c5ac
+  90:	477ffe00 	.word	0x477ffe00
+  94:	3d088889 	.word	0x3d088889
+  98:	461a5dfe 	.word	0x461a5dfe
+  9c:	00000000 	.word	0x00000000
+
+Disassembly of section .text.triangle:
+
+00000000 <triangle>:
+   0:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
+   4:	ed2d 8b0c 	vpush	{d8-d13}
+   8:	b0e5      	sub	sp, #404	@ 0x194
+   a:	edcd 2a14 	vstr	s5, [sp, #80]	@ 0x50
+   e:	edcd 3a10 	vstr	s7, [sp, #64]	@ 0x40
+  12:	ee72 2ac1 	vsub.f32	s5, s5, s2
+  16:	ee73 3ae0 	vsub.f32	s7, s7, s1
+  1a:	edcd 1a12 	vstr	s3, [sp, #72]	@ 0x48
+  1e:	ed8d 2a13 	vstr	s4, [sp, #76]	@ 0x4c
+  22:	ee71 1ac0 	vsub.f32	s3, s3, s0
+  26:	ee32 2a60 	vsub.f32	s4, s4, s1
+  2a:	ed8d 4a11 	vstr	s8, [sp, #68]	@ 0x44
+  2e:	ee62 9ae3 	vnmul.f32	s19, s5, s7
+  32:	ee34 4a41 	vsub.f32	s8, s8, s2
+  36:	ed8d 3a0f 	vstr	s6, [sp, #60]	@ 0x3c
+  3a:	eee4 9a02 	vfma.f32	s19, s8, s4
+  3e:	ee33 3a40 	vsub.f32	s6, s6, s0
+  42:	ee21 4ac4 	vnmul.f32	s8, s3, s8
+  46:	eea3 4a22 	vfma.f32	s8, s6, s5
+  4a:	ed8d 0a15 	vstr	s0, [sp, #84]	@ 0x54
+  4e:	ee22 8a43 	vnmul.f32	s16, s4, s6
+  52:	ee24 0a04 	vmul.f32	s0, s8, s8
+  56:	eea3 8aa1 	vfma.f32	s16, s7, s3
+  5a:	eea9 0aa9 	vfma.f32	s0, s19, s19
+  5e:	eea8 0a08 	vfma.f32	s0, s16, s16
+  62:	4606      	mov	r6, r0
+  64:	4689      	mov	r9, r1
+  66:	edcd 0a16 	vstr	s1, [sp, #88]	@ 0x58
+  6a:	ed8d 1a17 	vstr	s2, [sp, #92]	@ 0x5c
+  6e:	edcd 4a0c 	vstr	s9, [sp, #48]	@ 0x30
+  72:	ed8d 5a0d 	vstr	s10, [sp, #52]	@ 0x34
+  76:	edcd 5a0e 	vstr	s11, [sp, #56]	@ 0x38
+  7a:	eeb0 9a44 	vmov.f32	s18, s8
+  7e:	f7ff fffe 	bl	0 <sqrtf>
+			7e: R_ARM_THM_CALL	sqrtf
+  82:	eddf 8ae2 	vldr	s17, [pc, #904]	@ 40c <triangle+0x40c>
+  86:	eef0 7ac0 	vabs.f32	s15, s0
+  8a:	eef4 7a68 	vcmp.f32	s15, s17
+  8e:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  92:	eeb0 aa40 	vmov.f32	s20, s0
+  96:	f200 81e4 	bhi.w	462 <triangle+0x462>
+  9a:	eddf 7add 	vldr	s15, [pc, #884]	@ 410 <triangle+0x410>
+  9e:	eeb4 0ae7 	vcmpe.f32	s0, s15
+  a2:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  a6:	f100 81dc 	bmi.w	462 <triangle+0x462>
+  aa:	223c      	movs	r2, #60	@ 0x3c
+  ac:	2100      	movs	r1, #0
+  ae:	a83d      	add	r0, sp, #244	@ 0xf4
+  b0:	f7ff fffe 	bl	0 <memset>
+			b0: R_ARM_THM_CALL	memset
+  b4:	ed9d 0a15 	vldr	s0, [sp, #84]	@ 0x54
+  b8:	eddd 0a16 	vldr	s1, [sp, #88]	@ 0x58
+  bc:	ed9d 1a17 	vldr	s2, [sp, #92]	@ 0x5c
+  c0:	eddd 1a0c 	vldr	s3, [sp, #48]	@ 0x30
+  c4:	ed9d 2a0d 	vldr	s4, [sp, #52]	@ 0x34
+  c8:	eddd 2a0e 	vldr	s5, [sp, #56]	@ 0x38
+  cc:	f7ff fffe 	bl	0 <triangle>
+			cc: R_ARM_THM_CALL	camera
+  d0:	eeb0 ba40 	vmov.f32	s22, s0
+  d4:	eef0 aa60 	vmov.f32	s21, s1
+  d8:	eeb0 3a41 	vmov.f32	s6, s2
+  dc:	ed8d 0a34 	vstr	s0, [sp, #208]	@ 0xd0
+  e0:	edcd 0a35 	vstr	s1, [sp, #212]	@ 0xd4
+  e4:	ed9d 0a12 	vldr	s0, [sp, #72]	@ 0x48
+  e8:	eddd 0a13 	vldr	s1, [sp, #76]	@ 0x4c
+  ec:	ed8d 1a36 	vstr	s2, [sp, #216]	@ 0xd8
+  f0:	ed9d 1a14 	vldr	s2, [sp, #80]	@ 0x50
+  f4:	f7ff fffe 	bl	0 <triangle>
+			f4: R_ARM_THM_CALL	camera
+  f8:	ed8d 0a37 	vstr	s0, [sp, #220]	@ 0xdc
+  fc:	edcd 0a38 	vstr	s1, [sp, #224]	@ 0xe0
+ 100:	ed8d 1a39 	vstr	s2, [sp, #228]	@ 0xe4
+ 104:	eef0 3a40 	vmov.f32	s7, s0
+ 108:	eeb0 4a60 	vmov.f32	s8, s1
+ 10c:	ed9d 0a0f 	vldr	s0, [sp, #60]	@ 0x3c
+ 110:	eddd 0a10 	vldr	s1, [sp, #64]	@ 0x40
+ 114:	eef0 4a41 	vmov.f32	s9, s2
+ 118:	ed9d 1a11 	vldr	s2, [sp, #68]	@ 0x44
+ 11c:	f7ff fffe 	bl	0 <triangle>
+			11c: R_ARM_THM_CALL	camera
+ 120:	eeb0 6a40 	vmov.f32	s12, s0
+ 124:	eef0 6a60 	vmov.f32	s13, s1
+ 128:	eeb0 7a41 	vmov.f32	s14, s2
+ 12c:	ed8d 0a3a 	vstr	s0, [sp, #232]	@ 0xe8
+ 130:	edcd 0a3b 	vstr	s1, [sp, #236]	@ 0xec
+ 134:	ed8d 1a3c 	vstr	s2, [sp, #240]	@ 0xf0
+ 138:	eeb0 0a4b 	vmov.f32	s0, s22
+ 13c:	eef0 0a6a 	vmov.f32	s1, s21
+ 140:	eeb0 1a43 	vmov.f32	s2, s6
+ 144:	f7ff fffe 	bl	0 <triangle>
+			144: R_ARM_THM_CALL	finite_vec
+ 148:	2800      	cmp	r0, #0
+ 14a:	f000 818a 	beq.w	462 <triangle+0x462>
+ 14e:	eeb0 0a63 	vmov.f32	s0, s7
+ 152:	eef0 0a44 	vmov.f32	s1, s8
+ 156:	eeb0 1a64 	vmov.f32	s2, s9
+ 15a:	f7ff fffe 	bl	0 <triangle>
+			15a: R_ARM_THM_CALL	finite_vec
+ 15e:	2800      	cmp	r0, #0
+ 160:	f000 817f 	beq.w	462 <triangle+0x462>
+ 164:	eeb0 0a46 	vmov.f32	s0, s12
+ 168:	eef0 0a66 	vmov.f32	s1, s13
+ 16c:	eeb0 1a47 	vmov.f32	s2, s14
+ 170:	f7ff fffe 	bl	0 <triangle>
+			170: R_ARM_THM_CALL	finite_vec
+ 174:	2800      	cmp	r0, #0
+ 176:	f000 8174 	beq.w	462 <triangle+0x462>
+ 17a:	2103      	movs	r1, #3
+ 17c:	2301      	movs	r3, #1
+ 17e:	ed9f 0aa5 	vldr	s0, [pc, #660]	@ 414 <triangle+0x414>
+ 182:	aa4c      	add	r2, sp, #304	@ 0x130
+ 184:	a834      	add	r0, sp, #208	@ 0xd0
+ 186:	f7ff fffe 	bl	0 <triangle>
+			186: R_ARM_THM_CALL	clip
+ 18a:	2802      	cmp	r0, #2
+ 18c:	4601      	mov	r1, r0
+ 18e:	f240 8168 	bls.w	462 <triangle+0x462>
+ 192:	2300      	movs	r3, #0
+ 194:	eeb3 0a0e 	vmov.f32	s0, #62	@ 0x41f00000  30.0
+ 198:	aa34      	add	r2, sp, #208	@ 0xd0
+ 19a:	a84c      	add	r0, sp, #304	@ 0x130
+ 19c:	f7ff fffe 	bl	0 <triangle>
+			19c: R_ARM_THM_CALL	clip
+ 1a0:	2802      	cmp	r0, #2
+ 1a2:	9003      	str	r0, [sp, #12]
+ 1a4:	f240 815d 	bls.w	462 <triangle+0x462>
+ 1a8:	eef7 4a00 	vmov.f32	s9, #112	@ 0x3f800000  1.0
+ 1ac:	eec4 7a8a 	vdiv.f32	s15, s9, s20
+ 1b0:	ed9f 7a99 	vldr	s14, [pc, #612]	@ 418 <triangle+0x418>
+ 1b4:	ee27 8a88 	vmul.f32	s16, s15, s16
+ 1b8:	ee27 4a89 	vmul.f32	s8, s15, s18
+ 1bc:	ee67 7aa9 	vmul.f32	s15, s15, s19
+ 1c0:	ee67 7a87 	vmul.f32	s15, s15, s14
+ 1c4:	ed9f 7a95 	vldr	s14, [pc, #596]	@ 41c <triangle+0x41c>
+ 1c8:	eee4 7a07 	vfma.f32	s15, s8, s14
+ 1cc:	ed9f 7a94 	vldr	s14, [pc, #592]	@ 420 <triangle+0x420>
+ 1d0:	eee8 7a07 	vfma.f32	s15, s16, s14
+ 1d4:	ed9f 0a93 	vldr	s0, [pc, #588]	@ 424 <triangle+0x424>
+ 1d8:	eef0 7ae7 	vabs.f32	s15, s15
+ 1dc:	ed9f 7a92 	vldr	s14, [pc, #584]	@ 428 <triangle+0x428>
+ 1e0:	4648      	mov	r0, r9
+ 1e2:	eea7 0a87 	vfma.f32	s0, s15, s14
+ 1e6:	f7ff fffe 	bl	0 <triangle>
+			1e6: R_ARM_THM_CALL	rgb
+ 1ea:	2302      	movs	r3, #2
+ 1ec:	9004      	str	r0, [sp, #16]
+ 1ee:	f10d 09d0 	add.w	r9, sp, #208	@ 0xd0
+ 1f2:	9301      	str	r3, [sp, #4]
+ 1f4:	ab34      	add	r3, sp, #208	@ 0xd0
+ 1f6:	e893 0007 	ldmia.w	r3, {r0, r1, r2}
+ 1fa:	af19      	add	r7, sp, #100	@ 0x64
+ 1fc:	ad1c      	add	r5, sp, #112	@ 0x70
+ 1fe:	f109 030c 	add.w	r3, r9, #12
+ 202:	e887 0007 	stmia.w	r7, {r0, r1, r2}
+ 206:	e893 0007 	ldmia.w	r3, {r0, r1, r2}
+ 20a:	ac1f      	add	r4, sp, #124	@ 0x7c
+ 20c:	e885 0007 	stmia.w	r5, {r0, r1, r2}
+ 210:	f109 0318 	add.w	r3, r9, #24
+ 214:	e893 0007 	ldmia.w	r3, {r0, r1, r2}
+ 218:	e884 0007 	stmia.w	r4, {r0, r1, r2}
+ 21c:	e897 0007 	ldmia.w	r7, {r0, r1, r2}
+ 220:	ab2b      	add	r3, sp, #172	@ 0xac
+ 222:	e883 0007 	stmia.w	r3, {r0, r1, r2}
+ 226:	e895 0007 	ldmia.w	r5, {r0, r1, r2}
+ 22a:	af2e      	add	r7, sp, #184	@ 0xb8
+ 22c:	ad31      	add	r5, sp, #196	@ 0xc4
+ 22e:	e887 0007 	stmia.w	r7, {r0, r1, r2}
+ 232:	e894 0007 	ldmia.w	r4, {r0, r1, r2}
+ 236:	e885 0007 	stmia.w	r5, {r0, r1, r2}
+ 23a:	a822      	add	r0, sp, #136	@ 0x88
+ 23c:	2100      	movs	r1, #0
+ 23e:	4602      	mov	r2, r0
+ 240:	eddf 5a7a 	vldr	s11, [pc, #488]	@ 42c <triangle+0x42c>
+ 244:	ed9f 5a7a 	vldr	s10, [pc, #488]	@ 430 <triangle+0x430>
+ 248:	ed9f 4a7a 	vldr	s8, [pc, #488]	@ 434 <triangle+0x434>
+ 24c:	ac28      	add	r4, sp, #160	@ 0xa0
+ 24e:	ad25      	add	r5, sp, #148	@ 0x94
+ 250:	edd3 7a02 	vldr	s15, [r3, #8]
+ 254:	ee84 6aa7 	vdiv.f32	s12, s9, s15
+ 258:	edd3 7a00 	vldr	s15, [r3]
+ 25c:	eeb0 7a45 	vmov.f32	s14, s10
+ 260:	ee67 7aa5 	vmul.f32	s15, s15, s11
+ 264:	eea6 7a27 	vfma.f32	s14, s12, s15
+ 268:	edd3 6a01 	vldr	s13, [r3, #4]
+ 26c:	eca0 7a01 	vstmia	r0!, {s14}
+ 270:	eeb0 7ac7 	vabs.f32	s14, s14
+ 274:	ee66 6aa5 	vmul.f32	s13, s13, s11
+ 278:	eef0 7a44 	vmov.f32	s15, s8
+ 27c:	eeb4 7a68 	vcmp.f32	s14, s17
+ 280:	eee6 7a66 	vfms.f32	s15, s12, s13
+ 284:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 288:	eca4 6a01 	vstmia	r4!, {s12}
+ 28c:	ece5 7a01 	vstmia	r5!, {s15}
+ 290:	f200 80de 	bhi.w	450 <triangle+0x450>
+ 294:	eef0 7ae7 	vabs.f32	s15, s15
+ 298:	eef4 7a68 	vcmp.f32	s15, s17
+ 29c:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 2a0:	f200 80d6 	bhi.w	450 <triangle+0x450>
+ 2a4:	3101      	adds	r1, #1
+ 2a6:	2903      	cmp	r1, #3
+ 2a8:	f103 030c 	add.w	r3, r3, #12
+ 2ac:	d1d0      	bne.n	250 <triangle+0x250>
+ 2ae:	edd2 2a00 	vldr	s5, [r2]
+ 2b2:	ed9d 5a25 	vldr	s10, [sp, #148]	@ 0x94
+ 2b6:	edd2 3a01 	vldr	s7, [r2, #4]
+ 2ba:	ed9d 3a27 	vldr	s6, [sp, #156]	@ 0x9c
+ 2be:	ed9d 2a26 	vldr	s4, [sp, #152]	@ 0x98
+ 2c2:	ed92 4a02 	vldr	s8, [r2, #8]
+ 2c6:	ee33 7a45 	vsub.f32	s14, s6, s10
+ 2ca:	ee73 5ae2 	vsub.f32	s11, s7, s5
+ 2ce:	ee72 7a45 	vsub.f32	s15, s4, s10
+ 2d2:	ee74 1a62 	vsub.f32	s3, s8, s5
+ 2d6:	ee65 5ac7 	vnmul.f32	s11, s11, s14
+ 2da:	eee1 5aa7 	vfma.f32	s11, s3, s15
+ 2de:	eef0 7ae5 	vabs.f32	s15, s11
+ 2e2:	eef4 7a68 	vcmp.f32	s15, s17
+ 2e6:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 2ea:	f200 80b1 	bhi.w	450 <triangle+0x450>
+ 2ee:	ed9f 7a52 	vldr	s14, [pc, #328]	@ 438 <triangle+0x438>
+ 2f2:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 2f6:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 2fa:	f100 80a9 	bmi.w	450 <triangle+0x450>
+ 2fe:	fec3 6a84 	vmaxnm.f32	s13, s7, s8
+ 302:	ed9f 1a4e 	vldr	s2, [pc, #312]	@ 43c <triangle+0x43c>
+ 306:	fec2 6aa6 	vmaxnm.f32	s13, s5, s13
+ 30a:	eef4 6ac1 	vcmpe.f32	s13, s2
+ 30e:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 312:	f100 809d 	bmi.w	450 <triangle+0x450>
+ 316:	fe83 6ac4 	vminnm.f32	s12, s7, s8
+ 31a:	eddf 7a49 	vldr	s15, [pc, #292]	@ 440 <triangle+0x440>
+ 31e:	fe82 6ac6 	vminnm.f32	s12, s5, s12
+ 322:	eeb4 6ae7 	vcmpe.f32	s12, s15
+ 326:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 32a:	f280 8091 	bge.w	450 <triangle+0x450>
+ 32e:	fec2 7a03 	vmaxnm.f32	s15, s4, s6
+ 332:	fec5 7a27 	vmaxnm.f32	s15, s10, s15
+ 336:	eef4 7ac1 	vcmpe.f32	s15, s2
+ 33a:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 33e:	f100 8087 	bmi.w	450 <triangle+0x450>
+ 342:	fe82 7a43 	vminnm.f32	s14, s4, s6
+ 346:	eddf 0a3f 	vldr	s1, [pc, #252]	@ 444 <triangle+0x444>
+ 34a:	fe85 7a47 	vminnm.f32	s14, s10, s14
+ 34e:	eeb4 7ae0 	vcmpe.f32	s14, s1
+ 352:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 356:	da7b      	bge.n	450 <triangle+0x450>
+ 358:	febb 6a46 	vrintm.f32	s12, s12
+ 35c:	febb 7a47 	vrintm.f32	s14, s14
+ 360:	fe86 6a01 	vmaxnm.f32	s12, s12, s2
+ 364:	fe87 7a01 	vmaxnm.f32	s14, s14, s2
+ 368:	eebd 6ac6 	vcvt.s32.f32	s12, s12
+ 36c:	eebd 7ac7 	vcvt.s32.f32	s14, s14
+ 370:	ee16 5a10 	vmov	r5, s12
+ 374:	fefa 6a66 	vrintp.f32	s13, s13
+ 378:	ed9f 6a33 	vldr	s12, [pc, #204]	@ 448 <triangle+0x448>
+ 37c:	ee17 4a10 	vmov	r4, s14
+ 380:	fefa 7a67 	vrintp.f32	s15, s15
+ 384:	ed9f 7a31 	vldr	s14, [pc, #196]	@ 44c <triangle+0x44c>
+ 388:	fec6 6ac6 	vminnm.f32	s13, s13, s12
+ 38c:	fec7 7ac7 	vminnm.f32	s15, s15, s14
+ 390:	eefd 6ae6 	vcvt.s32.f32	s13, s13
+ 394:	eefd 7ae7 	vcvt.s32.f32	s15, s15
+ 398:	69b3      	ldr	r3, [r6, #24]
+ 39a:	edcd 6a02 	vstr	s13, [sp, #8]
+ 39e:	edcd 7a00 	vstr	s15, [sp]
+ 3a2:	b16b      	cbz	r3, 3c0 <triangle+0x3c0>
+ 3a4:	6972      	ldr	r2, [r6, #20]
+ 3a6:	4294      	cmp	r4, r2
+ 3a8:	bfb8      	it	lt
+ 3aa:	4614      	movlt	r4, r2
+ 3ac:	ee17 2a90 	vmov	r2, s15
+ 3b0:	429a      	cmp	r2, r3
+ 3b2:	bfa4      	itt	ge
+ 3b4:	f103 33ff 	addge.w	r3, r3, #4294967295
+ 3b8:	9300      	strge	r3, [sp, #0]
+ 3ba:	9b00      	ldr	r3, [sp, #0]
+ 3bc:	429c      	cmp	r4, r3
+ 3be:	dc47      	bgt.n	450 <triangle+0x450>
+ 3c0:	ee84 1aa5 	vdiv.f32	s2, s9, s11
+ 3c4:	eef6 7a00 	vmov.f32	s15, #96	@ 0x3f000000  0.5
+ 3c8:	ee33 aa42 	vsub.f32	s20, s6, s4
+ 3cc:	ee35 5a43 	vsub.f32	s10, s10, s6
+ 3d0:	ee33 8ac4 	vsub.f32	s16, s7, s8
+ 3d4:	ee21 9a0a 	vmul.f32	s18, s2, s20
+ 3d8:	ee61 9a05 	vmul.f32	s19, s2, s10
+ 3dc:	ee28 8a27 	vmul.f32	s16, s16, s15
+ 3e0:	ee61 1aa7 	vmul.f32	s3, s3, s15
+ 3e4:	f04f 32ff 	mov.w	r2, #4294967295
+ 3e8:	ee69 aa27 	vmul.f32	s21, s18, s15
+ 3ec:	ee29 baa7 	vmul.f32	s22, s19, s15
+ 3f0:	ee28 8a01 	vmul.f32	s16, s16, s2
+ 3f4:	ee61 1a81 	vmul.f32	s3, s3, s2
+ 3f8:	f005 031f 	and.w	r3, r5, #31
+ 3fc:	fa02 f303 	lsl.w	r3, r2, r3
+ 400:	9306      	str	r3, [sp, #24]
+ 402:	9b00      	ldr	r3, [sp, #0]
+ 404:	429c      	cmp	r4, r3
+ 406:	dd31      	ble.n	46c <triangle+0x46c>
+ 408:	e022      	b.n	450 <triangle+0x450>
+ 40a:	bf00      	nop
+ 40c:	7f7fffff 	.word	0x7f7fffff
+ 410:	322bcc77 	.word	0x322bcc77
+ 414:	3e19999a 	.word	0x3e19999a
+ 418:	3e99999a 	.word	0x3e99999a
+ 41c:	becccccd 	.word	0xbecccccd
+ 420:	3f5db3d7 	.word	0x3f5db3d7
+ 424:	3eb33333 	.word	0x3eb33333
+ 428:	3f266666 	.word	0x3f266666
+ 42c:	43401925 	.word	0x43401925
+ 430:	42f00000 	.word	0x42f00000
+ 434:	42c80000 	.word	0x42c80000
+ 438:	3727c5ac 	.word	0x3727c5ac
+ 43c:	00000000 	.word	0x00000000
+ 440:	43700000 	.word	0x43700000
+ 444:	43480000 	.word	0x43480000
+ 448:	436f0000 	.word	0x436f0000
+ 44c:	43470000 	.word	0x43470000
+ 450:	9b01      	ldr	r3, [sp, #4]
+ 452:	9a03      	ldr	r2, [sp, #12]
+ 454:	3301      	adds	r3, #1
+ 456:	4293      	cmp	r3, r2
+ 458:	9301      	str	r3, [sp, #4]
+ 45a:	f109 090c 	add.w	r9, r9, #12
+ 45e:	f47f aec9 	bne.w	1f4 <triangle+0x1f4>
+ 462:	b065      	add	sp, #404	@ 0x194
+ 464:	ecbd 8b0c 	vpop	{d8-d13}
+ 468:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
+ 46c:	ee07 4a10 	vmov	s14, r4
+ 470:	edd6 7a03 	vldr	s15, [r6, #12]
+ 474:	eeb8 7ac7 	vcvt.f32.s32	s14, s14
+ 478:	ee37 7a27 	vadd.f32	s14, s14, s15
+ 47c:	ee07 5a90 	vmov	s15, r5
+ 480:	ee77 5a42 	vsub.f32	s11, s14, s4
+ 484:	edd6 6a02 	vldr	s13, [r6, #8]
+ 488:	eef8 7ae7 	vcvt.f32.s32	s15, s15
+ 48c:	ee34 6a63 	vsub.f32	s12, s8, s7
+ 490:	ee77 7aa6 	vadd.f32	s15, s15, s13
+ 494:	ee26 6a65 	vnmul.f32	s12, s12, s11
+ 498:	ee37 7a43 	vsub.f32	s14, s14, s6
+ 49c:	ee72 5ac4 	vsub.f32	s11, s5, s8
+ 4a0:	ee77 6ae3 	vsub.f32	s13, s15, s7
+ 4a4:	ee65 5ac7 	vnmul.f32	s11, s11, s14
+ 4a8:	ee77 7ac4 	vsub.f32	s15, s15, s8
+ 4ac:	eeaa 6a26 	vfma.f32	s12, s20, s13
+ 4b0:	eee5 5a27 	vfma.f32	s11, s10, s15
+ 4b4:	6933      	ldr	r3, [r6, #16]
+ 4b6:	ee21 6a06 	vmul.f32	s12, s2, s12
+ 4ba:	ee61 5a25 	vmul.f32	s11, s2, s11
+ 4be:	b9db      	cbnz	r3, 4f8 <triangle+0x4f8>
+ 4c0:	23f0      	movs	r3, #240	@ 0xf0
+ 4c2:	46a8      	mov	r8, r5
+ 4c4:	6977      	ldr	r7, [r6, #20]
+ 4c6:	1be7      	subs	r7, r4, r7
+ 4c8:	435f      	muls	r7, r3
+ 4ca:	9b02      	ldr	r3, [sp, #8]
+ 4cc:	eb08 0107 	add.w	r1, r8, r7
+ 4d0:	4543      	cmp	r3, r8
+ 4d2:	da01      	bge.n	4d8 <triangle+0x4d8>
+ 4d4:	3401      	adds	r4, #1
+ 4d6:	e794      	b.n	402 <triangle+0x402>
+ 4d8:	eef0 0a65 	vmov.f32	s1, s11
+ 4dc:	eeb0 0a46 	vmov.f32	s0, s12
+ 4e0:	4630      	mov	r0, r6
+ 4e2:	9b04      	ldr	r3, [sp, #16]
+ 4e4:	aa28      	add	r2, sp, #160	@ 0xa0
+ 4e6:	f7ff fffe 	bl	0 <triangle>
+			4e6: R_ARM_THM_CALL	shade_sample
+ 4ea:	f108 0801 	add.w	r8, r8, #1
+ 4ee:	ee36 6a09 	vadd.f32	s12, s12, s18
+ 4f2:	ee75 5aa9 	vadd.f32	s11, s11, s19
+ 4f6:	e7e8      	b.n	4ca <triangle+0x4ca>
+ 4f8:	eb03 1244 	add.w	r2, r3, r4, lsl #5
+ 4fc:	eb03 1304 	add.w	r3, r3, r4, lsl #4
+ 500:	f503 53c8 	add.w	r3, r3, #6400	@ 0x1900
+ 504:	9308      	str	r3, [sp, #32]
+ 506:	096b      	lsrs	r3, r5, #5
+ 508:	9309      	str	r3, [sp, #36]	@ 0x24
+ 50a:	9b02      	ldr	r3, [sp, #8]
+ 50c:	9207      	str	r2, [sp, #28]
+ 50e:	095b      	lsrs	r3, r3, #5
+ 510:	9305      	str	r3, [sp, #20]
+ 512:	9b02      	ldr	r3, [sp, #8]
+ 514:	f04f 32ff 	mov.w	r2, #4294967295
+ 518:	43db      	mvns	r3, r3
+ 51a:	f003 031f 	and.w	r3, r3, #31
+ 51e:	fa22 f303 	lsr.w	r3, r2, r3
+ 522:	930a      	str	r3, [sp, #40]	@ 0x28
+ 524:	9b06      	ldr	r3, [sp, #24]
+ 526:	f025 0b1f 	bic.w	fp, r5, #31
+ 52a:	43db      	mvns	r3, r3
+ 52c:	ebab 0b05 	sub.w	fp, fp, r5
+ 530:	ea4f 1a55 	mov.w	sl, r5, lsr #5
+ 534:	930b      	str	r3, [sp, #44]	@ 0x2c
+ 536:	9b05      	ldr	r3, [sp, #20]
+ 538:	4553      	cmp	r3, sl
+ 53a:	d3cb      	bcc.n	4d4 <triangle+0x4d4>
+ 53c:	9b07      	ldr	r3, [sp, #28]
+ 53e:	f853 702a 	ldr.w	r7, [r3, sl, lsl #2]
+ 542:	9b08      	ldr	r3, [sp, #32]
+ 544:	f833 801a 	ldrh.w	r8, [r3, sl, lsl #1]
+ 548:	9b09      	ldr	r3, [sp, #36]	@ 0x24
+ 54a:	4553      	cmp	r3, sl
+ 54c:	d107      	bne.n	55e <triangle+0x55e>
+ 54e:	9b0b      	ldr	r3, [sp, #44]	@ 0x2c
+ 550:	ea03 0007 	and.w	r0, r3, r7
+ 554:	f7ff fffe 	bl	0 <triangle>
+			554: R_ARM_THM_CALL	count_bits
+ 558:	9b06      	ldr	r3, [sp, #24]
+ 55a:	4480      	add	r8, r0
+ 55c:	401f      	ands	r7, r3
+ 55e:	9b05      	ldr	r3, [sp, #20]
+ 560:	ea4f 0888 	mov.w	r8, r8, lsl #2
+ 564:	4553      	cmp	r3, sl
+ 566:	bf04      	itt	eq
+ 568:	9b0a      	ldreq	r3, [sp, #40]	@ 0x28
+ 56a:	401f      	andeq	r7, r3
+ 56c:	b927      	cbnz	r7, 578 <triangle+0x578>
+ 56e:	f10a 0a01 	add.w	sl, sl, #1
+ 572:	f10b 0b20 	add.w	fp, fp, #32
+ 576:	e7de      	b.n	536 <triangle+0x536>
+ 578:	fa97 f3a7 	rbit	r3, r7
+ 57c:	fab3 f383 	clz	r3, r3
+ 580:	445b      	add	r3, fp
+ 582:	ee07 3a90 	vmov	s15, r3
+ 586:	eef0 ba46 	vmov.f32	s23, s12
+ 58a:	eef8 7a67 	vcvt.f32.u32	s15, s15
+ 58e:	eeb0 ca65 	vmov.f32	s24, s11
+ 592:	eee9 ba27 	vfma.f32	s23, s18, s15
+ 596:	eea9 caa7 	vfma.f32	s24, s19, s15
+ 59a:	9b04      	ldr	r3, [sp, #16]
+ 59c:	4630      	mov	r0, r6
+ 59e:	4641      	mov	r1, r8
+ 5a0:	eef0 0a4c 	vmov.f32	s1, s24
+ 5a4:	eeb0 0a6b 	vmov.f32	s0, s23
+ 5a8:	aa28      	add	r2, sp, #160	@ 0xa0
+ 5aa:	f7ff fffe 	bl	0 <triangle>
+			5aa: R_ARM_THM_CALL	shade_sample
+ 5ae:	ee7a caab 	vadd.f32	s25, s21, s23
+ 5b2:	ee3b da0c 	vadd.f32	s26, s22, s24
+ 5b6:	f108 0101 	add.w	r1, r8, #1
+ 5ba:	eef0 0a4d 	vmov.f32	s1, s26
+ 5be:	eeb0 0a6c 	vmov.f32	s0, s25
+ 5c2:	aa28      	add	r2, sp, #160	@ 0xa0
+ 5c4:	f7ff fffe 	bl	0 <triangle>
+			5c4: R_ARM_THM_CALL	shade_sample
+ 5c8:	f108 0102 	add.w	r1, r8, #2
+ 5cc:	ee71 0a8c 	vadd.f32	s1, s3, s24
+ 5d0:	ee38 0a2b 	vadd.f32	s0, s16, s23
+ 5d4:	aa28      	add	r2, sp, #160	@ 0xa0
+ 5d6:	f7ff fffe 	bl	0 <triangle>
+			5d6: R_ARM_THM_CALL	shade_sample
+ 5da:	f108 0103 	add.w	r1, r8, #3
+ 5de:	ee71 0a8d 	vadd.f32	s1, s3, s26
+ 5e2:	ee38 0a2c 	vadd.f32	s0, s16, s25
+ 5e6:	aa28      	add	r2, sp, #160	@ 0xa0
+ 5e8:	f7ff fffe 	bl	0 <triangle>
+			5e8: R_ARM_THM_CALL	shade_sample
+ 5ec:	1e7b      	subs	r3, r7, #1
+ 5ee:	401f      	ands	r7, r3
+ 5f0:	f108 0804 	add.w	r8, r8, #4
+ 5f4:	e7ba      	b.n	56c <triangle+0x56c>
+ 5f6:	bf00      	nop
+
+Disassembly of section .text.bend_quad:
+
+00000000 <bend_quad>:
+   0:	b530      	push	{r4, r5, lr}
+   2:	4604      	mov	r4, r0
+   4:	460d      	mov	r5, r1
+   6:	b091      	sub	sp, #68	@ 0x44
+   8:	edcd 4a04 	vstr	s9, [sp, #16]
+   c:	ed8d 5a05 	vstr	s10, [sp, #20]
+  10:	edcd 5a06 	vstr	s11, [sp, #24]
+  14:	eef0 4a46 	vmov.f32	s9, s12
+  18:	eeb0 5a66 	vmov.f32	s10, s13
+  1c:	eef0 5a47 	vmov.f32	s11, s14
+  20:	ed8d 0a0d 	vstr	s0, [sp, #52]	@ 0x34
+  24:	edcd 0a0e 	vstr	s1, [sp, #56]	@ 0x38
+  28:	ed8d 1a0f 	vstr	s2, [sp, #60]	@ 0x3c
+  2c:	ed8d 3a07 	vstr	s6, [sp, #28]
+  30:	edcd 3a08 	vstr	s7, [sp, #32]
+  34:	ed8d 4a09 	vstr	s8, [sp, #36]	@ 0x24
+  38:	ed8d 6a01 	vstr	s12, [sp, #4]
+  3c:	edcd 6a02 	vstr	s13, [sp, #8]
+  40:	ed8d 7a03 	vstr	s14, [sp, #12]
+  44:	f7ff fffe 	bl	0 <bend_quad>
+			44: R_ARM_THM_CALL	triangle
+  48:	eddd 4a01 	vldr	s9, [sp, #4]
+  4c:	ed9d 5a02 	vldr	s10, [sp, #8]
+  50:	eddd 5a03 	vldr	s11, [sp, #12]
+  54:	4629      	mov	r1, r5
+  56:	ed9d 3a04 	vldr	s6, [sp, #16]
+  5a:	eddd 3a05 	vldr	s7, [sp, #20]
+  5e:	ed9d 4a06 	vldr	s8, [sp, #24]
+  62:	eddd 1a07 	vldr	s3, [sp, #28]
+  66:	ed9d 2a08 	vldr	s4, [sp, #32]
+  6a:	eddd 2a09 	vldr	s5, [sp, #36]	@ 0x24
+  6e:	ed9d 0a0d 	vldr	s0, [sp, #52]	@ 0x34
+  72:	eddd 0a0e 	vldr	s1, [sp, #56]	@ 0x38
+  76:	ed9d 1a0f 	vldr	s2, [sp, #60]	@ 0x3c
+  7a:	4620      	mov	r0, r4
+  7c:	b011      	add	sp, #68	@ 0x44
+  7e:	e8bd 4030 	ldmia.w	sp!, {r4, r5, lr}
+  82:	f7ff bffe 	b.w	0 <bend_quad>
+			82: R_ARM_THM_JUMP24	triangle
+
+Disassembly of section .text.draw_scene:
+
+00000000 <draw_scene>:
+   0:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
+   4:	ed2d 8b10 	vpush	{d8-d15}
+   8:	f8d2 8058 	ldr.w	r8, [r2, #88]	@ 0x58
+   c:	b0f9      	sub	sp, #484	@ 0x1e4
+   e:	4693      	mov	fp, r2
+  10:	eeb0 8a42 	vmov.f32	s16, s4
+  14:	eef0 8a62 	vmov.f32	s17, s5
+  18:	eeb0 9a43 	vmov.f32	s18, s6
+  1c:	ed8d 0a14 	vstr	s0, [sp, #80]	@ 0x50
+  20:	edcd 0a15 	vstr	s1, [sp, #84]	@ 0x54
+  24:	ed8d 1a16 	vstr	s2, [sp, #88]	@ 0x58
+  28:	edcd 1a17 	vstr	s3, [sp, #92]	@ 0x5c
+  2c:	ed8d 2a11 	vstr	s4, [sp, #68]	@ 0x44
+  30:	edcd 2a12 	vstr	s5, [sp, #72]	@ 0x48
+  34:	ed8d 3a13 	vstr	s6, [sp, #76]	@ 0x4c
+  38:	9001      	str	r0, [sp, #4]
+  3a:	9106      	str	r1, [sp, #24]
+  3c:	f1b8 0f00 	cmp.w	r8, #0
+  40:	f000 813f 	beq.w	2c2 <draw_scene+0x2c2>
+  44:	f8d8 3010 	ldr.w	r3, [r8, #16]
+  48:	eddf aabf 	vldr	s21, [pc, #764]	@ 348 <draw_scene+0x348>
+  4c:	ed9f babf 	vldr	s22, [pc, #764]	@ 34c <draw_scene+0x34c>
+  50:	eddf babf 	vldr	s23, [pc, #764]	@ 350 <draw_scene+0x350>
+  54:	ee78 aa6a 	vsub.f32	s21, s16, s21
+  58:	ee38 bacb 	vsub.f32	s22, s17, s22
+  5c:	ee79 ba2b 	vadd.f32	s23, s18, s23
+  60:	f04f 0900 	mov.w	r9, #0
+  64:	9302      	str	r3, [sp, #8]
+  66:	ae11      	add	r6, sp, #68	@ 0x44
+  68:	f8db 3004 	ldr.w	r3, [fp, #4]
+  6c:	454b      	cmp	r3, r9
+  6e:	f200 812a 	bhi.w	2c6 <draw_scene+0x2c6>
+  72:	f8db 4054 	ldr.w	r4, [fp, #84]	@ 0x54
+  76:	2c00      	cmp	r4, #0
+  78:	f000 8487 	beq.w	98a <draw_scene+0x98a>
+  7c:	edd4 7a0e 	vldr	s15, [r4, #56]	@ 0x38
+  80:	eef5 7ac0 	vcmpe.f32	s15, #0.0
+  84:	edd4 ca0f 	vldr	s25, [r4, #60]	@ 0x3c
+  88:	eeb7 da00 	vmov.f32	s26, #112	@ 0x3f800000  1.0
+  8c:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  90:	eef4 cacd 	vcmpe.f32	s25, s26
+  94:	bfcc      	ite	gt
+  96:	2308      	movgt	r3, #8
+  98:	2304      	movle	r3, #4
+  9a:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  9e:	9302      	str	r3, [sp, #8]
+  a0:	9b02      	ldr	r3, [sp, #8]
+  a2:	ed94 ca0d 	vldr	s24, [r4, #52]	@ 0x34
+  a6:	ea4f 0393 	mov.w	r3, r3, lsr #2
+  aa:	9309      	str	r3, [sp, #36]	@ 0x24
+  ac:	f300 830e 	bgt.w	6cc <draw_scene+0x6cc>
+  b0:	eef5 cac0 	vcmpe.f32	s25, #0.0
+  b4:	2301      	movs	r3, #1
+  b6:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  ba:	9307      	str	r3, [sp, #28]
+  bc:	dc01      	bgt.n	c2 <draw_scene+0xc2>
+  be:	eef0 ca4d 	vmov.f32	s25, s26
+  c2:	f1b8 0f00 	cmp.w	r8, #0
+  c6:	f000 8304 	beq.w	6d2 <draw_scene+0x6d2>
+  ca:	f8d8 3010 	ldr.w	r3, [r8, #16]
+  ce:	9308      	str	r3, [sp, #32]
+  d0:	4ba0      	ldr	r3, [pc, #640]	@ (354 <draw_scene+0x354>)
+  d2:	9303      	str	r3, [sp, #12]
+  d4:	220c      	movs	r2, #12
+  d6:	9902      	ldr	r1, [sp, #8]
+  d8:	ab42      	add	r3, sp, #264	@ 0x108
+  da:	fb02 3301 	mla	r3, r2, r1, r3
+  de:	930a      	str	r3, [sp, #40]	@ 0x28
+  e0:	2300      	movs	r3, #0
+  e2:	eddf da9d 	vldr	s27, [pc, #628]	@ 358 <draw_scene+0x358>
+  e6:	ed9f ea9d 	vldr	s28, [pc, #628]	@ 35c <draw_scene+0x35c>
+  ea:	eddf ea9d 	vldr	s29, [pc, #628]	@ 360 <draw_scene+0x360>
+  ee:	4e9d      	ldr	r6, [pc, #628]	@ (364 <draw_scene+0x364>)
+  f0:	9304      	str	r3, [sp, #16]
+  f2:	eddd 7a02 	vldr	s15, [sp, #8]
+  f6:	2100      	movs	r1, #0
+  f8:	eeb8 fae7 	vcvt.f32.s32	s30, s15
+  fc:	9a0a      	ldr	r2, [sp, #40]	@ 0x28
+  fe:	f10d 0a90 	add.w	sl, sp, #144	@ 0x90
+ 102:	ad36      	add	r5, sp, #216	@ 0xd8
+ 104:	f50d 7984 	add.w	r9, sp, #264	@ 0x108
+ 108:	9605      	str	r6, [sp, #20]
+ 10a:	9b05      	ldr	r3, [sp, #20]
+ 10c:	f04f 0b00 	mov.w	fp, #0
+ 110:	edd3 fa01 	vldr	s31, [r3, #4]
+ 114:	ed93 aa00 	vldr	s20, [r3]
+ 118:	236c      	movs	r3, #108	@ 0x6c
+ 11a:	ee6f 5aaf 	vmul.f32	s11, s31, s31
+ 11e:	434b      	muls	r3, r1
+ 120:	930b      	str	r3, [sp, #44]	@ 0x2c
+ 122:	ee07 ba90 	vmov	s15, fp
+ 126:	eef8 7ae7 	vcvt.f32.s32	s15, s15
+ 12a:	ee77 7aa7 	vadd.f32	s15, s15, s15
+ 12e:	edd4 9a09 	vldr	s19, [r4, #36]	@ 0x24
+ 132:	ee87 7a8f 	vdiv.f32	s14, s15, s30
+ 136:	ed94 6a0a 	vldr	s12, [r4, #40]	@ 0x28
+ 13a:	ee77 7a4d 	vsub.f32	s15, s14, s26
+ 13e:	eeb0 1a69 	vmov.f32	s2, s19
+ 142:	ed94 7a0e 	vldr	s14, [r4, #56]	@ 0x38
+ 146:	eea6 1a27 	vfma.f32	s2, s12, s15
+ 14a:	eeb5 7ac0 	vcmpe.f32	s14, #0.0
+ 14e:	ee71 4a69 	vsub.f32	s9, s2, s19
+ 152:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 156:	edd4 7a0c 	vldr	s15, [r4, #48]	@ 0x30
+ 15a:	bfc8      	it	gt
+ 15c:	ee84 5a86 	vdivgt.f32	s10, s9, s12
+ 160:	ee64 7aa7 	vmul.f32	s15, s9, s15
+ 164:	bfc8      	it	gt
+ 166:	ee27 7a05 	vmulgt.f32	s14, s14, s10
+ 16a:	edd4 1a02 	vldr	s3, [r4, #8]
+ 16e:	bfc8      	it	gt
+ 170:	eee5 7a07 	vfmagt.f32	s15, s10, s14
+ 174:	ed94 7a0b 	vldr	s14, [r4, #44]	@ 0x2c
+ 178:	eef6 6a00 	vmov.f32	s13, #96	@ 0x3f000000  0.5
+ 17c:	ee37 7a61 	vsub.f32	s14, s14, s3
+ 180:	ee3d 5a4a 	vsub.f32	s10, s26, s20
+ 184:	ee27 7a26 	vmul.f32	s14, s14, s13
+ 188:	270c      	movs	r7, #12
+ 18a:	eee7 1a05 	vfma.f32	s3, s14, s10
+ 18e:	9b0b      	ldr	r3, [sp, #44]	@ 0x2c
+ 190:	eee5 1aa7 	vfma.f32	s3, s11, s15
+ 194:	fb07 370b 	mla	r7, r7, fp, r3
+ 198:	f507 73f0 	add.w	r3, r7, #480	@ 0x1e0
+ 19c:	eb0d 0703 	add.w	r7, sp, r3
+ 1a0:	f1a7 03d8 	sub.w	r3, r7, #216	@ 0xd8
+ 1a4:	eef0 0a6f 	vmov.f32	s1, s31
+ 1a8:	eeb0 0a4a 	vmov.f32	s0, s20
+ 1ac:	4620      	mov	r0, r4
+ 1ae:	ed8d 6a0e 	vstr	s12, [sp, #56]	@ 0x38
+ 1b2:	edcd 5a0c 	vstr	s11, [sp, #48]	@ 0x30
+ 1b6:	e9cd 120f 	strd	r1, r2, [sp, #60]	@ 0x3c
+ 1ba:	930d      	str	r3, [sp, #52]	@ 0x34
+ 1bc:	f7ff fffe 	bl	0 <draw_scene>
+			1bc: R_ARM_THM_CALL	r3_bend_point
+ 1c0:	e9dd 120f 	ldrd	r1, r2, [sp, #60]	@ 0x3c
+ 1c4:	9b0d      	ldr	r3, [sp, #52]	@ 0x34
+ 1c6:	ed07 0a36 	vstr	s0, [r7, #-216]	@ 0xffffff28
+ 1ca:	edc3 0a01 	vstr	s1, [r3, #4]
+ 1ce:	ed83 1a02 	vstr	s2, [r3, #8]
+ 1d2:	9b02      	ldr	r3, [sp, #8]
+ 1d4:	f10b 0b01 	add.w	fp, fp, #1
+ 1d8:	455b      	cmp	r3, fp
+ 1da:	eddd 5a0c 	vldr	s11, [sp, #48]	@ 0x30
+ 1de:	ed9d 6a0e 	vldr	s12, [sp, #56]	@ 0x38
+ 1e2:	d29e      	bcs.n	122 <draw_scene+0x122>
+ 1e4:	edd9 7a02 	vldr	s15, [r9, #8]
+ 1e8:	edd2 1a02 	vldr	s3, [r2, #8]
+ 1ec:	ee77 7aed 	vsub.f32	s15, s15, s27
+ 1f0:	edd2 5a00 	vldr	s11, [r2]
+ 1f4:	ed92 7a01 	vldr	s14, [r2, #4]
+ 1f8:	ee71 4aed 	vsub.f32	s9, s3, s27
+ 1fc:	f8d9 3004 	ldr.w	r3, [r9, #4]
+ 200:	f8d9 0000 	ldr.w	r0, [r9]
+ 204:	edc5 7a02 	vstr	s15, [r5, #8]
+ 208:	edc5 5a03 	vstr	s11, [r5, #12]
+ 20c:	ed85 7a04 	vstr	s14, [r5, #16]
+ 210:	edc5 4a05 	vstr	s9, [r5, #20]
+ 214:	eeb5 cac0 	vcmpe.f32	s24, #0.0
+ 218:	6028      	str	r0, [r5, #0]
+ 21a:	606b      	str	r3, [r5, #4]
+ 21c:	f1b8 0f00 	cmp.w	r8, #0
+ 220:	f000 8262 	beq.w	6e8 <draw_scene+0x6e8>
+ 224:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 228:	f340 8262 	ble.w	6f0 <draw_scene+0x6f0>
+ 22c:	ed98 5a05 	vldr	s10, [r8, #20]
+ 230:	fec5 7a67 	vminnm.f32	s15, s10, s15
+ 234:	fe85 5a64 	vminnm.f32	s10, s10, s9
+ 238:	edc5 7a02 	vstr	s15, [r5, #8]
+ 23c:	ed85 5a05 	vstr	s10, [r5, #20]
+ 240:	edd4 7a0d 	vldr	s15, [r4, #52]	@ 0x34
+ 244:	ee79 9a86 	vadd.f32	s19, s19, s12
+ 248:	ee6f 7aa7 	vmul.f32	s15, s31, s15
+ 24c:	ee75 5a8e 	vadd.f32	s11, s11, s28
+ 250:	eeef 1aa7 	vfma.f32	s3, s31, s15
+ 254:	ee37 7a0e 	vadd.f32	s14, s14, s28
+ 258:	ee79 9aae 	vadd.f32	s19, s19, s29
+ 25c:	f04f 0b0c 	mov.w	fp, #12
+ 260:	eeb0 1a69 	vmov.f32	s2, s19
+ 264:	eef0 0a6f 	vmov.f32	s1, s31
+ 268:	eeb0 0a4a 	vmov.f32	s0, s20
+ 26c:	edca 5a00 	vstr	s11, [sl]
+ 270:	ed8a 7a01 	vstr	s14, [sl, #4]
+ 274:	edca 1a02 	vstr	s3, [sl, #8]
+ 278:	4620      	mov	r0, r4
+ 27a:	fb0b fb01 	mul.w	fp, fp, r1
+ 27e:	920c      	str	r2, [sp, #48]	@ 0x30
+ 280:	910b      	str	r1, [sp, #44]	@ 0x2c
+ 282:	f7ff fffe 	bl	0 <draw_scene>
+			282: R_ARM_THM_CALL	r3_bend_point
+ 286:	af2a      	add	r7, sp, #168	@ 0xa8
+ 288:	445f      	add	r7, fp
+ 28a:	ed87 0a00 	vstr	s0, [r7]
+ 28e:	edc7 0a01 	vstr	s1, [r7, #4]
+ 292:	ed87 1a02 	vstr	s2, [r7, #8]
+ 296:	eef0 0a6f 	vmov.f32	s1, s31
+ 29a:	eeb0 1a69 	vmov.f32	s2, s19
+ 29e:	eeb0 0a4a 	vmov.f32	s0, s20
+ 2a2:	edd5 1a05 	vldr	s3, [r5, #20]
+ 2a6:	4620      	mov	r0, r4
+ 2a8:	f7ff fffe 	bl	0 <draw_scene>
+			2a8: R_ARM_THM_CALL	r3_bend_point
+ 2ac:	e9dd 120b 	ldrd	r1, r2, [sp, #44]	@ 0x2c
+ 2b0:	af30      	add	r7, sp, #192	@ 0xc0
+ 2b2:	445f      	add	r7, fp
+ 2b4:	ed87 0a00 	vstr	s0, [r7]
+ 2b8:	edc7 0a01 	vstr	s1, [r7, #4]
+ 2bc:	ed87 1a02 	vstr	s2, [r7, #8]
+ 2c0:	e216      	b.n	6f0 <draw_scene+0x6f0>
+ 2c2:	4b29      	ldr	r3, [pc, #164]	@ (368 <draw_scene+0x368>)
+ 2c4:	e6c0      	b.n	48 <draw_scene+0x48>
+ 2c6:	234c      	movs	r3, #76	@ 0x4c
+ 2c8:	f8db 4000 	ldr.w	r4, [fp]
+ 2cc:	fb03 4409 	mla	r4, r3, r9, r4
+ 2d0:	f1b8 0f00 	cmp.w	r8, #0
+ 2d4:	d035      	beq.n	342 <draw_scene+0x342>
+ 2d6:	f8d8 5008 	ldr.w	r5, [r8, #8]
+ 2da:	454d      	cmp	r5, r9
+ 2dc:	bf8c      	ite	hi
+ 2de:	2500      	movhi	r5, #0
+ 2e0:	2501      	movls	r5, #1
+ 2e2:	af42      	add	r7, sp, #264	@ 0x108
+ 2e4:	463b      	mov	r3, r7
+ 2e6:	f04f 0c00 	mov.w	ip, #0
+ 2ea:	e894 0007 	ldmia.w	r4, {r0, r1, r2}
+ 2ee:	e883 0007 	stmia.w	r3, {r0, r1, r2}
+ 2f2:	edd4 7a03 	vldr	s15, [r4, #12]
+ 2f6:	ed93 6a00 	vldr	s12, [r3]
+ 2fa:	edd3 6a01 	vldr	s13, [r3, #4]
+ 2fe:	ed93 7a02 	vldr	s14, [r3, #8]
+ 302:	4622      	mov	r2, r4
+ 304:	2100      	movs	r1, #0
+ 306:	fa2c f001 	lsr.w	r0, ip, r1
+ 30a:	07c0      	lsls	r0, r0, #31
+ 30c:	bf58      	it	pl
+ 30e:	eef1 7a67 	vnegpl.f32	s15, s15
+ 312:	ed92 5a07 	vldr	s10, [r2, #28]
+ 316:	edd2 5a08 	vldr	s11, [r2, #32]
+ 31a:	edd2 4a06 	vldr	s9, [r2, #24]
+ 31e:	3101      	adds	r1, #1
+ 320:	2903      	cmp	r1, #3
+ 322:	eea7 6aa4 	vfma.f32	s12, s15, s9
+ 326:	eee7 6a85 	vfma.f32	s13, s15, s10
+ 32a:	eea7 7aa5 	vfma.f32	s14, s15, s11
+ 32e:	d01d      	beq.n	36c <draw_scene+0x36c>
+ 330:	edd4 5a04 	vldr	s11, [r4, #16]
+ 334:	edd4 7a05 	vldr	s15, [r4, #20]
+ 338:	2901      	cmp	r1, #1
+ 33a:	fe45 7aa7 	vseleq.f32	s15, s11, s15
+ 33e:	320c      	adds	r2, #12
+ 340:	e7e1      	b.n	306 <draw_scene+0x306>
+ 342:	4645      	mov	r5, r8
+ 344:	e7cd      	b.n	2e2 <draw_scene+0x2e2>
+ 346:	bf00      	nop
+ 348:	3fcccccd 	.word	0x3fcccccd
+ 34c:	40315cac 	.word	0x40315cac
+ 350:	40266666 	.word	0x40266666
+ 354:	00b964d1 	.word	0x00b964d1
+ 358:	3eae147b 	.word	0x3eae147b
+ 35c:	00000000 	.word	0x00000000
+ 360:	3df5c28f 	.word	0x3df5c28f
+ 364:	00000000 	.word	0x00000000
+			364: R_ARM_ABS32	.rodata.ring.4
+ 368:	00f2e6d5 	.word	0x00f2e6d5
+ 36c:	f10c 0c01 	add.w	ip, ip, #1
+ 370:	f1bc 0f08 	cmp.w	ip, #8
+ 374:	ed83 6a00 	vstr	s12, [r3]
+ 378:	edc3 6a01 	vstr	s13, [r3, #4]
+ 37c:	ed83 7a02 	vstr	s14, [r3, #8]
+ 380:	f103 030c 	add.w	r3, r3, #12
+ 384:	d1b1      	bne.n	2ea <draw_scene+0x2ea>
+ 386:	f1b8 0f00 	cmp.w	r8, #0
+ 38a:	d014      	beq.n	3b6 <draw_scene+0x3b6>
+ 38c:	b99d      	cbnz	r5, 3b6 <draw_scene+0x3b6>
+ 38e:	2301      	movs	r3, #1
+ 390:	f8d8 2018 	ldr.w	r2, [r8, #24]
+ 394:	fa03 f309 	lsl.w	r3, r3, r9
+ 398:	4013      	ands	r3, r2
+ 39a:	d10c      	bne.n	3b6 <draw_scene+0x3b6>
+ 39c:	ed98 7a05 	vldr	s14, [r8, #20]
+ 3a0:	edd7 7a02 	vldr	s15, [r7, #8]
+ 3a4:	fec7 7ac7 	vminnm.f32	s15, s15, s14
+ 3a8:	3301      	adds	r3, #1
+ 3aa:	2b04      	cmp	r3, #4
+ 3ac:	edc7 7a02 	vstr	s15, [r7, #8]
+ 3b0:	f107 070c 	add.w	r7, r7, #12
+ 3b4:	d1f4      	bne.n	3a0 <draw_scene+0x3a0>
+ 3b6:	f04f 0a00 	mov.w	sl, #0
+ 3ba:	4fc8      	ldr	r7, [pc, #800]	@ (6dc <draw_scene+0x6dc>)
+ 3bc:	b91d      	cbnz	r5, 3c6 <draw_scene+0x3c6>
+ 3be:	f1ba 0f02 	cmp.w	sl, #2
+ 3c2:	f000 8099 	beq.w	4f8 <draw_scene+0x4f8>
+ 3c6:	220c      	movs	r2, #12
+ 3c8:	683b      	ldr	r3, [r7, #0]
+ 3ca:	a978      	add	r1, sp, #480	@ 0x1e0
+ 3cc:	fb02 1303 	mla	r3, r2, r3, r1
+ 3d0:	ed13 0a36 	vldr	s0, [r3, #-216]	@ 0xffffff28
+ 3d4:	ed53 0a35 	vldr	s1, [r3, #-212]	@ 0xffffff2c
+ 3d8:	ed13 1a34 	vldr	s2, [r3, #-208]	@ 0xffffff30
+ 3dc:	687b      	ldr	r3, [r7, #4]
+ 3de:	fb02 1303 	mla	r3, r2, r3, r1
+ 3e2:	ed53 1a36 	vldr	s3, [r3, #-216]	@ 0xffffff28
+ 3e6:	ed13 2a35 	vldr	s4, [r3, #-212]	@ 0xffffff2c
+ 3ea:	ed53 2a34 	vldr	s5, [r3, #-208]	@ 0xffffff30
+ 3ee:	68bb      	ldr	r3, [r7, #8]
+ 3f0:	fb02 1303 	mla	r3, r2, r3, r1
+ 3f4:	ed13 3a36 	vldr	s6, [r3, #-216]	@ 0xffffff28
+ 3f8:	ed53 3a35 	vldr	s7, [r3, #-212]	@ 0xffffff2c
+ 3fc:	ed13 4a34 	vldr	s8, [r3, #-208]	@ 0xffffff30
+ 400:	f1b8 0f00 	cmp.w	r8, #0
+ 404:	d028      	beq.n	458 <draw_scene+0x458>
+ 406:	ee33 6ae0 	vsub.f32	s12, s7, s1
+ 40a:	ee32 5ac1 	vsub.f32	s10, s5, s2
+ 40e:	ee71 6ac0 	vsub.f32	s13, s3, s0
+ 412:	ee73 5a40 	vsub.f32	s11, s6, s0
+ 416:	ee72 7a60 	vsub.f32	s15, s4, s1
+ 41a:	ee34 7a41 	vsub.f32	s14, s8, s2
+ 41e:	ee65 4a46 	vnmul.f32	s9, s10, s12
+ 422:	eee7 4a27 	vfma.f32	s9, s14, s15
+ 426:	ee26 7ac7 	vnmul.f32	s14, s13, s14
+ 42a:	ee67 7ae5 	vnmul.f32	s15, s15, s11
+ 42e:	eea5 7a85 	vfma.f32	s14, s11, s10
+ 432:	eee6 7a26 	vfma.f32	s15, s12, s13
+ 436:	ee7b 6a60 	vsub.f32	s13, s22, s1
+ 43a:	ee7a 5ac0 	vsub.f32	s11, s21, s0
+ 43e:	ee26 7a87 	vmul.f32	s14, s13, s14
+ 442:	ee3b 6ac1 	vsub.f32	s12, s23, s2
+ 446:	eea5 7aa4 	vfma.f32	s14, s11, s9
+ 44a:	eea6 7a27 	vfma.f32	s14, s12, s15
+ 44e:	eeb5 7ac0 	vcmpe.f32	s14, #0.0
+ 452:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 456:	d94f      	bls.n	4f8 <draw_scene+0x4f8>
+ 458:	eef0 4a48 	vmov.f32	s9, s16
+ 45c:	eeb0 5a68 	vmov.f32	s10, s17
+ 460:	eef0 5a49 	vmov.f32	s11, s18
+ 464:	6ca1      	ldr	r1, [r4, #72]	@ 0x48
+ 466:	9801      	ldr	r0, [sp, #4]
+ 468:	ed8d 0a18 	vstr	s0, [sp, #96]	@ 0x60
+ 46c:	edcd 0a19 	vstr	s1, [sp, #100]	@ 0x64
+ 470:	ed8d 1a1a 	vstr	s2, [sp, #104]	@ 0x68
+ 474:	edcd 1a1b 	vstr	s3, [sp, #108]	@ 0x6c
+ 478:	ed8d 2a1c 	vstr	s4, [sp, #112]	@ 0x70
+ 47c:	edcd 2a1d 	vstr	s5, [sp, #116]	@ 0x74
+ 480:	ed8d 3a1e 	vstr	s6, [sp, #120]	@ 0x78
+ 484:	edcd 3a1f 	vstr	s7, [sp, #124]	@ 0x7c
+ 488:	ed8d 4a20 	vstr	s8, [sp, #128]	@ 0x80
+ 48c:	ed86 8a00 	vstr	s16, [r6]
+ 490:	edc6 8a01 	vstr	s17, [r6, #4]
+ 494:	ed86 9a02 	vstr	s18, [r6, #8]
+ 498:	f7ff fffe 	bl	0 <draw_scene>
+			498: R_ARM_THM_CALL	triangle
+ 49c:	210c      	movs	r1, #12
+ 49e:	6978      	ldr	r0, [r7, #20]
+ 4a0:	ab78      	add	r3, sp, #480	@ 0x1e0
+ 4a2:	fb01 3000 	mla	r0, r1, r0, r3
+ 4a6:	693a      	ldr	r2, [r7, #16]
+ 4a8:	f1a0 03d8 	sub.w	r3, r0, #216	@ 0xd8
+ 4ac:	9303      	str	r3, [sp, #12]
+ 4ae:	ab78      	add	r3, sp, #480	@ 0x1e0
+ 4b0:	fb01 3202 	mla	r2, r1, r2, r3
+ 4b4:	68fb      	ldr	r3, [r7, #12]
+ 4b6:	f50d 7cf0 	add.w	ip, sp, #480	@ 0x1e0
+ 4ba:	fb01 c303 	mla	r3, r1, r3, ip
+ 4be:	ed10 3a36 	vldr	s6, [r0, #-216]	@ 0xffffff28
+ 4c2:	9803      	ldr	r0, [sp, #12]
+ 4c4:	edd6 4a00 	vldr	s9, [r6]
+ 4c8:	edd0 3a01 	vldr	s7, [r0, #4]
+ 4cc:	ed90 4a02 	vldr	s8, [r0, #8]
+ 4d0:	ed96 5a01 	vldr	s10, [r6, #4]
+ 4d4:	edd6 5a02 	vldr	s11, [r6, #8]
+ 4d8:	ed52 1a36 	vldr	s3, [r2, #-216]	@ 0xffffff28
+ 4dc:	ed12 2a35 	vldr	s4, [r2, #-212]	@ 0xffffff2c
+ 4e0:	ed52 2a34 	vldr	s5, [r2, #-208]	@ 0xffffff30
+ 4e4:	ed13 0a36 	vldr	s0, [r3, #-216]	@ 0xffffff28
+ 4e8:	ed53 0a35 	vldr	s1, [r3, #-212]	@ 0xffffff2c
+ 4ec:	ed13 1a34 	vldr	s2, [r3, #-208]	@ 0xffffff30
+ 4f0:	6ca1      	ldr	r1, [r4, #72]	@ 0x48
+ 4f2:	9801      	ldr	r0, [sp, #4]
+ 4f4:	f7ff fffe 	bl	0 <draw_scene>
+			4f4: R_ARM_THM_CALL	triangle
+ 4f8:	f10a 0a02 	add.w	sl, sl, #2
+ 4fc:	f1ba 0f0c 	cmp.w	sl, #12
+ 500:	f107 0718 	add.w	r7, r7, #24
+ 504:	f47f af5a 	bne.w	3bc <draw_scene+0x3bc>
+ 508:	b115      	cbz	r5, 510 <draw_scene+0x510>
+ 50a:	f109 0901 	add.w	r9, r9, #1
+ 50e:	e5ab      	b.n	68 <draw_scene+0x68>
+ 510:	eef1 6a00 	vmov.f32	s13, #16	@ 0x40800000  4.0
+ 514:	ed94 aa03 	vldr	s20, [r4, #12]
+ 518:	edd4 9a04 	vldr	s19, [r4, #16]
+ 51c:	ee2a aa26 	vmul.f32	s20, s20, s13
+ 520:	ee69 9aa6 	vmul.f32	s19, s19, s13
+ 524:	eeb3 7a00 	vmov.f32	s14, #48	@ 0x41800000  16.0
+ 528:	feba aa4a 	vrintp.f32	s20, s20
+ 52c:	fefa 9a69 	vrintp.f32	s19, s19
+ 530:	eef7 7a00 	vmov.f32	s15, #112	@ 0x3f800000  1.0
+ 534:	fe8a aa47 	vminnm.f32	s20, s20, s14
+ 538:	fec9 9ac7 	vminnm.f32	s19, s19, s14
+ 53c:	fe8a aa27 	vmaxnm.f32	s20, s20, s15
+ 540:	fec9 9aa7 	vmaxnm.f32	s19, s19, s15
+ 544:	eebc aaca 	vcvt.u32.f32	s20, s20
+ 548:	eefc 9ae9 	vcvt.u32.f32	s19, s19
+ 54c:	ee19 3a90 	vmov	r3, s19
+ 550:	429d      	cmp	r5, r3
+ 552:	d0da      	beq.n	50a <draw_scene+0x50a>
+ 554:	f04f 0a00 	mov.w	sl, #0
+ 558:	af36      	add	r7, sp, #216	@ 0xd8
+ 55a:	e0b0      	b.n	6be <draw_scene+0x6be>
+ 55c:	edd4 7a05 	vldr	s15, [r4, #20]
+ 560:	edd4 3a0c 	vldr	s7, [r4, #48]	@ 0x30
+ 564:	ed94 4a03 	vldr	s8, [r4, #12]
+ 568:	edd4 4a04 	vldr	s9, [r4, #16]
+ 56c:	edd4 6a0d 	vldr	s13, [r4, #52]	@ 0x34
+ 570:	ed94 7a0e 	vldr	s14, [r4, #56]	@ 0x38
+ 574:	edd4 5a01 	vldr	s11, [r4, #4]
+ 578:	ed94 6a02 	vldr	s12, [r4, #8]
+ 57c:	ed94 5a00 	vldr	s10, [r4]
+ 580:	ee74 ca04 	vadd.f32	s25, s8, s8
+ 584:	eea7 5aa3 	vfma.f32	s10, s15, s7
+ 588:	ee34 0aa4 	vadd.f32	s0, s9, s9
+ 58c:	eee7 5aa6 	vfma.f32	s11, s15, s13
+ 590:	eea7 6a87 	vfma.f32	s12, s15, s14
+ 594:	ed94 1a06 	vldr	s2, [r4, #24]
+ 598:	edd4 1a07 	vldr	s3, [r4, #28]
+ 59c:	ed94 2a08 	vldr	s4, [r4, #32]
+ 5a0:	edd4 2a09 	vldr	s5, [r4, #36]	@ 0x24
+ 5a4:	ed94 3a0a 	vldr	s6, [r4, #40]	@ 0x28
+ 5a8:	edd4 3a0b 	vldr	s7, [r4, #44]	@ 0x2c
+ 5ac:	2300      	movs	r3, #0
+ 5ae:	eeb8 ca4a 	vcvt.f32.u32	s24, s20
+ 5b2:	eef8 0a69 	vcvt.f32.u32	s1, s19
+ 5b6:	aa36      	add	r2, sp, #216	@ 0xd8
+ 5b8:	1e59      	subs	r1, r3, #1
+ 5ba:	2901      	cmp	r1, #1
+ 5bc:	bf8c      	ite	hi
+ 5be:	4651      	movhi	r1, sl
+ 5c0:	f10a 0101 	addls.w	r1, sl, #1
+ 5c4:	ee07 1a90 	vmov	s15, r1
+ 5c8:	2b01      	cmp	r3, #1
+ 5ca:	bf94      	ite	ls
+ 5cc:	4629      	movls	r1, r5
+ 5ce:	1c69      	addhi	r1, r5, #1
+ 5d0:	eef8 7a67 	vcvt.f32.u32	s15, s15
+ 5d4:	ee06 1a90 	vmov	s13, r1
+ 5d8:	ee67 7aac 	vmul.f32	s15, s15, s25
+ 5dc:	eef8 6a66 	vcvt.f32.u32	s13, s13
+ 5e0:	ee87 7a8c 	vdiv.f32	s14, s15, s24
+ 5e4:	ee66 6a80 	vmul.f32	s13, s13, s0
+ 5e8:	ee37 7a44 	vsub.f32	s14, s14, s8
+ 5ec:	eec6 7aa0 	vdiv.f32	s15, s13, s1
+ 5f0:	eef0 6a46 	vmov.f32	s13, s12
+ 5f4:	eef0 da45 	vmov.f32	s27, s10
+ 5f8:	eeb0 da65 	vmov.f32	s26, s11
+ 5fc:	eee7 6a02 	vfma.f32	s13, s14, s4
+ 600:	ee77 7ae4 	vsub.f32	s15, s15, s9
+ 604:	eee7 da01 	vfma.f32	s27, s14, s2
+ 608:	eea7 da21 	vfma.f32	s26, s14, s3
+ 60c:	eeb0 7a66 	vmov.f32	s14, s13
+ 610:	eee7 daa2 	vfma.f32	s27, s15, s5
+ 614:	eea7 da83 	vfma.f32	s26, s15, s6
+ 618:	eea7 7aa3 	vfma.f32	s14, s15, s7
+ 61c:	3301      	adds	r3, #1
+ 61e:	2b04      	cmp	r3, #4
+ 620:	edc2 da00 	vstr	s27, [r2]
+ 624:	ed82 da01 	vstr	s26, [r2, #4]
+ 628:	ed82 7a02 	vstr	s14, [r2, #8]
+ 62c:	f102 020c 	add.w	r2, r2, #12
+ 630:	d1c2      	bne.n	5b8 <draw_scene+0x5b8>
+ 632:	eb05 030a 	add.w	r3, r5, sl
+ 636:	07d8      	lsls	r0, r3, #31
+ 638:	bf4c      	ite	mi
+ 63a:	6ca1      	ldrmi	r1, [r4, #72]	@ 0x48
+ 63c:	9902      	ldrpl	r1, [sp, #8]
+ 63e:	eef0 4a48 	vmov.f32	s9, s16
+ 642:	eeb0 5a68 	vmov.f32	s10, s17
+ 646:	eef0 5a49 	vmov.f32	s11, s18
+ 64a:	ed97 3a06 	vldr	s6, [r7, #24]
+ 64e:	edd7 3a07 	vldr	s7, [r7, #28]
+ 652:	ed97 4a08 	vldr	s8, [r7, #32]
+ 656:	edd7 1a03 	vldr	s3, [r7, #12]
+ 65a:	ed97 2a04 	vldr	s4, [r7, #16]
+ 65e:	edd7 2a05 	vldr	s5, [r7, #20]
+ 662:	ed97 0a00 	vldr	s0, [r7]
+ 666:	edd7 0a01 	vldr	s1, [r7, #4]
+ 66a:	ed97 1a02 	vldr	s2, [r7, #8]
+ 66e:	9801      	ldr	r0, [sp, #4]
+ 670:	9103      	str	r1, [sp, #12]
+ 672:	ed86 8a00 	vstr	s16, [r6]
+ 676:	edc6 8a01 	vstr	s17, [r6, #4]
+ 67a:	ed86 9a02 	vstr	s18, [r6, #8]
+ 67e:	f7ff fffe 	bl	0 <draw_scene>
+			67e: R_ARM_THM_CALL	triangle
+ 682:	edd6 4a00 	vldr	s9, [r6]
+ 686:	ed96 5a01 	vldr	s10, [r6, #4]
+ 68a:	edd6 5a02 	vldr	s11, [r6, #8]
+ 68e:	ed97 3a09 	vldr	s6, [r7, #36]	@ 0x24
+ 692:	edd7 3a0a 	vldr	s7, [r7, #40]	@ 0x28
+ 696:	ed97 4a0b 	vldr	s8, [r7, #44]	@ 0x2c
+ 69a:	edd7 1a06 	vldr	s3, [r7, #24]
+ 69e:	ed97 2a07 	vldr	s4, [r7, #28]
+ 6a2:	edd7 2a08 	vldr	s5, [r7, #32]
+ 6a6:	ed97 0a00 	vldr	s0, [r7]
+ 6aa:	edd7 0a01 	vldr	s1, [r7, #4]
+ 6ae:	ed97 1a02 	vldr	s2, [r7, #8]
+ 6b2:	9903      	ldr	r1, [sp, #12]
+ 6b4:	9801      	ldr	r0, [sp, #4]
+ 6b6:	f7ff fffe 	bl	0 <draw_scene>
+			6b6: R_ARM_THM_CALL	triangle
+ 6ba:	f10a 0a01 	add.w	sl, sl, #1
+ 6be:	ee1a 3a10 	vmov	r3, s20
+ 6c2:	459a      	cmp	sl, r3
+ 6c4:	f47f af4a 	bne.w	55c <draw_scene+0x55c>
+ 6c8:	3501      	adds	r5, #1
+ 6ca:	e73f      	b.n	54c <draw_scene+0x54c>
+ 6cc:	2302      	movs	r3, #2
+ 6ce:	9307      	str	r3, [sp, #28]
+ 6d0:	e4f7      	b.n	c2 <draw_scene+0xc2>
+ 6d2:	4b03      	ldr	r3, [pc, #12]	@ (6e0 <draw_scene+0x6e0>)
+ 6d4:	9303      	str	r3, [sp, #12]
+ 6d6:	4b03      	ldr	r3, [pc, #12]	@ (6e4 <draw_scene+0x6e4>)
+ 6d8:	9308      	str	r3, [sp, #32]
+ 6da:	e4fb      	b.n	d4 <draw_scene+0xd4>
+ 6dc:	00000000 	.word	0x00000000
+			6dc: R_ARM_ABS32	.rodata.faces.5
+ 6e0:	00a071bc 	.word	0x00a071bc
+ 6e4:	00f2e6d5 	.word	0x00f2e6d5
+ 6e8:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 6ec:	f73f ada8 	bgt.w	240 <draw_scene+0x240>
+ 6f0:	1c4b      	adds	r3, r1, #1
+ 6f2:	9905      	ldr	r1, [sp, #20]
+ 6f4:	2b02      	cmp	r3, #2
+ 6f6:	f101 0108 	add.w	r1, r1, #8
+ 6fa:	9105      	str	r1, [sp, #20]
+ 6fc:	f10a 0a0c 	add.w	sl, sl, #12
+ 700:	f04f 0101 	mov.w	r1, #1
+ 704:	f105 0518 	add.w	r5, r5, #24
+ 708:	f109 096c 	add.w	r9, r9, #108	@ 0x6c
+ 70c:	f102 026c 	add.w	r2, r2, #108	@ 0x6c
+ 710:	f47f acfb 	bne.w	10a <draw_scene+0x10a>
+ 714:	9b04      	ldr	r3, [sp, #16]
+ 716:	9a07      	ldr	r2, [sp, #28]
+ 718:	2500      	movs	r5, #0
+ 71a:	fbb3 faf2 	udiv	sl, r3, r2
+ 71e:	af21      	add	r7, sp, #132	@ 0x84
+ 720:	462b      	mov	r3, r5
+ 722:	9a09      	ldr	r2, [sp, #36]	@ 0x24
+ 724:	a878      	add	r0, sp, #480	@ 0x1e0
+ 726:	fbb3 f2f2 	udiv	r2, r3, r2
+ 72a:	4452      	add	r2, sl
+ 72c:	07d2      	lsls	r2, r2, #31
+ 72e:	f04f 020c 	mov.w	r2, #12
+ 732:	f105 0501 	add.w	r5, r5, #1
+ 736:	fb02 0303 	mla	r3, r2, r3, r0
+ 73a:	fb02 0205 	mla	r2, r2, r5, r0
+ 73e:	ed53 4a1b 	vldr	s9, [r3, #-108]	@ 0xffffff94
+ 742:	ed13 5a1a 	vldr	s10, [r3, #-104]	@ 0xffffff98
+ 746:	ed53 5a19 	vldr	s11, [r3, #-100]	@ 0xffffff9c
+ 74a:	ed13 0a36 	vldr	s0, [r3, #-216]	@ 0xffffff28
+ 74e:	ed53 0a35 	vldr	s1, [r3, #-212]	@ 0xffffff2c
+ 752:	ed13 1a34 	vldr	s2, [r3, #-208]	@ 0xffffff30
+ 756:	bf4c      	ite	mi
+ 758:	6c21      	ldrmi	r1, [r4, #64]	@ 0x40
+ 75a:	9908      	ldrpl	r1, [sp, #32]
+ 75c:	eeb0 6a48 	vmov.f32	s12, s16
+ 760:	eef0 6a68 	vmov.f32	s13, s17
+ 764:	eeb0 7a49 	vmov.f32	s14, s18
+ 768:	ed12 3a1b 	vldr	s6, [r2, #-108]	@ 0xffffff94
+ 76c:	ed52 3a1a 	vldr	s7, [r2, #-104]	@ 0xffffff98
+ 770:	ed12 4a19 	vldr	s8, [r2, #-100]	@ 0xffffff9c
+ 774:	ed52 1a36 	vldr	s3, [r2, #-216]	@ 0xffffff28
+ 778:	ed12 2a35 	vldr	s4, [r2, #-212]	@ 0xffffff2c
+ 77c:	ed52 2a34 	vldr	s5, [r2, #-208]	@ 0xffffff30
+ 780:	9801      	ldr	r0, [sp, #4]
+ 782:	ed87 8a00 	vstr	s16, [r7]
+ 786:	edc7 8a01 	vstr	s17, [r7, #4]
+ 78a:	ed87 9a02 	vstr	s18, [r7, #8]
+ 78e:	f7ff fffe 	bl	0 <draw_scene>
+			78e: R_ARM_THM_CALL	bend_quad
+ 792:	9b02      	ldr	r3, [sp, #8]
+ 794:	42ab      	cmp	r3, r5
+ 796:	d1c3      	bne.n	720 <draw_scene+0x720>
+ 798:	ed96 7a02 	vldr	s14, [r6, #8]
+ 79c:	edd6 7a00 	vldr	s15, [r6]
+ 7a0:	edd6 5a03 	vldr	s11, [r6, #12]
+ 7a4:	ee77 7a87 	vadd.f32	s15, s15, s14
+ 7a8:	ed96 7a01 	vldr	s14, [r6, #4]
+ 7ac:	ee37 7a25 	vadd.f32	s14, s14, s11
+ 7b0:	ed94 fa07 	vldr	s30, [r4, #28]
+ 7b4:	eec7 9a2c 	vdiv.f32	s19, s14, s25
+ 7b8:	ed94 aa08 	vldr	s20, [r4, #32]
+ 7bc:	ed94 7a06 	vldr	s14, [r4, #24]
+ 7c0:	ee29 fa8f 	vmul.f32	s30, s19, s30
+ 7c4:	ee29 aa8a 	vmul.f32	s20, s19, s20
+ 7c8:	ed94 6a04 	vldr	s12, [r4, #16]
+ 7cc:	ee69 9a87 	vmul.f32	s19, s19, s14
+ 7d0:	edd4 6a05 	vldr	s13, [r4, #20]
+ 7d4:	ed94 7a03 	vldr	s14, [r4, #12]
+ 7d8:	eea7 fa86 	vfma.f32	s30, s15, s12
+ 7dc:	eee7 9a87 	vfma.f32	s19, s15, s14
+ 7e0:	eea7 aaa6 	vfma.f32	s20, s15, s13
+ 7e4:	f1b8 0f00 	cmp.w	r8, #0
+ 7e8:	d017      	beq.n	81a <draw_scene+0x81a>
+ 7ea:	eddd 7a43 	vldr	s15, [sp, #268]	@ 0x10c
+ 7ee:	eddd 6a42 	vldr	s13, [sp, #264]	@ 0x108
+ 7f2:	ee7b 7a67 	vsub.f32	s15, s22, s15
+ 7f6:	ed9d 7a44 	vldr	s14, [sp, #272]	@ 0x110
+ 7fa:	ee7a 6ae6 	vsub.f32	s13, s21, s13
+ 7fe:	ee67 7a8f 	vmul.f32	s15, s15, s30
+ 802:	ee3b 7ac7 	vsub.f32	s14, s23, s14
+ 806:	eee9 7aa6 	vfma.f32	s15, s19, s13
+ 80a:	eeea 7a07 	vfma.f32	s15, s20, s14
+ 80e:	eef5 7ac0 	vcmpe.f32	s15, #0.0
+ 812:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 816:	f140 81ff 	bpl.w	c18 <draw_scene+0xc18>
+ 81a:	ed97 6a00 	vldr	s12, [r7]
+ 81e:	edd7 6a01 	vldr	s13, [r7, #4]
+ 822:	ed97 7a02 	vldr	s14, [r7, #8]
+ 826:	eddd 4a36 	vldr	s9, [sp, #216]	@ 0xd8
+ 82a:	ed9d 5a37 	vldr	s10, [sp, #220]	@ 0xdc
+ 82e:	eddd 5a38 	vldr	s11, [sp, #224]	@ 0xe0
+ 832:	ed9d 3a3c 	vldr	s6, [sp, #240]	@ 0xf0
+ 836:	eddd 3a3d 	vldr	s7, [sp, #244]	@ 0xf4
+ 83a:	ed9d 4a3e 	vldr	s8, [sp, #248]	@ 0xf8
+ 83e:	eddd 1a5d 	vldr	s3, [sp, #372]	@ 0x174
+ 842:	ed9d 2a5e 	vldr	s4, [sp, #376]	@ 0x178
+ 846:	eddd 2a5f 	vldr	s5, [sp, #380]	@ 0x17c
+ 84a:	ed9d 0a42 	vldr	s0, [sp, #264]	@ 0x108
+ 84e:	eddd 0a43 	vldr	s1, [sp, #268]	@ 0x10c
+ 852:	ed9d 1a44 	vldr	s2, [sp, #272]	@ 0x110
+ 856:	6c21      	ldr	r1, [r4, #64]	@ 0x40
+ 858:	9801      	ldr	r0, [sp, #4]
+ 85a:	f7ff fffe 	bl	0 <draw_scene>
+			85a: R_ARM_THM_CALL	bend_quad
+ 85e:	eeb5 cac0 	vcmpe.f32	s24, #0.0
+ 862:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 866:	f340 815d 	ble.w	b24 <draw_scene+0xb24>
+ 86a:	f1b8 0f00 	cmp.w	r8, #0
+ 86e:	f040 81d8 	bne.w	c22 <draw_scene+0xc22>
+ 872:	230c      	movs	r3, #12
+ 874:	a878      	add	r0, sp, #480	@ 0x1e0
+ 876:	fb03 0305 	mla	r3, r3, r5, r0
+ 87a:	ed9d 6a21 	vldr	s12, [sp, #132]	@ 0x84
+ 87e:	eddd 6a22 	vldr	s13, [sp, #136]	@ 0x88
+ 882:	ed9d 7a23 	vldr	s14, [sp, #140]	@ 0x8c
+ 886:	eddd 4a24 	vldr	s9, [sp, #144]	@ 0x90
+ 88a:	ed9d 5a25 	vldr	s10, [sp, #148]	@ 0x94
+ 88e:	eddd 5a26 	vldr	s11, [sp, #152]	@ 0x98
+ 892:	ed9d 3a27 	vldr	s6, [sp, #156]	@ 0x9c
+ 896:	eddd 3a28 	vldr	s7, [sp, #160]	@ 0xa0
+ 89a:	ed9d 4a29 	vldr	s8, [sp, #164]	@ 0xa4
+ 89e:	ed53 1a1b 	vldr	s3, [r3, #-108]	@ 0xffffff94
+ 8a2:	ed13 2a1a 	vldr	s4, [r3, #-104]	@ 0xffffff98
+ 8a6:	ed53 2a19 	vldr	s5, [r3, #-100]	@ 0xffffff9c
+ 8aa:	ed13 0a36 	vldr	s0, [r3, #-216]	@ 0xffffff28
+ 8ae:	ed53 0a35 	vldr	s1, [r3, #-212]	@ 0xffffff2c
+ 8b2:	ed13 1a34 	vldr	s2, [r3, #-208]	@ 0xffffff30
+ 8b6:	9903      	ldr	r1, [sp, #12]
+ 8b8:	9801      	ldr	r0, [sp, #4]
+ 8ba:	f7ff fffe 	bl	0 <draw_scene>
+			8ba: R_ARM_THM_CALL	bend_quad
+ 8be:	eddd 4a2a 	vldr	s9, [sp, #168]	@ 0xa8
+ 8c2:	ed9d 5a2b 	vldr	s10, [sp, #172]	@ 0xac
+ 8c6:	eddd 5a2c 	vldr	s11, [sp, #176]	@ 0xb0
+ 8ca:	ed9d 3a2d 	vldr	s6, [sp, #180]	@ 0xb4
+ 8ce:	eddd 3a2e 	vldr	s7, [sp, #184]	@ 0xb8
+ 8d2:	ed9d 4a2f 	vldr	s8, [sp, #188]	@ 0xbc
+ 8d6:	eddd 1a27 	vldr	s3, [sp, #156]	@ 0x9c
+ 8da:	ed9d 2a28 	vldr	s4, [sp, #160]	@ 0xa0
+ 8de:	eddd 2a29 	vldr	s5, [sp, #164]	@ 0xa4
+ 8e2:	ed9d 0a24 	vldr	s0, [sp, #144]	@ 0x90
+ 8e6:	eddd 0a25 	vldr	s1, [sp, #148]	@ 0x94
+ 8ea:	ed9d 1a26 	vldr	s2, [sp, #152]	@ 0x98
+ 8ee:	9903      	ldr	r1, [sp, #12]
+ 8f0:	9801      	ldr	r0, [sp, #4]
+ 8f2:	ed9d 6a21 	vldr	s12, [sp, #132]	@ 0x84
+ 8f6:	eddd 6a22 	vldr	s13, [sp, #136]	@ 0x88
+ 8fa:	ed9d 7a23 	vldr	s14, [sp, #140]	@ 0x8c
+ 8fe:	af21      	add	r7, sp, #132	@ 0x84
+ 900:	f7ff fffe 	bl	0 <draw_scene>
+			900: R_ARM_THM_CALL	bend_quad
+ 904:	f1b8 0f00 	cmp.w	r8, #0
+ 908:	d016      	beq.n	938 <draw_scene+0x938>
+ 90a:	eddd 7a2b 	vldr	s15, [sp, #172]	@ 0xac
+ 90e:	eddd 6a2a 	vldr	s13, [sp, #168]	@ 0xa8
+ 912:	ee7b 7a67 	vsub.f32	s15, s22, s15
+ 916:	ed9d 7a2c 	vldr	s14, [sp, #176]	@ 0xb0
+ 91a:	ee7a 6ae6 	vsub.f32	s13, s21, s13
+ 91e:	ee67 7a8f 	vmul.f32	s15, s15, s30
+ 922:	ee3b 7ac7 	vsub.f32	s14, s23, s14
+ 926:	eee9 7aa6 	vfma.f32	s15, s19, s13
+ 92a:	eeea 7a07 	vfma.f32	s15, s20, s14
+ 92e:	eef5 7ac0 	vcmpe.f32	s15, #0.0
+ 932:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 936:	dd21      	ble.n	97c <draw_scene+0x97c>
+ 938:	ed97 6a00 	vldr	s12, [r7]
+ 93c:	edd7 6a01 	vldr	s13, [r7, #4]
+ 940:	ed97 7a02 	vldr	s14, [r7, #8]
+ 944:	eddd 4a30 	vldr	s9, [sp, #192]	@ 0xc0
+ 948:	ed9d 5a31 	vldr	s10, [sp, #196]	@ 0xc4
+ 94c:	eddd 5a32 	vldr	s11, [sp, #200]	@ 0xc8
+ 950:	ed9d 3a33 	vldr	s6, [sp, #204]	@ 0xcc
+ 954:	eddd 3a34 	vldr	s7, [sp, #208]	@ 0xd0
+ 958:	ed9d 4a35 	vldr	s8, [sp, #212]	@ 0xd4
+ 95c:	eddd 1a2d 	vldr	s3, [sp, #180]	@ 0xb4
+ 960:	ed9d 2a2e 	vldr	s4, [sp, #184]	@ 0xb8
+ 964:	eddd 2a2f 	vldr	s5, [sp, #188]	@ 0xbc
+ 968:	ed9d 0a2a 	vldr	s0, [sp, #168]	@ 0xa8
+ 96c:	eddd 0a2b 	vldr	s1, [sp, #172]	@ 0xac
+ 970:	ed9d 1a2c 	vldr	s2, [sp, #176]	@ 0xb0
+ 974:	9903      	ldr	r1, [sp, #12]
+ 976:	9801      	ldr	r0, [sp, #4]
+ 978:	f7ff fffe 	bl	0 <draw_scene>
+			978: R_ARM_THM_CALL	bend_quad
+ 97c:	9b04      	ldr	r3, [sp, #16]
+ 97e:	3608      	adds	r6, #8
+ 980:	3301      	adds	r3, #1
+ 982:	2b18      	cmp	r3, #24
+ 984:	9304      	str	r3, [sp, #16]
+ 986:	f47f abb4 	bne.w	f2 <draw_scene+0xf2>
+ 98a:	ac11      	add	r4, sp, #68	@ 0x44
+ 98c:	f1b8 0f00 	cmp.w	r8, #0
+ 990:	f040 813d 	bne.w	c0e <draw_scene+0xc0e>
+ 994:	f04f 0900 	mov.w	r9, #0
+ 998:	4fb0      	ldr	r7, [pc, #704]	@ (c5c <draw_scene+0xc5c>)
+ 99a:	f10d 0ac0 	add.w	sl, sp, #192	@ 0xc0
+ 99e:	2500      	movs	r5, #0
+ 9a0:	9b06      	ldr	r3, [sp, #24]
+ 9a2:	ed9d fa14 	vldr	s30, [sp, #80]	@ 0x50
+ 9a6:	edd3 da14 	vldr	s27, [r3, #80]	@ 0x50
+ 9aa:	eddd ea15 	vldr	s29, [sp, #84]	@ 0x54
+ 9ae:	ed9d ea16 	vldr	s28, [sp, #88]	@ 0x58
+ 9b2:	9a06      	ldr	r2, [sp, #24]
+ 9b4:	ed9d 2a17 	vldr	s4, [sp, #92]	@ 0x5c
+ 9b8:	edd2 2a04 	vldr	s5, [r2, #16]
+ 9bc:	ed92 3a05 	vldr	s6, [r2, #20]
+ 9c0:	edd2 3a06 	vldr	s7, [r2, #24]
+ 9c4:	eef0 0a4f 	vmov.f32	s1, s30
+ 9c8:	eeb0 1a6e 	vmov.f32	s2, s29
+ 9cc:	eeb0 0a6d 	vmov.f32	s0, s27
+ 9d0:	4629      	mov	r1, r5
+ 9d2:	eef0 1a4e 	vmov.f32	s3, s28
+ 9d6:	4648      	mov	r0, r9
+ 9d8:	f7ff fffe 	bl	0 <draw_scene>
+			9d8: R_ARM_THM_CALL	sphere_point
+ 9dc:	f109 0b01 	add.w	fp, r9, #1
+ 9e0:	4629      	mov	r1, r5
+ 9e2:	4658      	mov	r0, fp
+ 9e4:	eef0 aa40 	vmov.f32	s21, s0
+ 9e8:	eeb0 aa60 	vmov.f32	s20, s1
+ 9ec:	eef0 9a41 	vmov.f32	s19, s2
+ 9f0:	ed8d 0a2a 	vstr	s0, [sp, #168]	@ 0xa8
+ 9f4:	edcd 0a2b 	vstr	s1, [sp, #172]	@ 0xac
+ 9f8:	eeb0 0a6d 	vmov.f32	s0, s27
+ 9fc:	eef0 0a4f 	vmov.f32	s1, s30
+ a00:	ed8d 1a2c 	vstr	s2, [sp, #176]	@ 0xb0
+ a04:	eef0 1a4e 	vmov.f32	s3, s28
+ a08:	eeb0 1a6e 	vmov.f32	s2, s29
+ a0c:	f7ff fffe 	bl	0 <draw_scene>
+			a0c: R_ARM_THM_CALL	sphere_point
+ a10:	9502      	str	r5, [sp, #8]
+ a12:	3501      	adds	r5, #1
+ a14:	eeb0 ca40 	vmov.f32	s24, s0
+ a18:	eef0 ba60 	vmov.f32	s23, s1
+ a1c:	eeb0 ba41 	vmov.f32	s22, s2
+ a20:	ed8a 0a00 	vstr	s0, [sl]
+ a24:	edca 0a01 	vstr	s1, [sl, #4]
+ a28:	eeb0 0a6d 	vmov.f32	s0, s27
+ a2c:	eef0 0a4f 	vmov.f32	s1, s30
+ a30:	ed8a 1a02 	vstr	s2, [sl, #8]
+ a34:	eef0 1a4e 	vmov.f32	s3, s28
+ a38:	eeb0 1a6e 	vmov.f32	s2, s29
+ a3c:	4629      	mov	r1, r5
+ a3e:	f7ff fffe 	bl	0 <draw_scene>
+			a3e: R_ARM_THM_CALL	sphere_point
+ a42:	eef0 1a4e 	vmov.f32	s3, s28
+ a46:	eef0 fa40 	vmov.f32	s31, s0
+ a4a:	eeb0 da60 	vmov.f32	s26, s1
+ a4e:	eef0 ca41 	vmov.f32	s25, s2
+ a52:	ed8d 0a36 	vstr	s0, [sp, #216]	@ 0xd8
+ a56:	edcd 0a37 	vstr	s1, [sp, #220]	@ 0xdc
+ a5a:	eeb0 0a6d 	vmov.f32	s0, s27
+ a5e:	eef0 0a4f 	vmov.f32	s1, s30
+ a62:	ed8d 1a38 	vstr	s2, [sp, #224]	@ 0xe0
+ a66:	4629      	mov	r1, r5
+ a68:	eeb0 1a6e 	vmov.f32	s2, s29
+ a6c:	4648      	mov	r0, r9
+ a6e:	f7ff fffe 	bl	0 <draw_scene>
+			a6e: R_ARM_THM_CALL	sphere_point
+ a72:	2103      	movs	r1, #3
+ a74:	9a02      	ldr	r2, [sp, #8]
+ a76:	4b7a      	ldr	r3, [pc, #488]	@ (c60 <draw_scene+0xc60>)
+ a78:	fbb2 f2f1 	udiv	r2, r2, r1
+ a7c:	f012 0f01 	tst.w	r2, #1
+ a80:	bf0c      	ite	eq
+ a82:	4639      	moveq	r1, r7
+ a84:	4619      	movne	r1, r3
+ a86:	ed8d 0a42 	vstr	s0, [sp, #264]	@ 0x108
+ a8a:	edcd 0a43 	vstr	s1, [sp, #268]	@ 0x10c
+ a8e:	ed8d 1a44 	vstr	s2, [sp, #272]	@ 0x110
+ a92:	eef0 4a48 	vmov.f32	s9, s16
+ a96:	eeb0 5a68 	vmov.f32	s10, s17
+ a9a:	eef0 5a49 	vmov.f32	s11, s18
+ a9e:	eeb0 3a6f 	vmov.f32	s6, s31
+ aa2:	eef0 3a4d 	vmov.f32	s7, s26
+ aa6:	eeb0 4a6c 	vmov.f32	s8, s25
+ aaa:	eef0 1a4c 	vmov.f32	s3, s24
+ aae:	eeb0 2a6b 	vmov.f32	s4, s23
+ ab2:	eef0 2a4b 	vmov.f32	s5, s22
+ ab6:	eeb0 0a6a 	vmov.f32	s0, s21
+ aba:	eef0 0a4a 	vmov.f32	s1, s20
+ abe:	eeb0 1a69 	vmov.f32	s2, s19
+ ac2:	9801      	ldr	r0, [sp, #4]
+ ac4:	9102      	str	r1, [sp, #8]
+ ac6:	ed84 8a00 	vstr	s16, [r4]
+ aca:	edc4 8a01 	vstr	s17, [r4, #4]
+ ace:	ed84 9a02 	vstr	s18, [r4, #8]
+ ad2:	f7ff fffe 	bl	0 <draw_scene>
+			ad2: R_ARM_THM_CALL	triangle
+ ad6:	edd4 4a00 	vldr	s9, [r4]
+ ada:	ed94 5a01 	vldr	s10, [r4, #4]
+ ade:	edd4 5a02 	vldr	s11, [r4, #8]
+ ae2:	ed9d 3a42 	vldr	s6, [sp, #264]	@ 0x108
+ ae6:	eddd 3a43 	vldr	s7, [sp, #268]	@ 0x10c
+ aea:	ed9d 4a44 	vldr	s8, [sp, #272]	@ 0x110
+ aee:	eddd 1a36 	vldr	s3, [sp, #216]	@ 0xd8
+ af2:	ed9d 2a37 	vldr	s4, [sp, #220]	@ 0xdc
+ af6:	eddd 2a38 	vldr	s5, [sp, #224]	@ 0xe0
+ afa:	ed9d 0a2a 	vldr	s0, [sp, #168]	@ 0xa8
+ afe:	eddd 0a2b 	vldr	s1, [sp, #172]	@ 0xac
+ b02:	ed9d 1a2c 	vldr	s2, [sp, #176]	@ 0xb0
+ b06:	9902      	ldr	r1, [sp, #8]
+ b08:	9801      	ldr	r0, [sp, #4]
+ b0a:	f7ff fffe 	bl	0 <draw_scene>
+			b0a: R_ARM_THM_CALL	triangle
+ b0e:	2d0c      	cmp	r5, #12
+ b10:	f47f af46 	bne.w	9a0 <draw_scene+0x9a0>
+ b14:	f1bb 0f06 	cmp.w	fp, #6
+ b18:	d17c      	bne.n	c14 <draw_scene+0xc14>
+ b1a:	b079      	add	sp, #484	@ 0x1e4
+ b1c:	ecbd 8b10 	vpop	{d8-d15}
+ b20:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
+ b24:	f1b8 0f00 	cmp.w	r8, #0
+ b28:	d01b      	beq.n	b62 <draw_scene+0xb62>
+ b2a:	230c      	movs	r3, #12
+ b2c:	aa78      	add	r2, sp, #480	@ 0x1e0
+ b2e:	fb03 2305 	mla	r3, r3, r5, r2
+ b32:	ed53 7a35 	vldr	s15, [r3, #-212]	@ 0xffffff2c
+ b36:	ed53 6a36 	vldr	s13, [r3, #-216]	@ 0xffffff28
+ b3a:	ee7b 7a67 	vsub.f32	s15, s22, s15
+ b3e:	ed13 7a34 	vldr	s14, [r3, #-208]	@ 0xffffff30
+ b42:	ee7a 6ae6 	vsub.f32	s13, s21, s13
+ b46:	ee67 7a8f 	vmul.f32	s15, s15, s30
+ b4a:	ee3b 7ac7 	vsub.f32	s14, s23, s14
+ b4e:	eee9 7aa6 	vfma.f32	s15, s19, s13
+ b52:	eeea 7a07 	vfma.f32	s15, s20, s14
+ b56:	eef5 7ac0 	vcmpe.f32	s15, #0.0
+ b5a:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ b5e:	f77f af0d 	ble.w	97c <draw_scene+0x97c>
+ b62:	230c      	movs	r3, #12
+ b64:	a878      	add	r0, sp, #480	@ 0x1e0
+ b66:	fb03 0305 	mla	r3, r3, r5, r0
+ b6a:	ed9d 6a21 	vldr	s12, [sp, #132]	@ 0x84
+ b6e:	eddd 6a22 	vldr	s13, [sp, #136]	@ 0x88
+ b72:	ed9d 7a23 	vldr	s14, [sp, #140]	@ 0x8c
+ b76:	eddd 4a39 	vldr	s9, [sp, #228]	@ 0xe4
+ b7a:	ed9d 5a3a 	vldr	s10, [sp, #232]	@ 0xe8
+ b7e:	eddd 5a3b 	vldr	s11, [sp, #236]	@ 0xec
+ b82:	ed9d 3a3f 	vldr	s6, [sp, #252]	@ 0xfc
+ b86:	eddd 3a40 	vldr	s7, [sp, #256]	@ 0x100
+ b8a:	ed9d 4a41 	vldr	s8, [sp, #260]	@ 0x104
+ b8e:	ed53 1a1b 	vldr	s3, [r3, #-108]	@ 0xffffff94
+ b92:	ed13 2a1a 	vldr	s4, [r3, #-104]	@ 0xffffff98
+ b96:	ed53 2a19 	vldr	s5, [r3, #-100]	@ 0xffffff9c
+ b9a:	ed13 0a36 	vldr	s0, [r3, #-216]	@ 0xffffff28
+ b9e:	ed53 0a35 	vldr	s1, [r3, #-212]	@ 0xffffff2c
+ ba2:	ed13 1a34 	vldr	s2, [r3, #-208]	@ 0xffffff30
+ ba6:	6c21      	ldr	r1, [r4, #64]	@ 0x40
+ ba8:	e6e5      	b.n	976 <draw_scene+0x976>
+ baa:	f8d8 3000 	ldr.w	r3, [r8]
+ bae:	eeb0 6a48 	vmov.f32	s12, s16
+ bb2:	fb06 3305 	mla	r3, r6, r5, r3
+ bb6:	eef0 6a68 	vmov.f32	s13, s17
+ bba:	eeb0 7a49 	vmov.f32	s14, s18
+ bbe:	edd3 4a09 	vldr	s9, [r3, #36]	@ 0x24
+ bc2:	ed93 5a0a 	vldr	s10, [r3, #40]	@ 0x28
+ bc6:	edd3 5a0b 	vldr	s11, [r3, #44]	@ 0x2c
+ bca:	ed93 3a06 	vldr	s6, [r3, #24]
+ bce:	edd3 3a07 	vldr	s7, [r3, #28]
+ bd2:	ed93 4a08 	vldr	s8, [r3, #32]
+ bd6:	edd3 1a03 	vldr	s3, [r3, #12]
+ bda:	ed93 2a04 	vldr	s4, [r3, #16]
+ bde:	edd3 2a05 	vldr	s5, [r3, #20]
+ be2:	ed93 0a00 	vldr	s0, [r3]
+ be6:	edd3 0a01 	vldr	s1, [r3, #4]
+ bea:	ed93 1a02 	vldr	s2, [r3, #8]
+ bee:	6b19      	ldr	r1, [r3, #48]	@ 0x30
+ bf0:	9801      	ldr	r0, [sp, #4]
+ bf2:	ed84 8a00 	vstr	s16, [r4]
+ bf6:	edc4 8a01 	vstr	s17, [r4, #4]
+ bfa:	ed84 9a02 	vstr	s18, [r4, #8]
+ bfe:	f7ff fffe 	bl	0 <draw_scene>
+			bfe: R_ARM_THM_CALL	bend_quad
+ c02:	3501      	adds	r5, #1
+ c04:	f8d8 3004 	ldr.w	r3, [r8, #4]
+ c08:	42ab      	cmp	r3, r5
+ c0a:	d8ce      	bhi.n	baa <draw_scene+0xbaa>
+ c0c:	e6c2      	b.n	994 <draw_scene+0x994>
+ c0e:	2500      	movs	r5, #0
+ c10:	2634      	movs	r6, #52	@ 0x34
+ c12:	e7f7      	b.n	c04 <draw_scene+0xc04>
+ c14:	46d9      	mov	r9, fp
+ c16:	e6c2      	b.n	99e <draw_scene+0x99e>
+ c18:	eeb5 cac0 	vcmpe.f32	s24, #0.0
+ c1c:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ c20:	dd83      	ble.n	b2a <draw_scene+0xb2a>
+ c22:	230c      	movs	r3, #12
+ c24:	aa78      	add	r2, sp, #480	@ 0x1e0
+ c26:	fb03 2305 	mla	r3, r3, r5, r2
+ c2a:	ed53 7a35 	vldr	s15, [r3, #-212]	@ 0xffffff2c
+ c2e:	ed53 6a36 	vldr	s13, [r3, #-216]	@ 0xffffff28
+ c32:	ee7b 7a67 	vsub.f32	s15, s22, s15
+ c36:	ed13 7a34 	vldr	s14, [r3, #-208]	@ 0xffffff30
+ c3a:	ee7a 6ae6 	vsub.f32	s13, s21, s13
+ c3e:	ee67 7a8f 	vmul.f32	s15, s15, s30
+ c42:	ee3b 7ac7 	vsub.f32	s14, s23, s14
+ c46:	eee9 7aa6 	vfma.f32	s15, s19, s13
+ c4a:	eeea 7a07 	vfma.f32	s15, s20, s14
+ c4e:	eef5 7ac0 	vcmpe.f32	s15, #0.0
+ c52:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ c56:	f57f ae32 	bpl.w	8be <draw_scene+0x8be>
+ c5a:	e60a      	b.n	872 <draw_scene+0x872>
+ c5c:	00ee648b 	.word	0x00ee648b
+ c60:	00ffe6aa 	.word	0x00ffe6aa
+
+Disassembly of section .text.roll3_renderer_project_focus:
+
+00000000 <roll3_renderer_project_focus>:
+   0:	b57f      	push	{r0, r1, r2, r3, r4, r5, r6, lr}
+   2:	eeb0 6a40 	vmov.f32	s12, s0
+   6:	eef0 6a60 	vmov.f32	s13, s1
+   a:	eeb0 7a41 	vmov.f32	s14, s2
+   e:	4603      	mov	r3, r0
+  10:	b908      	cbnz	r0, 16 <roll3_renderer_project_focus+0x16>
+  12:	2000      	movs	r0, #0
+  14:	e05f      	b.n	d6 <roll3_renderer_project_focus+0xd6>
+  16:	2900      	cmp	r1, #0
+  18:	d0fb      	beq.n	12 <roll3_renderer_project_focus+0x12>
+  1a:	2a00      	cmp	r2, #0
+  1c:	d0f9      	beq.n	12 <roll3_renderer_project_focus+0x12>
+  1e:	f7ff fffe 	bl	0 <roll3_renderer_project_focus>
+			1e: R_ARM_THM_CALL	finite_vec
+  22:	2800      	cmp	r0, #0
+  24:	d0f5      	beq.n	12 <roll3_renderer_project_focus+0x12>
+  26:	eeb0 0a61 	vmov.f32	s0, s3
+  2a:	eef0 0a42 	vmov.f32	s1, s4
+  2e:	eeb0 1a62 	vmov.f32	s2, s5
+  32:	f7ff fffe 	bl	0 <roll3_renderer_project_focus>
+			32: R_ARM_THM_CALL	finite_vec
+  36:	2800      	cmp	r0, #0
+  38:	d0eb      	beq.n	12 <roll3_renderer_project_focus+0x12>
+  3a:	eeb0 0a46 	vmov.f32	s0, s12
+  3e:	eef0 0a66 	vmov.f32	s1, s13
+  42:	eeb0 1a47 	vmov.f32	s2, s14
+  46:	f7ff fffe 	bl	0 <roll3_renderer_project_focus>
+			46: R_ARM_THM_CALL	camera
+  4a:	eeb0 6a40 	vmov.f32	s12, s0
+  4e:	eef0 6a60 	vmov.f32	s13, s1
+  52:	eeb0 7a41 	vmov.f32	s14, s2
+  56:	f7ff fffe 	bl	0 <roll3_renderer_project_focus>
+			56: R_ARM_THM_CALL	finite_vec
+  5a:	2800      	cmp	r0, #0
+  5c:	d0d9      	beq.n	12 <roll3_renderer_project_focus+0x12>
+  5e:	eddf 7a1f 	vldr	s15, [pc, #124]	@ dc <roll3_renderer_project_focus+0xdc>
+  62:	eeb4 7ae7 	vcmpe.f32	s14, s15
+  66:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  6a:	d4d2      	bmi.n	12 <roll3_renderer_project_focus+0x12>
+  6c:	eef3 7a0e 	vmov.f32	s15, #62	@ 0x41f00000  30.0
+  70:	eeb4 7ae7 	vcmpe.f32	s14, s15
+  74:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  78:	dccb      	bgt.n	12 <roll3_renderer_project_focus+0x12>
+  7a:	eddf 5a19 	vldr	s11, [pc, #100]	@ e0 <roll3_renderer_project_focus+0xe0>
+  7e:	ee26 6a25 	vmul.f32	s12, s12, s11
+  82:	eec6 7a07 	vdiv.f32	s15, s12, s14
+  86:	ed9f 6a17 	vldr	s12, [pc, #92]	@ e4 <roll3_renderer_project_focus+0xe4>
+  8a:	ee66 6aa5 	vmul.f32	s13, s13, s11
+  8e:	ee77 7a86 	vadd.f32	s15, s15, s12
+  92:	ee86 6a87 	vdiv.f32	s12, s13, s14
+  96:	edc3 7a00 	vstr	s15, [r3]
+  9a:	eddf 7a13 	vldr	s15, [pc, #76]	@ e8 <roll3_renderer_project_focus+0xe8>
+  9e:	ee77 7ac6 	vsub.f32	s15, s15, s12
+  a2:	edc1 7a00 	vstr	s15, [r1]
+  a6:	ed82 7a00 	vstr	s14, [r2]
+  aa:	edd3 7a00 	vldr	s15, [r3]
+  ae:	ed9f 7a0f 	vldr	s14, [pc, #60]	@ ec <roll3_renderer_project_focus+0xec>
+  b2:	eef0 7ae7 	vabs.f32	s15, s15
+  b6:	eef4 7a47 	vcmp.f32	s15, s14
+  ba:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  be:	d8a8      	bhi.n	12 <roll3_renderer_project_focus+0x12>
+  c0:	edd1 7a00 	vldr	s15, [r1]
+  c4:	eef0 7ae7 	vabs.f32	s15, s15
+  c8:	eef4 7a47 	vcmp.f32	s15, s14
+  cc:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  d0:	bf94      	ite	ls
+  d2:	2001      	movls	r0, #1
+  d4:	2000      	movhi	r0, #0
+  d6:	b007      	add	sp, #28
+  d8:	f85d fb04 	ldr.w	pc, [sp], #4
+  dc:	3e19999a 	.word	0x3e19999a
+  e0:	43401925 	.word	0x43401925
+  e4:	42f00000 	.word	0x42f00000
+  e8:	42c80000 	.word	0x42c80000
+  ec:	7f7fffff 	.word	0x7f7fffff
+
+Disassembly of section .text.roll3_renderer_project:
+
+00000000 <roll3_renderer_project>:
+   0:	eddf 1a04 	vldr	s3, [pc, #16]	@ 14 <roll3_renderer_project+0x14>
+   4:	eddf 2a04 	vldr	s5, [pc, #16]	@ 18 <roll3_renderer_project+0x18>
+   8:	eeb0 2a61 	vmov.f32	s4, s3
+   c:	b088      	sub	sp, #32
+   e:	b008      	add	sp, #32
+  10:	f7ff bffe 	b.w	0 <roll3_renderer_project>
+			10: R_ARM_THM_JUMP24	roll3_renderer_project_focus
+  14:	00000000 	.word	0x00000000
+  18:	3e4ccccd 	.word	0x3e4ccccd
+
+Disassembly of section .text.roll3_renderer_focus:
+
+00000000 <roll3_renderer_focus>:
+   0:	b530      	push	{r4, r5, lr}
+   2:	7b03      	ldrb	r3, [r0, #12]
+   4:	b08b      	sub	sp, #44	@ 0x2c
+   6:	2b04      	cmp	r3, #4
+   8:	4604      	mov	r4, r0
+   a:	460d      	mov	r5, r1
+   c:	ab04      	add	r3, sp, #16
+   e:	d123      	bne.n	58 <roll3_renderer_focus+0x58>
+  10:	6dc2      	ldr	r2, [r0, #92]	@ 0x5c
+  12:	b1ca      	cbz	r2, 48 <roll3_renderer_focus+0x48>
+  14:	edd5 7a07 	vldr	s15, [r5, #28]
+  18:	f101 0214 	add.w	r2, r1, #20
+  1c:	ca07      	ldmia	r2, {r0, r1, r2}
+  1e:	e883 0007 	stmia.w	r3, {r0, r1, r2}
+  22:	ed9f 7a11 	vldr	s14, [pc, #68]	@ 68 <roll3_renderer_focus+0x68>
+  26:	fec7 7a87 	vmaxnm.f32	s15, s15, s14
+  2a:	edcd 7a06 	vstr	s15, [sp, #24]
+  2e:	e893 0007 	ldmia.w	r3, {r0, r1, r2}
+  32:	ab0a      	add	r3, sp, #40	@ 0x28
+  34:	e903 0007 	stmdb	r3, {r0, r1, r2}
+  38:	ed9d 0a07 	vldr	s0, [sp, #28]
+  3c:	eddd 0a08 	vldr	s1, [sp, #32]
+  40:	ed9d 1a09 	vldr	s2, [sp, #36]	@ 0x24
+  44:	b00b      	add	sp, #44	@ 0x2c
+  46:	bd30      	pop	{r4, r5, pc}
+  48:	f101 0208 	add.w	r2, r1, #8
+  4c:	ca07      	ldmia	r2, {r0, r1, r2}
+  4e:	edd5 7a04 	vldr	s15, [r5, #16]
+  52:	e883 0007 	stmia.w	r3, {r0, r1, r2}
+  56:	e7e4      	b.n	22 <roll3_renderer_focus+0x22>
+  58:	f100 0210 	add.w	r2, r0, #16
+  5c:	ca07      	ldmia	r2, {r0, r1, r2}
+  5e:	edd4 7a06 	vldr	s15, [r4, #24]
+  62:	e883 0007 	stmia.w	r3, {r0, r1, r2}
+  66:	e7dc      	b.n	22 <roll3_renderer_focus+0x22>
+  68:	3e4ccccd 	.word	0x3e4ccccd
+
+Disassembly of section .text.follow_update:
+
+00000000 <follow_update>:
+   0:	b530      	push	{r4, r5, lr}
+   2:	460d      	mov	r5, r1
+   4:	4604      	mov	r4, r0
+   6:	b08b      	sub	sp, #44	@ 0x2c
+   8:	4611      	mov	r1, r2
+   a:	4628      	mov	r0, r5
+   c:	f7ff fffe 	bl	0 <follow_update>
+			c: R_ARM_THM_CALL	roll3_renderer_focus
+  10:	7d63      	ldrb	r3, [r4, #21]
+  12:	eef0 6a60 	vmov.f32	s13, s1
+  16:	eeb0 7a41 	vmov.f32	s14, s2
+  1a:	ed8d 0a04 	vstr	s0, [sp, #16]
+  1e:	edcd 0a05 	vstr	s1, [sp, #20]
+  22:	ed8d 1a06 	vstr	s2, [sp, #24]
+  26:	b163      	cbz	r3, 42 <follow_update+0x42>
+  28:	68e2      	ldr	r2, [r4, #12]
+  2a:	686b      	ldr	r3, [r5, #4]
+  2c:	429a      	cmp	r2, r3
+  2e:	d108      	bne.n	42 <follow_update+0x42>
+  30:	7d22      	ldrb	r2, [r4, #20]
+  32:	7b2b      	ldrb	r3, [r5, #12]
+  34:	429a      	cmp	r2, r3
+  36:	d104      	bne.n	42 <follow_update+0x42>
+  38:	6d6b      	ldr	r3, [r5, #84]	@ 0x54
+  3a:	6922      	ldr	r2, [r4, #16]
+  3c:	1a9b      	subs	r3, r3, r2
+  3e:	2bfa      	cmp	r3, #250	@ 0xfa
+  40:	d919      	bls.n	76 <follow_update+0x76>
+  42:	ab04      	add	r3, sp, #16
+  44:	e893 0007 	ldmia.w	r3, {r0, r1, r2}
+  48:	e884 0007 	stmia.w	r4, {r0, r1, r2}
+  4c:	e894 0007 	ldmia.w	r4, {r0, r1, r2}
+  50:	2301      	movs	r3, #1
+  52:	7563      	strb	r3, [r4, #21]
+  54:	686b      	ldr	r3, [r5, #4]
+  56:	60e3      	str	r3, [r4, #12]
+  58:	7b2b      	ldrb	r3, [r5, #12]
+  5a:	7523      	strb	r3, [r4, #20]
+  5c:	6d6b      	ldr	r3, [r5, #84]	@ 0x54
+  5e:	6123      	str	r3, [r4, #16]
+  60:	ab0a      	add	r3, sp, #40	@ 0x28
+  62:	e903 0007 	stmdb	r3, {r0, r1, r2}
+  66:	ed9d 0a07 	vldr	s0, [sp, #28]
+  6a:	eddd 0a08 	vldr	s1, [sp, #32]
+  6e:	ed9d 1a09 	vldr	s2, [sp, #36]	@ 0x24
+  72:	b00b      	add	sp, #44	@ 0x2c
+  74:	bd30      	pop	{r4, r5, pc}
+  76:	2b00      	cmp	r3, #0
+  78:	d0e8      	beq.n	4c <follow_update+0x4c>
+  7a:	ee07 3a90 	vmov	s15, r3
+  7e:	ed9f 1a17 	vldr	s2, [pc, #92]	@ dc <follow_update+0xdc>
+  82:	eef8 7ae7 	vcvt.f32.s32	s15, s15
+  86:	ed9f 6a16 	vldr	s12, [pc, #88]	@ e0 <follow_update+0xe0>
+  8a:	ee37 1a81 	vadd.f32	s2, s15, s2
+  8e:	ee37 6a86 	vadd.f32	s12, s15, s12
+  92:	ee87 1a81 	vdiv.f32	s2, s15, s2
+  96:	eef0 0a40 	vmov.f32	s1, s0
+  9a:	eddf 1a12 	vldr	s3, [pc, #72]	@ e4 <follow_update+0xe4>
+  9e:	ed94 0a00 	vldr	s0, [r4]
+  a2:	eec7 5a86 	vdiv.f32	s11, s15, s12
+  a6:	f7ff fffe 	bl	0 <follow_update>
+			a6: R_ARM_THM_CALL	follow_axis
+  aa:	eddf 1a0e 	vldr	s3, [pc, #56]	@ e4 <follow_update+0xe4>
+  ae:	ed84 0a00 	vstr	s0, [r4]
+  b2:	eef0 0a66 	vmov.f32	s1, s13
+  b6:	ed94 0a01 	vldr	s0, [r4, #4]
+  ba:	f7ff fffe 	bl	0 <follow_update>
+			ba: R_ARM_THM_CALL	follow_axis
+  be:	eddf 1a0a 	vldr	s3, [pc, #40]	@ e8 <follow_update+0xe8>
+  c2:	ed84 0a01 	vstr	s0, [r4, #4]
+  c6:	eeb0 1a65 	vmov.f32	s2, s11
+  ca:	ed94 0a02 	vldr	s0, [r4, #8]
+  ce:	eef0 0a47 	vmov.f32	s1, s14
+  d2:	f7ff fffe 	bl	0 <follow_update>
+			d2: R_ARM_THM_CALL	follow_axis
+  d6:	ed84 0a02 	vstr	s0, [r4, #8]
+  da:	e7b7      	b.n	4c <follow_update+0x4c>
+  dc:	42f00000 	.word	0x42f00000
+  e0:	43480000 	.word	0x43480000
+  e4:	3ccccccd 	.word	0x3ccccccd
+  e8:	3d23d70a 	.word	0x3d23d70a
+
+Disassembly of section .text.render_frame:
+
+00000000 <render_frame>:
+   0:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
+   4:	ed2d 8b06 	vpush	{d8-d10}
+   8:	b0a5      	sub	sp, #148	@ 0x94
+   a:	461c      	mov	r4, r3
+   c:	e9dd a634 	ldrd	sl, r6, [sp, #208]	@ 0xd0
+  10:	4683      	mov	fp, r0
+  12:	e9cd 1201 	strd	r1, r2, [sp, #4]
+  16:	9d36      	ldr	r5, [sp, #216]	@ 0xd8
+  18:	b930      	cbnz	r0, 28 <render_frame+0x28>
+  1a:	f04f 30ff 	mov.w	r0, #4294967295
+  1e:	b025      	add	sp, #148	@ 0x94
+  20:	ecbd 8b06 	vpop	{d8-d10}
+  24:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
+  28:	9b01      	ldr	r3, [sp, #4]
+  2a:	2b00      	cmp	r3, #0
+  2c:	d0f5      	beq.n	1a <render_frame+0x1a>
+  2e:	9b02      	ldr	r3, [sp, #8]
+  30:	3b08      	subs	r3, #8
+  32:	2bc0      	cmp	r3, #192	@ 0xc0
+  34:	d8f1      	bhi.n	1a <render_frame+0x1a>
+  36:	2c00      	cmp	r4, #0
+  38:	d061      	beq.n	fe <render_frame+0xfe>
+  3a:	6827      	ldr	r7, [r4, #0]
+  3c:	2f01      	cmp	r7, #1
+  3e:	d15e      	bne.n	fe <render_frame+0xfe>
+  40:	ed94 0a04 	vldr	s0, [r4, #16]
+  44:	edd4 0a05 	vldr	s1, [r4, #20]
+  48:	ed94 1a06 	vldr	s2, [r4, #24]
+  4c:	f7ff fffe 	bl	0 <render_frame>
+			4c: R_ARM_THM_CALL	finite_vec
+  50:	2800      	cmp	r0, #0
+  52:	d054      	beq.n	fe <render_frame+0xfe>
+  54:	ed94 0a07 	vldr	s0, [r4, #28]
+  58:	edd4 0a08 	vldr	s1, [r4, #32]
+  5c:	ed94 1a09 	vldr	s2, [r4, #36]	@ 0x24
+  60:	f7ff fffe 	bl	0 <render_frame>
+			60: R_ARM_THM_CALL	finite_vec
+  64:	2800      	cmp	r0, #0
+  66:	d04a      	beq.n	fe <render_frame+0xfe>
+  68:	ed94 0a0a 	vldr	s0, [r4, #40]	@ 0x28
+  6c:	edd4 0a0b 	vldr	s1, [r4, #44]	@ 0x2c
+  70:	ed94 1a0c 	vldr	s2, [r4, #48]	@ 0x30
+  74:	f7ff fffe 	bl	0 <render_frame>
+			74: R_ARM_THM_CALL	finite_vec
+  78:	2800      	cmp	r0, #0
+  7a:	d040      	beq.n	fe <render_frame+0xfe>
+  7c:	ed94 0a0d 	vldr	s0, [r4, #52]	@ 0x34
+  80:	edd4 0a0e 	vldr	s1, [r4, #56]	@ 0x38
+  84:	ed94 1a0f 	vldr	s2, [r4, #60]	@ 0x3c
+  88:	f7ff fffe 	bl	0 <render_frame>
+			88: R_ARM_THM_CALL	finite_vec
+  8c:	b3b8      	cbz	r0, fe <render_frame+0xfe>
+  8e:	edd4 7a14 	vldr	s15, [r4, #80]	@ 0x50
+  92:	ed9f 8ac4 	vldr	s16, [pc, #784]	@ 3a4 <render_frame+0x3a4>
+  96:	eeb0 7ae7 	vabs.f32	s14, s15
+  9a:	eeb4 7a48 	vcmp.f32	s14, s16
+  9e:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  a2:	d82c      	bhi.n	fe <render_frame+0xfe>
+  a4:	eef5 7ac0 	vcmpe.f32	s15, #0.0
+  a8:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  ac:	dd27      	ble.n	fe <render_frame+0xfe>
+  ae:	eeb2 7a04 	vmov.f32	s14, #36	@ 0x41200000  10.0
+  b2:	eef4 7ac7 	vcmpe.f32	s15, s14
+  b6:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  ba:	d820      	bhi.n	fe <render_frame+0xfe>
+  bc:	7b23      	ldrb	r3, [r4, #12]
+  be:	2b06      	cmp	r3, #6
+  c0:	d81d      	bhi.n	fe <render_frame+0xfe>
+  c2:	7b63      	ldrb	r3, [r4, #13]
+  c4:	2b01      	cmp	r3, #1
+  c6:	d81a      	bhi.n	fe <render_frame+0xfe>
+  c8:	4650      	mov	r0, sl
+  ca:	f7ff fffe 	bl	0 <r3_world_validate>
+			ca: R_ARM_THM_CALL	r3_world_validate
+  ce:	b9b0      	cbnz	r0, fe <render_frame+0xfe>
+  d0:	ed94 9a11 	vldr	s18, [r4, #68]	@ 0x44
+  d4:	edd4 9a10 	vldr	s19, [r4, #64]	@ 0x40
+  d8:	ee29 0a09 	vmul.f32	s0, s18, s18
+  dc:	edd4 8a12 	vldr	s17, [r4, #72]	@ 0x48
+  e0:	eea9 0aa9 	vfma.f32	s0, s19, s19
+  e4:	ed94 aa13 	vldr	s20, [r4, #76]	@ 0x4c
+  e8:	eea8 0aa8 	vfma.f32	s0, s17, s17
+  ec:	eeaa 0a0a 	vfma.f32	s0, s20, s20
+  f0:	eef0 7ac0 	vabs.f32	s15, s0
+  f4:	eef4 7a48 	vcmp.f32	s15, s16
+  f8:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  fc:	d914      	bls.n	128 <render_frame+0x128>
+  fe:	f640 0184 	movw	r1, #2180	@ 0x884
+ 102:	f50b 32bb 	add.w	r2, fp, #95744	@ 0x17600
+ 106:	f1ab 0302 	sub.w	r3, fp, #2
+ 10a:	32fe      	adds	r2, #254	@ 0xfe
+ 10c:	f823 1f02 	strh.w	r1, [r3, #2]!
+ 110:	429a      	cmp	r2, r3
+ 112:	d1fb      	bne.n	10c <render_frame+0x10c>
+ 114:	f44f 72f0 	mov.w	r2, #480	@ 0x1e0
+ 118:	9b02      	ldr	r3, [sp, #8]
+ 11a:	21ff      	movs	r1, #255	@ 0xff
+ 11c:	4353      	muls	r3, r2
+ 11e:	9801      	ldr	r0, [sp, #4]
+ 120:	461a      	mov	r2, r3
+ 122:	f7ff fffe 	bl	0 <memset>
+			122: R_ARM_THM_CALL	memset
+ 126:	e778      	b.n	1a <render_frame+0x1a>
+ 128:	eef7 aa00 	vmov.f32	s21, #112	@ 0x3f800000  1.0
+ 12c:	ee70 7a6a 	vsub.f32	s15, s0, s21
+ 130:	ed9f 7a9d 	vldr	s14, [pc, #628]	@ 3a8 <render_frame+0x3a8>
+ 134:	eef0 7ae7 	vabs.f32	s15, s15
+ 138:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 13c:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 140:	dcdd      	bgt.n	fe <render_frame+0xfe>
+ 142:	f7ff fffe 	bl	0 <sqrtf>
+			142: R_ARM_THM_CALL	sqrtf
+ 146:	ee8a 8a80 	vdiv.f32	s16, s21, s0
+ 14a:	ee69 9a88 	vmul.f32	s19, s19, s16
+ 14e:	ee29 9a08 	vmul.f32	s18, s18, s16
+ 152:	ee68 8a28 	vmul.f32	s17, s16, s17
+ 156:	ee28 8a0a 	vmul.f32	s16, s16, s20
+ 15a:	2e00      	cmp	r6, #0
+ 15c:	f000 80cc 	beq.w	2f8 <render_frame+0x2f8>
+ 160:	4652      	mov	r2, sl
+ 162:	4621      	mov	r1, r4
+ 164:	4630      	mov	r0, r6
+ 166:	f7ff fffe 	bl	0 <render_frame>
+			166: R_ARM_THM_CALL	follow_update
+ 16a:	ed8d 0a0a 	vstr	s0, [sp, #40]	@ 0x28
+ 16e:	edcd 0a0b 	vstr	s1, [sp, #44]	@ 0x2c
+ 172:	ed8d 1a0c 	vstr	s2, [sp, #48]	@ 0x30
+ 176:	2600      	movs	r6, #0
+ 178:	2d00      	cmp	r5, #0
+ 17a:	f040 817d 	bne.w	478 <render_frame+0x478>
+ 17e:	46a8      	mov	r8, r5
+ 180:	f44f 76f0 	mov.w	r6, #480	@ 0x1e0
+ 184:	f04f 597c 	mov.w	r9, #1056964608	@ 0x3f000000
+ 188:	462b      	mov	r3, r5
+ 18a:	9a02      	ldr	r2, [sp, #8]
+ 18c:	9321      	str	r3, [sp, #132]	@ 0x84
+ 18e:	4415      	add	r5, r2
+ 190:	2dc8      	cmp	r5, #200	@ 0xc8
+ 192:	fb06 b203 	mla	r2, r6, r3, fp
+ 196:	462b      	mov	r3, r5
+ 198:	bf28      	it	cs
+ 19a:	23c8      	movcs	r3, #200	@ 0xc8
+ 19c:	921c      	str	r2, [sp, #112]	@ 0x70
+ 19e:	9322      	str	r3, [sp, #136]	@ 0x88
+ 1a0:	9a01      	ldr	r2, [sp, #4]
+ 1a2:	f8da 3058 	ldr.w	r3, [sl, #88]	@ 0x58
+ 1a6:	a81c      	add	r0, sp, #112	@ 0x70
+ 1a8:	921d      	str	r2, [sp, #116]	@ 0x74
+ 1aa:	9323      	str	r3, [sp, #140]	@ 0x8c
+ 1ac:	eef0 0a49 	vmov.f32	s1, s18
+ 1b0:	eeb0 1a68 	vmov.f32	s2, s17
+ 1b4:	eef0 1a48 	vmov.f32	s3, s16
+ 1b8:	f8cd 8080 	str.w	r8, [sp, #128]	@ 0x80
+ 1bc:	f8cd b010 	str.w	fp, [sp, #16]
+ 1c0:	f8cd 9078 	str.w	r9, [sp, #120]	@ 0x78
+ 1c4:	f8cd 907c 	str.w	r9, [sp, #124]	@ 0x7c
+ 1c8:	f7ff fffe 	bl	0 <render_frame>
+			1c8: R_ARM_THM_CALL	clear_target
+ 1cc:	ed9d 2a0a 	vldr	s4, [sp, #40]	@ 0x28
+ 1d0:	eddd 2a0b 	vldr	s5, [sp, #44]	@ 0x2c
+ 1d4:	ed9d 3a0c 	vldr	s6, [sp, #48]	@ 0x30
+ 1d8:	eeb0 0a69 	vmov.f32	s0, s19
+ 1dc:	4652      	mov	r2, sl
+ 1de:	4621      	mov	r1, r4
+ 1e0:	a81c      	add	r0, sp, #112	@ 0x70
+ 1e2:	edcd 9a10 	vstr	s19, [sp, #64]	@ 0x40
+ 1e6:	ed8d 9a11 	vstr	s18, [sp, #68]	@ 0x44
+ 1ea:	edcd 8a12 	vstr	s17, [sp, #72]	@ 0x48
+ 1ee:	ed8d 8a13 	vstr	s16, [sp, #76]	@ 0x4c
+ 1f2:	f7ff fffe 	bl	0 <render_frame>
+			1f2: R_ARM_THM_CALL	draw_scene
+ 1f6:	2dc7      	cmp	r5, #199	@ 0xc7
+ 1f8:	d9c6      	bls.n	188 <render_frame+0x188>
+ 1fa:	9b37      	ldr	r3, [sp, #220]	@ 0xdc
+ 1fc:	2b00      	cmp	r3, #0
+ 1fe:	f000 81ae 	beq.w	55e <render_frame+0x55e>
+ 202:	f04f 0800 	mov.w	r8, #0
+ 206:	f44f 52c8 	mov.w	r2, #6400	@ 0x1900
+ 20a:	2100      	movs	r1, #0
+ 20c:	4618      	mov	r0, r3
+ 20e:	f7ff fffe 	bl	0 <memset>
+			20e: R_ARM_THM_CALL	memset
+ 212:	f8dd 90dc 	ldr.w	r9, [sp, #220]	@ 0xdc
+ 216:	2500      	movs	r5, #0
+ 218:	9e04      	ldr	r6, [sp, #16]
+ 21a:	f8cd 9014 	str.w	r9, [sp, #20]
+ 21e:	f108 0801 	add.w	r8, r8, #1
+ 222:	f109 0920 	add.w	r9, r9, #32
+ 226:	9503      	str	r5, [sp, #12]
+ 228:	3501      	adds	r5, #1
+ 22a:	2df0      	cmp	r5, #240	@ 0xf0
+ 22c:	d00b      	beq.n	246 <render_frame+0x246>
+ 22e:	8871      	ldrh	r1, [r6, #2]
+ 230:	8830      	ldrh	r0, [r6, #0]
+ 232:	f7ff fffe 	bl	0 <render_frame>
+			232: R_ARM_THM_CALL	color_edge
+ 236:	b130      	cbz	r0, 246 <render_frame+0x246>
+ 238:	9903      	ldr	r1, [sp, #12]
+ 23a:	9805      	ldr	r0, [sp, #20]
+ 23c:	f7ff fffe 	bl	0 <render_frame>
+			23c: R_ARM_THM_CALL	mark_edge
+ 240:	4629      	mov	r1, r5
+ 242:	f7ff fffe 	bl	0 <render_frame>
+			242: R_ARM_THM_CALL	mark_edge
+ 246:	f1b8 0fc8 	cmp.w	r8, #200	@ 0xc8
+ 24a:	d00d      	beq.n	268 <render_frame+0x268>
+ 24c:	f8b6 11e0 	ldrh.w	r1, [r6, #480]	@ 0x1e0
+ 250:	8830      	ldrh	r0, [r6, #0]
+ 252:	f7ff fffe 	bl	0 <render_frame>
+			252: R_ARM_THM_CALL	color_edge
+ 256:	b138      	cbz	r0, 268 <render_frame+0x268>
+ 258:	9903      	ldr	r1, [sp, #12]
+ 25a:	9805      	ldr	r0, [sp, #20]
+ 25c:	f7ff fffe 	bl	0 <render_frame>
+			25c: R_ARM_THM_CALL	mark_edge
+ 260:	4648      	mov	r0, r9
+ 262:	9903      	ldr	r1, [sp, #12]
+ 264:	f7ff fffe 	bl	0 <render_frame>
+			264: R_ARM_THM_CALL	mark_edge
+ 268:	2df0      	cmp	r5, #240	@ 0xf0
+ 26a:	f106 0602 	add.w	r6, r6, #2
+ 26e:	d1da      	bne.n	226 <render_frame+0x226>
+ 270:	9b04      	ldr	r3, [sp, #16]
+ 272:	f1b8 0fc8 	cmp.w	r8, #200	@ 0xc8
+ 276:	f503 73f0 	add.w	r3, r3, #480	@ 0x1e0
+ 27a:	9304      	str	r3, [sp, #16]
+ 27c:	d1cb      	bne.n	216 <render_frame+0x216>
+ 27e:	2220      	movs	r2, #32
+ 280:	2100      	movs	r1, #0
+ 282:	a814      	add	r0, sp, #80	@ 0x50
+ 284:	f7ff fffe 	bl	0 <memset>
+			284: R_ARM_THM_CALL	memset
+ 288:	9a37      	ldr	r2, [sp, #220]	@ 0xdc
+ 28a:	a91c      	add	r1, sp, #112	@ 0x70
+ 28c:	468c      	mov	ip, r1
+ 28e:	4610      	mov	r0, r2
+ 290:	ad14      	add	r5, sp, #80	@ 0x50
+ 292:	f102 0620 	add.w	r6, r2, #32
+ 296:	2fc8      	cmp	r7, #200	@ 0xc8
+ 298:	bf08      	it	eq
+ 29a:	f04f 0800 	moveq.w	r8, #0
+ 29e:	f850 eb04 	ldr.w	lr, [r0], #4
+ 2a2:	682b      	ldr	r3, [r5, #0]
+ 2a4:	bf18      	it	ne
+ 2a6:	f8d0 801c 	ldrne.w	r8, [r0, #28]
+ 2aa:	ea4e 0303 	orr.w	r3, lr, r3
+ 2ae:	ea43 0308 	orr.w	r3, r3, r8
+ 2b2:	42b0      	cmp	r0, r6
+ 2b4:	f84c 3b04 	str.w	r3, [ip], #4
+ 2b8:	f845 eb04 	str.w	lr, [r5], #4
+ 2bc:	d1eb      	bne.n	296 <render_frame+0x296>
+ 2be:	2000      	movs	r0, #0
+ 2c0:	4696      	mov	lr, r2
+ 2c2:	4684      	mov	ip, r0
+ 2c4:	3001      	adds	r0, #1
+ 2c6:	2808      	cmp	r0, #8
+ 2c8:	bf08      	it	eq
+ 2ca:	f04f 0800 	moveq.w	r8, #0
+ 2ce:	f851 5b04 	ldr.w	r5, [r1], #4
+ 2d2:	ea4f 0355 	mov.w	r3, r5, lsr #1
+ 2d6:	ea43 0345 	orr.w	r3, r3, r5, lsl #1
+ 2da:	bf18      	it	ne
+ 2dc:	f8d1 8000 	ldrne.w	r8, [r1]
+ 2e0:	432b      	orrs	r3, r5
+ 2e2:	ea43 73dc 	orr.w	r3, r3, ip, lsr #31
+ 2e6:	ea43 73c8 	orr.w	r3, r3, r8, lsl #31
+ 2ea:	2808      	cmp	r0, #8
+ 2ec:	f84e 3b04 	str.w	r3, [lr], #4
+ 2f0:	d007      	beq.n	302 <render_frame+0x302>
+ 2f2:	f851 cc04 	ldr.w	ip, [r1, #-4]
+ 2f6:	e7e5      	b.n	2c4 <render_frame+0x2c4>
+ 2f8:	4651      	mov	r1, sl
+ 2fa:	4620      	mov	r0, r4
+ 2fc:	f7ff fffe 	bl	0 <render_frame>
+			2fc: R_ARM_THM_CALL	roll3_renderer_focus
+ 300:	e733      	b.n	16a <render_frame+0x16a>
+ 302:	8b93      	ldrh	r3, [r2, #28]
+ 304:	3701      	adds	r7, #1
+ 306:	2fc9      	cmp	r7, #201	@ 0xc9
+ 308:	61d3      	str	r3, [r2, #28]
+ 30a:	d001      	beq.n	310 <render_frame+0x310>
+ 30c:	4632      	mov	r2, r6
+ 30e:	e7bc      	b.n	28a <render_frame+0x28a>
+ 310:	ab0d      	add	r3, sp, #52	@ 0x34
+ 312:	aa0a      	add	r2, sp, #40	@ 0x28
+ 314:	ca07      	ldmia	r2, {r0, r1, r2}
+ 316:	e883 0007 	stmia.w	r3, {r0, r1, r2}
+ 31a:	f8da 3058 	ldr.w	r3, [sl, #88]	@ 0x58
+ 31e:	edcd 9a14 	vstr	s19, [sp, #80]	@ 0x50
+ 322:	ed8d 9a15 	vstr	s18, [sp, #84]	@ 0x54
+ 326:	edcd 8a16 	vstr	s17, [sp, #88]	@ 0x58
+ 32a:	ed8d 8a17 	vstr	s16, [sp, #92]	@ 0x5c
+ 32e:	b1bb      	cbz	r3, 360 <render_frame+0x360>
+ 330:	68d8      	ldr	r0, [r3, #12]
+ 332:	eeb7 0a00 	vmov.f32	s0, #112	@ 0x3f800000  1.0
+ 336:	f7ff fffe 	bl	0 <render_frame>
+			336: R_ARM_THM_CALL	rgb
+ 33a:	23f0      	movs	r3, #240	@ 0xf0
+ 33c:	2500      	movs	r5, #0
+ 33e:	9a02      	ldr	r2, [sp, #8]
+ 340:	9004      	str	r0, [sp, #16]
+ 342:	435a      	muls	r2, r3
+ 344:	08d3      	lsrs	r3, r2, #3
+ 346:	9305      	str	r3, [sp, #20]
+ 348:	9b37      	ldr	r3, [sp, #220]	@ 0xdc
+ 34a:	9203      	str	r2, [sp, #12]
+ 34c:	f503 53c7 	add.w	r3, r3, #6368	@ 0x18e0
+ 350:	331e      	adds	r3, #30
+ 352:	9302      	str	r3, [sp, #8]
+ 354:	9b37      	ldr	r3, [sp, #220]	@ 0xdc
+ 356:	462e      	mov	r6, r5
+ 358:	2200      	movs	r2, #0
+ 35a:	eb03 1145 	add.w	r1, r3, r5, lsl #5
+ 35e:	e01c      	b.n	39a <render_frame+0x39a>
+ 360:	4812      	ldr	r0, [pc, #72]	@ (3ac <render_frame+0x3ac>)
+ 362:	e7e6      	b.n	332 <render_frame+0x332>
+ 364:	f859 0b04 	ldr.w	r0, [r9], #4
+ 368:	f7ff fffe 	bl	0 <render_frame>
+			368: R_ARM_THM_CALL	count_bits
+ 36c:	45c8      	cmp	r8, r9
+ 36e:	4407      	add	r7, r0
+ 370:	d1f8      	bne.n	364 <render_frame+0x364>
+ 372:	9b05      	ldr	r3, [sp, #20]
+ 374:	4417      	add	r7, r2
+ 376:	42bb      	cmp	r3, r7
+ 378:	d31a      	bcc.n	3b0 <render_frame+0x3b0>
+ 37a:	9b02      	ldr	r3, [sp, #8]
+ 37c:	eb03 1706 	add.w	r7, r3, r6, lsl #4
+ 380:	f827 2f02 	strh.w	r2, [r7, #2]!
+ 384:	f851 0b04 	ldr.w	r0, [r1], #4
+ 388:	f7ff fffe 	bl	0 <render_frame>
+			388: R_ARM_THM_CALL	count_bits
+ 38c:	4588      	cmp	r8, r1
+ 38e:	4402      	add	r2, r0
+ 390:	d1f6      	bne.n	380 <render_frame+0x380>
+ 392:	3601      	adds	r6, #1
+ 394:	2ec8      	cmp	r6, #200	@ 0xc8
+ 396:	f000 80e4 	beq.w	562 <render_frame+0x562>
+ 39a:	4689      	mov	r9, r1
+ 39c:	2700      	movs	r7, #0
+ 39e:	f101 0820 	add.w	r8, r1, #32
+ 3a2:	e7df      	b.n	364 <render_frame+0x364>
+ 3a4:	7f7fffff 	.word	0x7f7fffff
+ 3a8:	3d4ccccd 	.word	0x3d4ccccd
+ 3ac:	000c1220 	.word	0x000c1220
+ 3b0:	b36a      	cbz	r2, 40e <render_frame+0x40e>
+ 3b2:	9901      	ldr	r1, [sp, #4]
+ 3b4:	9803      	ldr	r0, [sp, #12]
+ 3b6:	2300      	movs	r3, #0
+ 3b8:	eb01 0900 	add.w	r9, r1, r0
+ 3bc:	e9cd 911c 	strd	r9, r1, [sp, #112]	@ 0x70
+ 3c0:	f04f 517a 	mov.w	r1, #1048576000	@ 0x3e800000
+ 3c4:	911e      	str	r1, [sp, #120]	@ 0x78
+ 3c6:	911f      	str	r1, [sp, #124]	@ 0x7c
+ 3c8:	9937      	ldr	r1, [sp, #220]	@ 0xdc
+ 3ca:	9323      	str	r3, [sp, #140]	@ 0x8c
+ 3cc:	e9cd 1520 	strd	r1, r5, [sp, #128]	@ 0x80
+ 3d0:	f64f 71ff 	movw	r1, #65535	@ 0xffff
+ 3d4:	9622      	str	r6, [sp, #136]	@ 0x88
+ 3d6:	0092      	lsls	r2, r2, #2
+ 3d8:	4293      	cmp	r3, r2
+ 3da:	d31a      	bcc.n	412 <render_frame+0x412>
+ 3dc:	4652      	mov	r2, sl
+ 3de:	ed9d 2a0d 	vldr	s4, [sp, #52]	@ 0x34
+ 3e2:	eddd 2a0e 	vldr	s5, [sp, #56]	@ 0x38
+ 3e6:	ed9d 3a0f 	vldr	s6, [sp, #60]	@ 0x3c
+ 3ea:	ed9d 0a14 	vldr	s0, [sp, #80]	@ 0x50
+ 3ee:	eddd 0a15 	vldr	s1, [sp, #84]	@ 0x54
+ 3f2:	ed9d 1a16 	vldr	s2, [sp, #88]	@ 0x58
+ 3f6:	eddd 1a17 	vldr	s3, [sp, #92]	@ 0x5c
+ 3fa:	4621      	mov	r1, r4
+ 3fc:	a81c      	add	r0, sp, #112	@ 0x70
+ 3fe:	f7ff fffe 	bl	0 <render_frame>
+			3fe: R_ARM_THM_CALL	draw_scene
+ 402:	2200      	movs	r2, #0
+ 404:	42ae      	cmp	r6, r5
+ 406:	d80c      	bhi.n	422 <render_frame+0x422>
+ 408:	2ec8      	cmp	r6, #200	@ 0xc8
+ 40a:	f000 80a8 	beq.w	55e <render_frame+0x55e>
+ 40e:	4635      	mov	r5, r6
+ 410:	e7a0      	b.n	354 <render_frame+0x354>
+ 412:	9804      	ldr	r0, [sp, #16]
+ 414:	f829 0013 	strh.w	r0, [r9, r3, lsl #1]
+ 418:	9801      	ldr	r0, [sp, #4]
+ 41a:	f820 1013 	strh.w	r1, [r0, r3, lsl #1]
+ 41e:	3301      	adds	r3, #1
+ 420:	e7da      	b.n	3d8 <render_frame+0x3d8>
+ 422:	21f0      	movs	r1, #240	@ 0xf0
+ 424:	fb01 f705 	mul.w	r7, r1, r5
+ 428:	9b37      	ldr	r3, [sp, #220]	@ 0xdc
+ 42a:	f507 7180 	add.w	r1, r7, #256	@ 0x100
+ 42e:	eb03 1345 	add.w	r3, r3, r5, lsl #5
+ 432:	9106      	str	r1, [sp, #24]
+ 434:	f853 8b04 	ldr.w	r8, [r3], #4
+ 438:	f1b8 0f00 	cmp.w	r8, #0
+ 43c:	d105      	bne.n	44a <render_frame+0x44a>
+ 43e:	9906      	ldr	r1, [sp, #24]
+ 440:	3720      	adds	r7, #32
+ 442:	42b9      	cmp	r1, r7
+ 444:	d1f6      	bne.n	434 <render_frame+0x434>
+ 446:	3501      	adds	r5, #1
+ 448:	e7dc      	b.n	404 <render_frame+0x404>
+ 44a:	fa98 f1a8 	rbit	r1, r8
+ 44e:	fab1 f181 	clz	r1, r1
+ 452:	eb09 00c2 	add.w	r0, r9, r2, lsl #3
+ 456:	4439      	add	r1, r7
+ 458:	9309      	str	r3, [sp, #36]	@ 0x24
+ 45a:	9108      	str	r1, [sp, #32]
+ 45c:	9207      	str	r2, [sp, #28]
+ 45e:	f7ff fffe 	bl	0 <render_frame>
+			45e: R_ARM_THM_CALL	resolve_four
+ 462:	9908      	ldr	r1, [sp, #32]
+ 464:	9a07      	ldr	r2, [sp, #28]
+ 466:	f82b 0011 	strh.w	r0, [fp, r1, lsl #1]
+ 46a:	f108 30ff 	add.w	r0, r8, #4294967295
+ 46e:	9b09      	ldr	r3, [sp, #36]	@ 0x24
+ 470:	ea08 0800 	and.w	r8, r8, r0
+ 474:	3201      	adds	r2, #1
+ 476:	e7df      	b.n	438 <render_frame+0x438>
+ 478:	f04f 577a 	mov.w	r7, #1048576000	@ 0x3e800000
+ 47c:	f04f 587d 	mov.w	r8, #1061158912	@ 0x3f400000
+ 480:	f8da 3058 	ldr.w	r3, [sl, #88]	@ 0x58
+ 484:	9a01      	ldr	r2, [sp, #4]
+ 486:	a81c      	add	r0, sp, #112	@ 0x70
+ 488:	9323      	str	r3, [sp, #140]	@ 0x8c
+ 48a:	eef0 0a49 	vmov.f32	s1, s18
+ 48e:	eeb0 1a68 	vmov.f32	s2, s17
+ 492:	eef0 1a48 	vmov.f32	s3, s16
+ 496:	921d      	str	r2, [sp, #116]	@ 0x74
+ 498:	e9cd 6620 	strd	r6, r6, [sp, #128]	@ 0x80
+ 49c:	9622      	str	r6, [sp, #136]	@ 0x88
+ 49e:	f8cd b070 	str.w	fp, [sp, #112]	@ 0x70
+ 4a2:	971e      	str	r7, [sp, #120]	@ 0x78
+ 4a4:	f8cd 807c 	str.w	r8, [sp, #124]	@ 0x7c
+ 4a8:	f7ff fffe 	bl	0 <render_frame>
+			4a8: R_ARM_THM_CALL	clear_target
+ 4ac:	eeb0 0a69 	vmov.f32	s0, s19
+ 4b0:	4652      	mov	r2, sl
+ 4b2:	4621      	mov	r1, r4
+ 4b4:	ed9d 2a0a 	vldr	s4, [sp, #40]	@ 0x28
+ 4b8:	eddd 2a0b 	vldr	s5, [sp, #44]	@ 0x2c
+ 4bc:	ed9d 3a0c 	vldr	s6, [sp, #48]	@ 0x30
+ 4c0:	a81c      	add	r0, sp, #112	@ 0x70
+ 4c2:	edcd 9a10 	vstr	s19, [sp, #64]	@ 0x40
+ 4c6:	ed8d 9a11 	vstr	s18, [sp, #68]	@ 0x44
+ 4ca:	edcd 8a12 	vstr	s17, [sp, #72]	@ 0x48
+ 4ce:	ed8d 8a13 	vstr	s16, [sp, #76]	@ 0x4c
+ 4d2:	f7ff fffe 	bl	0 <render_frame>
+			4d2: R_ARM_THM_CALL	draw_scene
+ 4d6:	f8da 3058 	ldr.w	r3, [sl, #88]	@ 0x58
+ 4da:	a81c      	add	r0, sp, #112	@ 0x70
+ 4dc:	951c      	str	r5, [sp, #112]	@ 0x70
+ 4de:	9323      	str	r3, [sp, #140]	@ 0x8c
+ 4e0:	e9cd 6620 	strd	r6, r6, [sp, #128]	@ 0x80
+ 4e4:	9622      	str	r6, [sp, #136]	@ 0x88
+ 4e6:	f8cd 8078 	str.w	r8, [sp, #120]	@ 0x78
+ 4ea:	971f      	str	r7, [sp, #124]	@ 0x7c
+ 4ec:	f7ff fffe 	bl	0 <render_frame>
+			4ec: R_ARM_THM_CALL	clear_target
+ 4f0:	4621      	mov	r1, r4
+ 4f2:	a81c      	add	r0, sp, #112	@ 0x70
+ 4f4:	ed9d 2a0a 	vldr	s4, [sp, #40]	@ 0x28
+ 4f8:	eddd 2a0b 	vldr	s5, [sp, #44]	@ 0x2c
+ 4fc:	ed9d 3a0c 	vldr	s6, [sp, #48]	@ 0x30
+ 500:	ed9d 0a10 	vldr	s0, [sp, #64]	@ 0x40
+ 504:	eddd 0a11 	vldr	s1, [sp, #68]	@ 0x44
+ 508:	ed9d 1a12 	vldr	s2, [sp, #72]	@ 0x48
+ 50c:	eddd 1a13 	vldr	s3, [sp, #76]	@ 0x4c
+ 510:	4652      	mov	r2, sl
+ 512:	f7ff fffe 	bl	0 <render_frame>
+			512: R_ARM_THM_CALL	draw_scene
+ 516:	f50b 30bb 	add.w	r0, fp, #95744	@ 0x17600
+ 51a:	f1ab 0102 	sub.w	r1, fp, #2
+ 51e:	3d02      	subs	r5, #2
+ 520:	30fe      	adds	r0, #254	@ 0xfe
+ 522:	f835 2f02 	ldrh.w	r2, [r5, #2]!
+ 526:	f831 6f02 	ldrh.w	r6, [r1, #2]!
+ 52a:	f3c2 1445 	ubfx	r4, r2, #5, #6
+ 52e:	f3c6 1345 	ubfx	r3, r6, #5, #6
+ 532:	3401      	adds	r4, #1
+ 534:	441c      	add	r4, r3
+ 536:	0ad3      	lsrs	r3, r2, #11
+ 538:	eb03 23d6 	add.w	r3, r3, r6, lsr #11
+ 53c:	3301      	adds	r3, #1
+ 53e:	085b      	lsrs	r3, r3, #1
+ 540:	f002 021f 	and.w	r2, r2, #31
+ 544:	0864      	lsrs	r4, r4, #1
+ 546:	02db      	lsls	r3, r3, #11
+ 548:	3201      	adds	r2, #1
+ 54a:	f006 061f 	and.w	r6, r6, #31
+ 54e:	ea43 1344 	orr.w	r3, r3, r4, lsl #5
+ 552:	4432      	add	r2, r6
+ 554:	ea43 0352 	orr.w	r3, r3, r2, lsr #1
+ 558:	4281      	cmp	r1, r0
+ 55a:	800b      	strh	r3, [r1, #0]
+ 55c:	d1e1      	bne.n	522 <render_frame+0x522>
+ 55e:	2000      	movs	r0, #0
+ 560:	e55d      	b.n	1e <render_frame+0x1e>
+ 562:	2a00      	cmp	r2, #0
+ 564:	f47f af25 	bne.w	3b2 <render_frame+0x3b2>
+ 568:	e7f9      	b.n	55e <render_frame+0x55e>
+ 56a:	bf00      	nop
+
+Disassembly of section .text.roll3_renderer_render:
+
+00000000 <roll3_renderer_render>:
+   0:	b51f      	push	{r0, r1, r2, r3, r4, lr}
+   2:	2400      	movs	r4, #0
+   4:	e9cd 3400 	strd	r3, r4, [sp]
+   8:	e9cd 4402 	strd	r4, r4, [sp, #8]
+   c:	4613      	mov	r3, r2
+   e:	22c8      	movs	r2, #200	@ 0xc8
+  10:	f7ff fffe 	bl	0 <roll3_renderer_render>
+			10: R_ARM_THM_CALL	render_frame
+  14:	b004      	add	sp, #16
+  16:	bd10      	pop	{r4, pc}
+
+Disassembly of section .text.roll3_renderer_render_follow:
+
+00000000 <roll3_renderer_render_follow>:
+   0:	b51f      	push	{r0, r1, r2, r3, r4, lr}
+   2:	2400      	movs	r4, #0
+   4:	9403      	str	r4, [sp, #12]
+   6:	9c07      	ldr	r4, [sp, #28]
+   8:	9402      	str	r4, [sp, #8]
+   a:	9c06      	ldr	r4, [sp, #24]
+   c:	e9cd 3400 	strd	r3, r4, [sp]
+  10:	4613      	mov	r3, r2
+  12:	22c8      	movs	r2, #200	@ 0xc8
+  14:	f7ff fffe 	bl	0 <roll3_renderer_render_follow>
+			14: R_ARM_THM_CALL	render_frame
+  18:	b004      	add	sp, #16
+  1a:	bd10      	pop	{r4, pc}
+
+Disassembly of section .text.roll3_renderer_render_edges:
+
+00000000 <roll3_renderer_render_edges>:
+   0:	b51f      	push	{r0, r1, r2, r3, r4, lr}
+   2:	9c08      	ldr	r4, [sp, #32]
+   4:	9403      	str	r4, [sp, #12]
+   6:	2400      	movs	r4, #0
+   8:	9402      	str	r4, [sp, #8]
+   a:	9c07      	ldr	r4, [sp, #28]
+   c:	9401      	str	r4, [sp, #4]
+   e:	9c06      	ldr	r4, [sp, #24]
+  10:	9400      	str	r4, [sp, #0]
+  12:	f7ff fffe 	bl	0 <roll3_renderer_render_edges>
+			12: R_ARM_THM_CALL	render_frame
+  16:	b004      	add	sp, #16
+  18:	bd10      	pop	{r4, pc}
+
+Disassembly of section .text.roll3_renderer_render_play:
+
+00000000 <roll3_renderer_render_play>:
+   0:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
+   4:	2400      	movs	r4, #0
+   6:	b08b      	sub	sp, #44	@ 0x2c
+   8:	e9cd 4402 	strd	r4, r4, [sp, #8]
+   c:	9c15      	ldr	r4, [sp, #84]	@ 0x54
+   e:	4605      	mov	r5, r0
+  10:	9401      	str	r4, [sp, #4]
+  12:	9c14      	ldr	r4, [sp, #80]	@ 0x50
+  14:	4688      	mov	r8, r1
+  16:	9400      	str	r4, [sp, #0]
+  18:	f7ff fffe 	bl	0 <roll3_renderer_render_play>
+			18: R_ARM_THM_CALL	render_frame
+  1c:	9008      	str	r0, [sp, #32]
+  1e:	2800      	cmp	r0, #0
+  20:	f040 8099 	bne.w	156 <roll3_renderer_render_play+0x156>
+  24:	f44f 72f0 	mov.w	r2, #480	@ 0x1e0
+  28:	4629      	mov	r1, r5
+  2a:	4640      	mov	r0, r8
+  2c:	f7ff fffe 	bl	0 <memcpy>
+			2c: R_ARM_THM_CALL	memcpy
+  30:	9b08      	ldr	r3, [sp, #32]
+  32:	f508 7af0 	add.w	sl, r8, #480	@ 0x1e0
+  36:	9306      	str	r3, [sp, #24]
+  38:	f04f 0b00 	mov.w	fp, #0
+  3c:	f44f 72f0 	mov.w	r2, #480	@ 0x1e0
+  40:	4629      	mov	r1, r5
+  42:	4650      	mov	r0, sl
+  44:	f7ff fffe 	bl	0 <memcpy>
+			44: R_ARM_THM_CALL	memcpy
+  48:	9b06      	ldr	r3, [sp, #24]
+  4a:	3301      	adds	r3, #1
+  4c:	2bc8      	cmp	r3, #200	@ 0xc8
+  4e:	9306      	str	r3, [sp, #24]
+  50:	bf1c      	itt	ne
+  52:	f505 73f0 	addne.w	r3, r5, #480	@ 0x1e0
+  56:	9309      	strne	r3, [sp, #36]	@ 0x24
+  58:	f1aa 0302 	sub.w	r3, sl, #2
+  5c:	bf08      	it	eq
+  5e:	f8cd a024 	streq.w	sl, [sp, #36]	@ 0x24
+  62:	9307      	str	r3, [sp, #28]
+  64:	9b07      	ldr	r3, [sp, #28]
+  66:	f833 4f02 	ldrh.w	r4, [r3, #2]!
+  6a:	9307      	str	r3, [sp, #28]
+  6c:	f1bb 0f00 	cmp.w	fp, #0
+  70:	d008      	beq.n	84 <roll3_renderer_render_play+0x84>
+  72:	f1bb 0fef 	cmp.w	fp, #239	@ 0xef
+  76:	f833 7c02 	ldrh.w	r7, [r3, #-2]
+  7a:	d104      	bne.n	86 <roll3_renderer_render_play+0x86>
+  7c:	4626      	mov	r6, r4
+  7e:	e004      	b.n	8a <roll3_renderer_render_play+0x8a>
+  80:	469a      	mov	sl, r3
+  82:	e7d9      	b.n	38 <roll3_renderer_render_play+0x38>
+  84:	4627      	mov	r7, r4
+  86:	9b07      	ldr	r3, [sp, #28]
+  88:	885e      	ldrh	r6, [r3, #2]
+  8a:	f838 301b 	ldrh.w	r3, [r8, fp, lsl #1]
+  8e:	42bc      	cmp	r4, r7
+  90:	9305      	str	r3, [sp, #20]
+  92:	9b09      	ldr	r3, [sp, #36]	@ 0x24
+  94:	f833 901b 	ldrh.w	r9, [r3, fp, lsl #1]
+  98:	d106      	bne.n	a8 <roll3_renderer_render_play+0xa8>
+  9a:	42b4      	cmp	r4, r6
+  9c:	d104      	bne.n	a8 <roll3_renderer_render_play+0xa8>
+  9e:	9b05      	ldr	r3, [sp, #20]
+  a0:	42a3      	cmp	r3, r4
+  a2:	d101      	bne.n	a8 <roll3_renderer_render_play+0xa8>
+  a4:	45a1      	cmp	r9, r4
+  a6:	d04a      	beq.n	13e <roll3_renderer_render_play+0x13e>
+  a8:	4639      	mov	r1, r7
+  aa:	4620      	mov	r0, r4
+  ac:	f7ff fffe 	bl	0 <roll3_renderer_render_play>
+			ac: R_ARM_THM_CALL	color_edge
+  b0:	b970      	cbnz	r0, d0 <roll3_renderer_render_play+0xd0>
+  b2:	4631      	mov	r1, r6
+  b4:	4620      	mov	r0, r4
+  b6:	f7ff fffe 	bl	0 <roll3_renderer_render_play>
+			b6: R_ARM_THM_CALL	color_edge
+  ba:	b948      	cbnz	r0, d0 <roll3_renderer_render_play+0xd0>
+  bc:	4620      	mov	r0, r4
+  be:	9905      	ldr	r1, [sp, #20]
+  c0:	f7ff fffe 	bl	0 <roll3_renderer_render_play>
+			c0: R_ARM_THM_CALL	color_edge
+  c4:	b920      	cbnz	r0, d0 <roll3_renderer_render_play+0xd0>
+  c6:	4649      	mov	r1, r9
+  c8:	4620      	mov	r0, r4
+  ca:	f7ff fffe 	bl	0 <roll3_renderer_render_play>
+			ca: R_ARM_THM_CALL	color_edge
+  ce:	b3b0      	cbz	r0, 13e <roll3_renderer_render_play+0x13e>
+  d0:	9b05      	ldr	r3, [sp, #20]
+  d2:	0ae1      	lsrs	r1, r4, #11
+  d4:	3101      	adds	r1, #1
+  d6:	0ad8      	lsrs	r0, r3, #11
+  d8:	f004 0c1f 	and.w	ip, r4, #31
+  dc:	eb00 0081 	add.w	r0, r0, r1, lsl #2
+  e0:	f10c 0c01 	add.w	ip, ip, #1
+  e4:	f003 011f 	and.w	r1, r3, #31
+  e8:	eb01 018c 	add.w	r1, r1, ip, lsl #2
+  ec:	f009 0c1f 	and.w	ip, r9, #31
+  f0:	eb00 20d9 	add.w	r0, r0, r9, lsr #11
+  f4:	4461      	add	r1, ip
+  f6:	f007 0c1f 	and.w	ip, r7, #31
+  fa:	eb00 20d7 	add.w	r0, r0, r7, lsr #11
+  fe:	4461      	add	r1, ip
+ 100:	f006 0c1f 	and.w	ip, r6, #31
+ 104:	eb00 20d6 	add.w	r0, r0, r6, lsr #11
+ 108:	4461      	add	r1, ip
+ 10a:	08c0      	lsrs	r0, r0, #3
+ 10c:	f3c4 1345 	ubfx	r3, r4, #5, #6
+ 110:	08c9      	lsrs	r1, r1, #3
+ 112:	ea41 21c0 	orr.w	r1, r1, r0, lsl #11
+ 116:	1c58      	adds	r0, r3, #1
+ 118:	9b05      	ldr	r3, [sp, #20]
+ 11a:	f3c9 1945 	ubfx	r9, r9, #5, #6
+ 11e:	f3c3 1345 	ubfx	r3, r3, #5, #6
+ 122:	eb03 0380 	add.w	r3, r3, r0, lsl #2
+ 126:	444b      	add	r3, r9
+ 128:	f3c7 1745 	ubfx	r7, r7, #5, #6
+ 12c:	443b      	add	r3, r7
+ 12e:	f3c6 1645 	ubfx	r6, r6, #5, #6
+ 132:	4433      	add	r3, r6
+ 134:	08db      	lsrs	r3, r3, #3
+ 136:	ea41 1143 	orr.w	r1, r1, r3, lsl #5
+ 13a:	f825 101b 	strh.w	r1, [r5, fp, lsl #1]
+ 13e:	f10b 0b01 	add.w	fp, fp, #1
+ 142:	f1bb 0ff0 	cmp.w	fp, #240	@ 0xf0
+ 146:	d18d      	bne.n	64 <roll3_renderer_render_play+0x64>
+ 148:	9a06      	ldr	r2, [sp, #24]
+ 14a:	4643      	mov	r3, r8
+ 14c:	2ac8      	cmp	r2, #200	@ 0xc8
+ 14e:	46d0      	mov	r8, sl
+ 150:	f505 75f0 	add.w	r5, r5, #480	@ 0x1e0
+ 154:	d194      	bne.n	80 <roll3_renderer_render_play+0x80>
+ 156:	9808      	ldr	r0, [sp, #32]
+ 158:	b00b      	add	sp, #44	@ 0x2c
+ 15a:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
+
+Disassembly of section .text.roll3_renderer_selftest:
+
+00000000 <roll3_renderer_selftest>:
+   0:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
+   4:	ed2d 8b04 	vpush	{d8-d9}
+   8:	ed9f 8ac2 	vldr	s16, [pc, #776]	@ 314 <roll3_renderer_selftest+0x314>
+   c:	eddf 8ac2 	vldr	s17, [pc, #776]	@ 318 <roll3_renderer_selftest+0x318>
+  10:	b0cf      	sub	sp, #316	@ 0x13c
+  12:	f10d 0b14 	add.w	fp, sp, #20
+  16:	f10d 0910 	add.w	r9, sp, #16
+  1a:	f10d 0a0c 	add.w	sl, sp, #12
+  1e:	4604      	mov	r4, r0
+  20:	465a      	mov	r2, fp
+  22:	4649      	mov	r1, r9
+  24:	4650      	mov	r0, sl
+  26:	eef0 1a48 	vmov.f32	s3, s16
+  2a:	eeb0 2a48 	vmov.f32	s4, s16
+  2e:	eef0 2a68 	vmov.f32	s5, s17
+  32:	eeb0 0a48 	vmov.f32	s0, s16
+  36:	eef0 0a48 	vmov.f32	s1, s16
+  3a:	eeb0 1a68 	vmov.f32	s2, s17
+  3e:	ed8d 8a0b 	vstr	s16, [sp, #44]	@ 0x2c
+  42:	ed8d 8a0c 	vstr	s16, [sp, #48]	@ 0x30
+  46:	edcd 8a0d 	vstr	s17, [sp, #52]	@ 0x34
+  4a:	f7ff fffe 	bl	0 <roll3_renderer_selftest>
+			4a: R_ARM_THM_CALL	roll3_renderer_project_focus
+  4e:	ad0b      	add	r5, sp, #44	@ 0x2c
+  50:	4607      	mov	r7, r0
+  52:	2800      	cmp	r0, #0
+  54:	f000 8215 	beq.w	482 <roll3_renderer_selftest+0x482>
+  58:	ed9f 7ab0 	vldr	s14, [pc, #704]	@ 31c <roll3_renderer_selftest+0x31c>
+  5c:	edda 7a00 	vldr	s15, [sl]
+  60:	ee77 7ac7 	vsub.f32	s15, s15, s14
+  64:	ed9f 7aae 	vldr	s14, [pc, #696]	@ 320 <roll3_renderer_selftest+0x320>
+  68:	eef0 7ae7 	vabs.f32	s15, s15
+  6c:	eef4 7ac7 	vcmpe.f32	s15, s14
+  70:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  74:	f140 8205 	bpl.w	482 <roll3_renderer_selftest+0x482>
+  78:	edd9 7a00 	vldr	s15, [r9]
+  7c:	eddf 6aa9 	vldr	s13, [pc, #676]	@ 324 <roll3_renderer_selftest+0x324>
+  80:	ee77 7ae6 	vsub.f32	s15, s15, s13
+  84:	eef0 7ae7 	vabs.f32	s15, s15
+  88:	eef4 7ac7 	vcmpe.f32	s15, s14
+  8c:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+  90:	bf4c      	ite	mi
+  92:	2101      	movmi	r1, #1
+  94:	2100      	movpl	r1, #0
+  96:	f081 0601 	eor.w	r6, r1, #1
+  9a:	b10c      	cbz	r4, a0 <roll3_renderer_selftest+0xa0>
+  9c:	48a2      	ldr	r0, [pc, #648]	@ (328 <roll3_renderer_selftest+0x328>)
+  9e:	47a0      	blx	r4
+  a0:	f10d 081c 	add.w	r8, sp, #28
+  a4:	2f00      	cmp	r7, #0
+  a6:	f040 81ee 	bne.w	486 <roll3_renderer_selftest+0x486>
+  aa:	2100      	movs	r1, #0
+  ac:	f081 0301 	eor.w	r3, r1, #1
+  b0:	441e      	add	r6, r3
+  b2:	b10c      	cbz	r4, b8 <roll3_renderer_selftest+0xb8>
+  b4:	489d      	ldr	r0, [pc, #628]	@ (32c <roll3_renderer_selftest+0x32c>)
+  b6:	47a0      	blx	r4
+  b8:	2f00      	cmp	r7, #0
+  ba:	f040 8205 	bne.w	4c8 <roll3_renderer_selftest+0x4c8>
+  be:	2100      	movs	r1, #0
+  c0:	f081 0301 	eor.w	r3, r1, #1
+  c4:	441e      	add	r6, r3
+  c6:	b10c      	cbz	r4, cc <roll3_renderer_selftest+0xcc>
+  c8:	4899      	ldr	r0, [pc, #612]	@ (330 <roll3_renderer_selftest+0x330>)
+  ca:	47a0      	blx	r4
+  cc:	4641      	mov	r1, r8
+  ce:	edd5 1a00 	vldr	s3, [r5]
+  d2:	ed95 2a01 	vldr	s4, [r5, #4]
+  d6:	edd5 2a02 	vldr	s5, [r5, #8]
+  da:	ed9f 0a96 	vldr	s0, [pc, #600]	@ 334 <roll3_renderer_selftest+0x334>
+  de:	eddf 0a96 	vldr	s1, [pc, #600]	@ 338 <roll3_renderer_selftest+0x338>
+  e2:	ed9f 1a96 	vldr	s2, [pc, #600]	@ 33c <roll3_renderer_selftest+0x33c>
+  e6:	aa08      	add	r2, sp, #32
+  e8:	a806      	add	r0, sp, #24
+  ea:	f7ff fffe 	bl	0 <roll3_renderer_selftest>
+			ea: R_ARM_THM_CALL	roll3_renderer_project_focus
+  ee:	1983      	adds	r3, r0, r6
+  f0:	9301      	str	r3, [sp, #4]
+  f2:	b124      	cbz	r4, fe <roll3_renderer_selftest+0xfe>
+  f4:	f080 0001 	eor.w	r0, r0, #1
+  f8:	b2c1      	uxtb	r1, r0
+  fa:	4891      	ldr	r0, [pc, #580]	@ (340 <roll3_renderer_selftest+0x340>)
+  fc:	47a0      	blx	r4
+  fe:	4b91      	ldr	r3, [pc, #580]	@ (344 <roll3_renderer_selftest+0x344>)
+ 100:	ae1d      	add	r6, sp, #116	@ 0x74
+ 102:	ad34      	add	r5, sp, #208	@ 0xd0
+ 104:	e893 0007 	ldmia.w	r3, {r0, r1, r2}
+ 108:	e886 0007 	stmia.w	r6, {r0, r1, r2}
+ 10c:	e885 0007 	stmia.w	r5, {r0, r1, r2}
+ 110:	ab06      	add	r3, sp, #24
+ 112:	4641      	mov	r1, r8
+ 114:	4618      	mov	r0, r3
+ 116:	eddd 1a34 	vldr	s3, [sp, #208]	@ 0xd0
+ 11a:	ed9d 2a35 	vldr	s4, [sp, #212]	@ 0xd4
+ 11e:	eddd 2a36 	vldr	s5, [sp, #216]	@ 0xd8
+ 122:	ed9d 0a1d 	vldr	s0, [sp, #116]	@ 0x74
+ 126:	eddd 0a1e 	vldr	s1, [sp, #120]	@ 0x78
+ 12a:	ed9d 1a1f 	vldr	s2, [sp, #124]	@ 0x7c
+ 12e:	aa08      	add	r2, sp, #32
+ 130:	f7ff fffe 	bl	0 <roll3_renderer_selftest>
+			130: R_ARM_THM_CALL	roll3_renderer_project_focus
+ 134:	4601      	mov	r1, r0
+ 136:	b1f0      	cbz	r0, 176 <roll3_renderer_selftest+0x176>
+ 138:	ed9a 7a00 	vldr	s14, [sl]
+ 13c:	eddd 7a06 	vldr	s15, [sp, #24]
+ 140:	ee77 7ac7 	vsub.f32	s15, s15, s14
+ 144:	ed9f 7a76 	vldr	s14, [pc, #472]	@ 320 <roll3_renderer_selftest+0x320>
+ 148:	eef0 7ae7 	vabs.f32	s15, s15
+ 14c:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 150:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 154:	f140 81d8 	bpl.w	508 <roll3_renderer_selftest+0x508>
+ 158:	edd8 7a00 	vldr	s15, [r8]
+ 15c:	edd9 6a00 	vldr	s13, [r9]
+ 160:	ee77 7ae6 	vsub.f32	s15, s15, s13
+ 164:	eef0 7ae7 	vabs.f32	s15, s15
+ 168:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 16c:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 170:	bf4c      	ite	mi
+ 172:	2101      	movmi	r1, #1
+ 174:	2100      	movpl	r1, #0
+ 176:	9b01      	ldr	r3, [sp, #4]
+ 178:	f081 0901 	eor.w	r9, r1, #1
+ 17c:	4499      	add	r9, r3
+ 17e:	b10c      	cbz	r4, 184 <roll3_renderer_selftest+0x184>
+ 180:	4871      	ldr	r0, [pc, #452]	@ (348 <roll3_renderer_selftest+0x348>)
+ 182:	47a0      	blx	r4
+ 184:	b197      	cbz	r7, 1ac <roll3_renderer_selftest+0x1ac>
+ 186:	ed9b 7a00 	vldr	s14, [fp]
+ 18a:	eddf 6a70 	vldr	s13, [pc, #448]	@ 34c <roll3_renderer_selftest+0x34c>
+ 18e:	eec6 7a87 	vdiv.f32	s15, s13, s14
+ 192:	eeb7 7a08 	vmov.f32	s14, #120	@ 0x3fc00000  1.5
+ 196:	ee67 7a87 	vmul.f32	s15, s15, s14
+ 19a:	eeb3 7a08 	vmov.f32	s14, #56	@ 0x41c00000  24.0
+ 19e:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 1a2:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 1a6:	bfac      	ite	ge
+ 1a8:	2701      	movge	r7, #1
+ 1aa:	2700      	movlt	r7, #0
+ 1ac:	f087 0801 	eor.w	r8, r7, #1
+ 1b0:	fa59 f888 	uxtab	r8, r9, r8
+ 1b4:	b174      	cbz	r4, 1d4 <roll3_renderer_selftest+0x1d4>
+ 1b6:	4639      	mov	r1, r7
+ 1b8:	4865      	ldr	r0, [pc, #404]	@ (350 <roll3_renderer_selftest+0x350>)
+ 1ba:	47a0      	blx	r4
+ 1bc:	2101      	movs	r1, #1
+ 1be:	4865      	ldr	r0, [pc, #404]	@ (354 <roll3_renderer_selftest+0x354>)
+ 1c0:	47a0      	blx	r4
+ 1c2:	2101      	movs	r1, #1
+ 1c4:	4864      	ldr	r0, [pc, #400]	@ (358 <roll3_renderer_selftest+0x358>)
+ 1c6:	47a0      	blx	r4
+ 1c8:	2101      	movs	r1, #1
+ 1ca:	4864      	ldr	r0, [pc, #400]	@ (35c <roll3_renderer_selftest+0x35c>)
+ 1cc:	47a0      	blx	r4
+ 1ce:	2101      	movs	r1, #1
+ 1d0:	4863      	ldr	r0, [pc, #396]	@ (360 <roll3_renderer_selftest+0x360>)
+ 1d2:	47a0      	blx	r4
+ 1d4:	f04f 32ff 	mov.w	r2, #4294967295
+ 1d8:	2300      	movs	r3, #0
+ 1da:	a809      	add	r0, sp, #36	@ 0x24
+ 1dc:	e9cd 2309 	strd	r2, r3, [sp, #36]	@ 0x24
+ 1e0:	f7ff fffe 	bl	0 <roll3_renderer_selftest>
+			1e0: R_ARM_THM_CALL	resolve_four
+ 1e4:	f248 4110 	movw	r1, #33808	@ 0x8410
+ 1e8:	4288      	cmp	r0, r1
+ 1ea:	bf18      	it	ne
+ 1ec:	f108 0801 	addne.w	r8, r8, #1
+ 1f0:	b13c      	cbz	r4, 202 <roll3_renderer_selftest+0x202>
+ 1f2:	1a43      	subs	r3, r0, r1
+ 1f4:	4259      	negs	r1, r3
+ 1f6:	485b      	ldr	r0, [pc, #364]	@ (364 <roll3_renderer_selftest+0x364>)
+ 1f8:	4159      	adcs	r1, r3
+ 1fa:	47a0      	blx	r4
+ 1fc:	2101      	movs	r1, #1
+ 1fe:	485a      	ldr	r0, [pc, #360]	@ (368 <roll3_renderer_selftest+0x368>)
+ 200:	47a0      	blx	r4
+ 202:	ed9f 9a5a 	vldr	s18, [pc, #360]	@ 36c <roll3_renderer_selftest+0x36c>
+ 206:	2218      	movs	r2, #24
+ 208:	2100      	movs	r1, #0
+ 20a:	a817      	add	r0, sp, #92	@ 0x5c
+ 20c:	f7ff fffe 	bl	0 <memset>
+			20c: R_ARM_THM_CALL	memset
+ 210:	225c      	movs	r2, #92	@ 0x5c
+ 212:	2100      	movs	r1, #0
+ 214:	4630      	mov	r0, r6
+ 216:	f7ff fffe 	bl	0 <memset>
+			216: R_ARM_THM_CALL	memset
+ 21a:	4b55      	ldr	r3, [pc, #340]	@ (370 <roll3_renderer_selftest+0x370>)
+ 21c:	2268      	movs	r2, #104	@ 0x68
+ 21e:	2100      	movs	r1, #0
+ 220:	4628      	mov	r0, r5
+ 222:	9324      	str	r3, [sp, #144]	@ 0x90
+ 224:	edcd 8a21 	vstr	s17, [sp, #132]	@ 0x84
+ 228:	ed8d 9a22 	vstr	s18, [sp, #136]	@ 0x88
+ 22c:	2701      	movs	r7, #1
+ 22e:	f7ff fffe 	bl	0 <memset>
+			22e: R_ARM_THM_CALL	memset
+ 232:	2302      	movs	r3, #2
+ 234:	4632      	mov	r2, r6
+ 236:	4629      	mov	r1, r5
+ 238:	a817      	add	r0, sp, #92	@ 0x5c
+ 23a:	f88d 30dc 	strb.w	r3, [sp, #220]	@ 0xdc
+ 23e:	edcd 8a3a 	vstr	s17, [sp, #232]	@ 0xe8
+ 242:	9735      	str	r7, [sp, #212]	@ 0xd4
+ 244:	f04f 0943 	mov.w	r9, #67	@ 0x43
+ 248:	f7ff fffe 	bl	0 <roll3_renderer_selftest>
+			248: R_ARM_THM_CALL	follow_update
+ 24c:	ed9f 5a49 	vldr	s10, [pc, #292]	@ 374 <roll3_renderer_selftest+0x374>
+ 250:	eddd 6a17 	vldr	s13, [sp, #92]	@ 0x5c
+ 254:	ed9d 7a19 	vldr	s14, [sp, #100]	@ 0x64
+ 258:	2300      	movs	r3, #0
+ 25a:	eddf 4a31 	vldr	s9, [pc, #196]	@ 320 <roll3_renderer_selftest+0x320>
+ 25e:	f013 0f01 	tst.w	r3, #1
+ 262:	fe45 7a24 	vseleq.f32	s15, s10, s9
+ 266:	edcd 7a38 	vstr	s15, [sp, #224]	@ 0xe0
+ 26a:	ee77 7aa8 	vadd.f32	s15, s15, s17
+ 26e:	fb03 9209 	mla	r2, r3, r9, r9
+ 272:	4629      	mov	r1, r5
+ 274:	9249      	str	r2, [sp, #292]	@ 0x124
+ 276:	a817      	add	r0, sp, #92	@ 0x5c
+ 278:	4632      	mov	r2, r6
+ 27a:	edcd 6a17 	vstr	s13, [sp, #92]	@ 0x5c
+ 27e:	ed8d 7a19 	vstr	s14, [sp, #100]	@ 0x64
+ 282:	edcd 7a3a 	vstr	s15, [sp, #232]	@ 0xe8
+ 286:	f103 0a01 	add.w	sl, r3, #1
+ 28a:	f7ff fffe 	bl	0 <roll3_renderer_selftest>
+			28a: R_ARM_THM_CALL	follow_update
+ 28e:	eddd 6a17 	vldr	s13, [sp, #92]	@ 0x5c
+ 292:	ed9d 7a19 	vldr	s14, [sp, #100]	@ 0x64
+ 296:	b167      	cbz	r7, 2b2 <roll3_renderer_selftest+0x2b2>
+ 298:	eef5 6a40 	vcmp.f32	s13, #0.0
+ 29c:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 2a0:	f040 8134 	bne.w	50c <roll3_renderer_selftest+0x50c>
+ 2a4:	eeb4 7a68 	vcmp.f32	s14, s17
+ 2a8:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 2ac:	bf0c      	ite	eq
+ 2ae:	2701      	moveq	r7, #1
+ 2b0:	2700      	movne	r7, #0
+ 2b2:	4653      	mov	r3, sl
+ 2b4:	2b14      	cmp	r3, #20
+ 2b6:	d1d2      	bne.n	25e <roll3_renderer_selftest+0x25e>
+ 2b8:	f087 0901 	eor.w	r9, r7, #1
+ 2bc:	44c1      	add	r9, r8
+ 2be:	b114      	cbz	r4, 2c6 <roll3_renderer_selftest+0x2c6>
+ 2c0:	4639      	mov	r1, r7
+ 2c2:	482d      	ldr	r0, [pc, #180]	@ (378 <roll3_renderer_selftest+0x378>)
+ 2c4:	47a0      	blx	r4
+ 2c6:	4a2d      	ldr	r2, [pc, #180]	@ (37c <roll3_renderer_selftest+0x37c>)
+ 2c8:	ab38      	add	r3, sp, #224	@ 0xe0
+ 2ca:	ca07      	ldmia	r2, {r0, r1, r2}
+ 2cc:	e883 0007 	stmia.w	r3, {r0, r1, r2}
+ 2d0:	f240 537f 	movw	r3, #1407	@ 0x57f
+ 2d4:	4632      	mov	r2, r6
+ 2d6:	4629      	mov	r1, r5
+ 2d8:	a817      	add	r0, sp, #92	@ 0x5c
+ 2da:	9349      	str	r3, [sp, #292]	@ 0x124
+ 2dc:	f7ff fffe 	bl	0 <roll3_renderer_selftest>
+			2dc: R_ARM_THM_CALL	follow_update
+ 2e0:	ed9d 5a17 	vldr	s10, [sp, #92]	@ 0x5c
+ 2e4:	eeb5 5ac0 	vcmpe.f32	s10, #0.0
+ 2e8:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 2ec:	9b19      	ldr	r3, [sp, #100]	@ 0x64
+ 2ee:	f340 810f 	ble.w	510 <roll3_renderer_selftest+0x510>
+ 2f2:	eef6 7a00 	vmov.f32	s15, #96	@ 0x3f000000  0.5
+ 2f6:	eeb4 5ae7 	vcmpe.f32	s10, s15
+ 2fa:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 2fe:	bf4c      	ite	mi
+ 300:	2701      	movmi	r7, #1
+ 302:	2700      	movpl	r7, #0
+ 304:	f240 58c2 	movw	r8, #1474	@ 0x5c2
+ 308:	eef6 4a00 	vmov.f32	s9, #96	@ 0x3f000000  0.5
+ 30c:	f640 2afe 	movw	sl, #2814	@ 0xafe
+ 310:	e038      	b.n	384 <roll3_renderer_selftest+0x384>
+ 312:	bf00      	nop
+ 314:	00000000 	.word	0x00000000
+ 318:	3e4ccccd 	.word	0x3e4ccccd
+ 31c:	42f00000 	.word	0x42f00000
+ 320:	3c23d70a 	.word	0x3c23d70a
+ 324:	42c80000 	.word	0x42c80000
+ 328:	00000000 	.word	0x00000000
+			328: R_ARM_ABS32	.rodata.roll3_renderer_selftest.str1.1
+ 32c:	00000015 	.word	0x00000015
+			32c: R_ARM_ABS32	.rodata.roll3_renderer_selftest.str1.1
+ 330:	00000029 	.word	0x00000029
+			330: R_ARM_ABS32	.rodata.roll3_renderer_selftest.str1.1
+ 334:	bfcccccd 	.word	0xbfcccccd
+ 338:	c0315cac 	.word	0xc0315cac
+ 33c:	40333333 	.word	0x40333333
+ 340:	0000003f 	.word	0x0000003f
+			340: R_ARM_ABS32	.rodata.roll3_renderer_selftest.str1.1
+ 344:	00000000 	.word	0x00000000
+			344: R_ARM_ABS32	.rodata
+ 348:	00000051 	.word	0x00000051
+			348: R_ARM_ABS32	.rodata.roll3_renderer_selftest.str1.1
+ 34c:	4299adb7 	.word	0x4299adb7
+ 350:	0000006b 	.word	0x0000006b
+			350: R_ARM_ABS32	.rodata.roll3_renderer_selftest.str1.1
+ 354:	00000085 	.word	0x00000085
+			354: R_ARM_ABS32	.rodata.roll3_renderer_selftest.str1.1
+ 358:	000000a9 	.word	0x000000a9
+			358: R_ARM_ABS32	.rodata.roll3_renderer_selftest.str1.1
+ 35c:	000000c9 	.word	0x000000c9
+			35c: R_ARM_ABS32	.rodata.roll3_renderer_selftest.str1.1
+ 360:	000000f1 	.word	0x000000f1
+			360: R_ARM_ABS32	.rodata.roll3_renderer_selftest.str1.1
+ 364:	00000109 	.word	0x00000109
+			364: R_ARM_ABS32	.rodata.roll3_renderer_selftest.str1.1
+ 368:	00000124 	.word	0x00000124
+			368: R_ARM_ABS32	.rodata.roll3_renderer_selftest.str1.1
+ 36c:	405ccccd 	.word	0x405ccccd
+ 370:	3f333333 	.word	0x3f333333
+ 374:	bc23d70a 	.word	0xbc23d70a
+ 378:	0000013e 	.word	0x0000013e
+			378: R_ARM_ABS32	.rodata.roll3_renderer_selftest.str1.1
+ 37c:	0000000c 	.word	0x0000000c
+			37c: R_ARM_ABS32	.rodata
+ 380:	3cf5c28f 	.word	0x3cf5c28f
+ 384:	4632      	mov	r2, r6
+ 386:	4629      	mov	r1, r5
+ 388:	a817      	add	r0, sp, #92	@ 0x5c
+ 38a:	ed8d 5a17 	vstr	s10, [sp, #92]	@ 0x5c
+ 38e:	9319      	str	r3, [sp, #100]	@ 0x64
+ 390:	f8cd 8124 	str.w	r8, [sp, #292]	@ 0x124
+ 394:	f7ff fffe 	bl	0 <roll3_renderer_selftest>
+			394: R_ARM_THM_CALL	follow_update
+ 398:	eef0 7a45 	vmov.f32	s15, s10
+ 39c:	9b19      	ldr	r3, [sp, #100]	@ 0x64
+ 39e:	ed9d 5a17 	vldr	s10, [sp, #92]	@ 0x5c
+ 3a2:	b167      	cbz	r7, 3be <roll3_renderer_selftest+0x3be>
+ 3a4:	eef4 7ac5 	vcmpe.f32	s15, s10
+ 3a8:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 3ac:	f200 80b2 	bhi.w	514 <roll3_renderer_selftest+0x514>
+ 3b0:	eeb4 5ae4 	vcmpe.f32	s10, s9
+ 3b4:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 3b8:	bf94      	ite	ls
+ 3ba:	2701      	movls	r7, #1
+ 3bc:	2700      	movhi	r7, #0
+ 3be:	f108 0843 	add.w	r8, r8, #67	@ 0x43
+ 3c2:	45d0      	cmp	r8, sl
+ 3c4:	d1de      	bne.n	384 <roll3_renderer_selftest+0x384>
+ 3c6:	b177      	cbz	r7, 3e6 <roll3_renderer_selftest+0x3e6>
+ 3c8:	eef6 7a00 	vmov.f32	s15, #96	@ 0x3f000000  0.5
+ 3cc:	ee35 5a67 	vsub.f32	s10, s10, s15
+ 3d0:	ed5f 7a15 	vldr	s15, [pc, #-84]	@ 380 <roll3_renderer_selftest+0x380>
+ 3d4:	eeb0 5ac5 	vabs.f32	s10, s10
+ 3d8:	eeb4 5ae7 	vcmpe.f32	s10, s15
+ 3dc:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 3e0:	bf4c      	ite	mi
+ 3e2:	2701      	movmi	r7, #1
+ 3e4:	2700      	movpl	r7, #0
+ 3e6:	f087 0801 	eor.w	r8, r7, #1
+ 3ea:	44c8      	add	r8, r9
+ 3ec:	b114      	cbz	r4, 3f4 <roll3_renderer_selftest+0x3f4>
+ 3ee:	4639      	mov	r1, r7
+ 3f0:	484b      	ldr	r0, [pc, #300]	@ (520 <roll3_renderer_selftest+0x520>)
+ 3f2:	47a0      	blx	r4
+ 3f4:	2304      	movs	r3, #4
+ 3f6:	f88d 30dc 	strb.w	r3, [sp, #220]	@ 0xdc
+ 3fa:	2301      	movs	r3, #1
+ 3fc:	4632      	mov	r2, r6
+ 3fe:	4629      	mov	r1, r5
+ 400:	a817      	add	r0, sp, #92	@ 0x5c
+ 402:	934b      	str	r3, [sp, #300]	@ 0x12c
+ 404:	f04f 0902 	mov.w	r9, #2
+ 408:	f7ff fffe 	bl	0 <roll3_renderer_selftest>
+			408: R_ARM_THM_CALL	follow_update
+ 40c:	ed9d 5a17 	vldr	s10, [sp, #92]	@ 0x5c
+ 410:	4632      	mov	r2, r6
+ 412:	4629      	mov	r1, r5
+ 414:	a817      	add	r0, sp, #92	@ 0x5c
+ 416:	ed8d 8a38 	vstr	s16, [sp, #224]	@ 0xe0
+ 41a:	f88d 90dc 	strb.w	r9, [sp, #220]	@ 0xdc
+ 41e:	f7ff fffe 	bl	0 <roll3_renderer_selftest>
+			41e: R_ARM_THM_CALL	follow_update
+ 422:	eeb4 5a49 	vcmp.f32	s10, s18
+ 426:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 42a:	d175      	bne.n	518 <roll3_renderer_selftest+0x518>
+ 42c:	eddd 7a17 	vldr	s15, [sp, #92]	@ 0x5c
+ 430:	eef5 7a40 	vcmp.f32	s15, #0.0
+ 434:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 438:	bf0c      	ite	eq
+ 43a:	2701      	moveq	r7, #1
+ 43c:	2700      	movne	r7, #0
+ 43e:	eeb0 5a00 	vmov.f32	s10, #0	@ 0x40000000  2.0
+ 442:	4632      	mov	r2, r6
+ 444:	4629      	mov	r1, r5
+ 446:	a817      	add	r0, sp, #92	@ 0x5c
+ 448:	ed8d 5a38 	vstr	s10, [sp, #224]	@ 0xe0
+ 44c:	f8cd 90d4 	str.w	r9, [sp, #212]	@ 0xd4
+ 450:	f7ff fffe 	bl	0 <roll3_renderer_selftest>
+			450: R_ARM_THM_CALL	follow_update
+ 454:	2f00      	cmp	r7, #0
+ 456:	d061      	beq.n	51c <roll3_renderer_selftest+0x51c>
+ 458:	eddd 7a17 	vldr	s15, [sp, #92]	@ 0x5c
+ 45c:	eef4 7a45 	vcmp.f32	s15, s10
+ 460:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 464:	bf0c      	ite	eq
+ 466:	2101      	moveq	r1, #1
+ 468:	2100      	movne	r1, #0
+ 46a:	f081 0501 	eor.w	r5, r1, #1
+ 46e:	4445      	add	r5, r8
+ 470:	b10c      	cbz	r4, 476 <roll3_renderer_selftest+0x476>
+ 472:	482c      	ldr	r0, [pc, #176]	@ (524 <roll3_renderer_selftest+0x524>)
+ 474:	47a0      	blx	r4
+ 476:	4628      	mov	r0, r5
+ 478:	b04f      	add	sp, #316	@ 0x13c
+ 47a:	ecbd 8b04 	vpop	{d8-d9}
+ 47e:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
+ 482:	2100      	movs	r1, #0
+ 484:	e607      	b.n	96 <roll3_renderer_selftest+0x96>
+ 486:	ab06      	add	r3, sp, #24
+ 488:	4641      	mov	r1, r8
+ 48a:	4618      	mov	r0, r3
+ 48c:	edd5 1a00 	vldr	s3, [r5]
+ 490:	ed95 2a01 	vldr	s4, [r5, #4]
+ 494:	edd5 2a02 	vldr	s5, [r5, #8]
+ 498:	ed9f 0a23 	vldr	s0, [pc, #140]	@ 528 <roll3_renderer_selftest+0x528>
+ 49c:	eefe 0a00 	vmov.f32	s1, #224	@ 0xbf000000 -0.5
+ 4a0:	ed9f 1a22 	vldr	s2, [pc, #136]	@ 52c <roll3_renderer_selftest+0x52c>
+ 4a4:	aa08      	add	r2, sp, #32
+ 4a6:	f7ff fffe 	bl	0 <roll3_renderer_selftest>
+			4a6: R_ARM_THM_CALL	roll3_renderer_project_focus
+ 4aa:	2800      	cmp	r0, #0
+ 4ac:	f43f adfd 	beq.w	aa <roll3_renderer_selftest+0xaa>
+ 4b0:	ed9d 7a06 	vldr	s14, [sp, #24]
+ 4b4:	edda 7a00 	vldr	s15, [sl]
+ 4b8:	eeb4 7ae7 	vcmpe.f32	s14, s15
+ 4bc:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 4c0:	bfcc      	ite	gt
+ 4c2:	2101      	movgt	r1, #1
+ 4c4:	2100      	movle	r1, #0
+ 4c6:	e5f1      	b.n	ac <roll3_renderer_selftest+0xac>
+ 4c8:	4641      	mov	r1, r8
+ 4ca:	edd5 1a00 	vldr	s3, [r5]
+ 4ce:	ed95 2a01 	vldr	s4, [r5, #4]
+ 4d2:	edd5 2a02 	vldr	s5, [r5, #8]
+ 4d6:	eeb6 0a00 	vmov.f32	s0, #96	@ 0x3f000000  0.5
+ 4da:	eddf 0a13 	vldr	s1, [pc, #76]	@ 528 <roll3_renderer_selftest+0x528>
+ 4de:	ed9f 1a13 	vldr	s2, [pc, #76]	@ 52c <roll3_renderer_selftest+0x52c>
+ 4e2:	aa08      	add	r2, sp, #32
+ 4e4:	a806      	add	r0, sp, #24
+ 4e6:	f7ff fffe 	bl	0 <roll3_renderer_selftest>
+			4e6: R_ARM_THM_CALL	roll3_renderer_project_focus
+ 4ea:	2800      	cmp	r0, #0
+ 4ec:	f43f ade7 	beq.w	be <roll3_renderer_selftest+0xbe>
+ 4f0:	ed98 7a00 	vldr	s14, [r8]
+ 4f4:	edd9 7a00 	vldr	s15, [r9]
+ 4f8:	eeb4 7ae7 	vcmpe.f32	s14, s15
+ 4fc:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 500:	bf4c      	ite	mi
+ 502:	2101      	movmi	r1, #1
+ 504:	2100      	movpl	r1, #0
+ 506:	e5db      	b.n	c0 <roll3_renderer_selftest+0xc0>
+ 508:	2100      	movs	r1, #0
+ 50a:	e634      	b.n	176 <roll3_renderer_selftest+0x176>
+ 50c:	2700      	movs	r7, #0
+ 50e:	e6d0      	b.n	2b2 <roll3_renderer_selftest+0x2b2>
+ 510:	2700      	movs	r7, #0
+ 512:	e6f7      	b.n	304 <roll3_renderer_selftest+0x304>
+ 514:	2700      	movs	r7, #0
+ 516:	e752      	b.n	3be <roll3_renderer_selftest+0x3be>
+ 518:	2700      	movs	r7, #0
+ 51a:	e790      	b.n	43e <roll3_renderer_selftest+0x43e>
+ 51c:	4639      	mov	r1, r7
+ 51e:	e7a4      	b.n	46a <roll3_renderer_selftest+0x46a>
+ 520:	0000015c 	.word	0x0000015c
+			520: R_ARM_ABS32	.rodata.roll3_renderer_selftest.str1.1
+ 524:	0000017b 	.word	0x0000017b
+			524: R_ARM_ABS32	.rodata.roll3_renderer_selftest.str1.1
+ 528:	3f5db3d7 	.word	0x3f5db3d7
+ 52c:	3e4ccccd 	.word	0x3e4ccccd

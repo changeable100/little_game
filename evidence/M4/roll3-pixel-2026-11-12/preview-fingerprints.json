@@ -1,0 +1,54 @@
+[
+  {
+    "path": "IMMERSIVE-CALIBRATION.png",
+    "sha256": "85e093ed9ea0de1668544aeac28c55db0ee19292484df54967d00daa5e7b7acc"
+  },
+  {
+    "path": "IMMERSIVE-GO.png",
+    "sha256": "8026c21b1df55b47d6bb174a2e214e56360af806839e15145c407e121bce5ee8"
+  },
+  {
+    "path": "IMMERSIVE-RESULT-800.png",
+    "sha256": "d533f5ebd714efb1a68ee08e410b3e5a705f8e98efbed5614549befb7e88fc01"
+  },
+  {
+    "path": "PIXEL-BEND.png",
+    "sha256": "8e5c1a6557e2cb26c4406a68cfe5881570b4dd6bd5bce271fc05f86809f17616"
+  },
+  {
+    "path": "PIXEL-comparison-final.png",
+    "sha256": "00e0c77ccd0923c7ea62d9636032e4cb2361d8b5996a541b2f881c33ed6981d3"
+  },
+  {
+    "path": "PIXEL-comparison.png",
+    "sha256": "887bd9188adb6aa62bb44a88b9fdbc3d2565355211cdd2764e7ad59cc6bfe7cb"
+  },
+  {
+    "path": "PIXEL-gallery-final.png",
+    "sha256": "bcde24825e3d69ab96d30c966e8cf08a9e06003fefbdc32873d32142a57cc0ab"
+  },
+  {
+    "path": "PIXEL-GOAL.png",
+    "sha256": "f37fa4cc86173bd3422628215ded4eb04fdeb28452286418a884b0c94f5056d6"
+  },
+  {
+    "path": "PIXEL-LONG.png",
+    "sha256": "50cf29ceca8f40563dcd2d3c610c872f92e81ff71a809b5a0d25722d833c747c"
+  },
+  {
+    "path": "PIXEL-SLOPE.png",
+    "sha256": "d853979ae0e568696c069abb71e9aa7ab4e654dcad8d02a61a4b94cc7a044b1c"
+  },
+  {
+    "path": "PIXEL-START.png",
+    "sha256": "bd9276a746f0e47c596071e2736e521d629e229fb30cecbcf6aa30e04680e398"
+  },
+  {
+    "path": "PIXEL-states-final.png",
+    "sha256": "4f710b00901e82fa27214eafa2473fabf0c61a3183ca36e4798945b288054e81"
+  },
+  {
+    "path": "PIXEL-states.png",
+    "sha256": "2acbe091057bb346eb2c7f3d5886b5c616be5d8cc041ae6309cf0c511b2bf5fc"
+  }
+]

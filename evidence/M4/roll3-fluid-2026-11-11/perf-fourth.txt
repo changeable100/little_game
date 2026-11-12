@@ -1,0 +1,8 @@
+M3 pose=0 host_ms before=0.3971 after=0.3703 ratio=0.933
+M3 pose=1 host_ms before=0.6109 after=0.5523 ratio=0.904
+M3 pose=2 host_ms before=0.5859 after=0.6048 ratio=1.032
+M3 pose=3 host_ms before=0.5481 after=0.5013 ratio=0.915
+M3 pose=4 host_ms before=0.4909 after=0.4376 ratio=0.891
+M3 pose=5 host_ms before=0.4414 after=0.3704 ratio=0.839
+TC-521 direct A/B 42 frames changed_pixels=0 mean_ms before=0.5124 after=0.4728 ratio=0.923
+Assertion failed: new_ms<=.75*old_ms, file tests/roll3_perf_compare.c, line 49

@@ -1,0 +1,57 @@
+crossing end=0 direction=-1 displacement=0.152470 z=1.487223 grounded=1
+TC-501 scene-xyz-contract PASS
+TC-501 malformed-world PASS
+TC-501 stale-and-api-guards PASS
+TC-501 calibration-pause-restart-back PASS
+TC-502 stationary-2000-steps PASS
+TC-502 xyz-freeflight-orientation PASS
+TC-502 freefall-gravity PASS
+TC-502 elastic-face-tangent PASS
+TC-502 thin-wall-8mps PASS
+TC-502 rounded-edge PASS
+TC-502 rounded-corner PASS
+TC-502 rotated-box-normal PASS
+TC-502 ramp-natural-roll PASS
+TC-502 no-slip-preserves-energy PASS
+TC-502 friction-spinup PASS
+TC-502 rolling-resistance-dissipates PASS
+TC-502 repeated-elastic-energy PASS
+TC-502 multi-contact-corner PASS
+TC-501 checkpoint-fall-respawn PASS
+TC-501 goal-freeze PASS
+TC-502 invalid-input PASS
+TC-501 counters-and-exhaustion PASS
+TC-502 quaternion-normalization PASS
+TC-502 rounded-box-near-miss PASS
+TC-502 bounded-deep-contact PASS
+TC-502 linear-angular-speed-budget PASS
+TC-513 seven-deck-top-corners PASS
+TC-513 seam S-R1 PASS
+TC-513 seam R1-C1 PASS
+TC-513 seam C1-R2 PASS
+TC-513 seam R2-C2 PASS
+TC-513 seam C2-R3 PASS
+TC-513 seam R3-G PASS
+TC-513 checkpoint-goal-clearance PASS
+TC-513 continuous-six-seam-checkpoint-route PASS
+TC-506 level-coast-stops-without-energy-gain PASS
+TC-517 smooth banked bend geometry and flush ends PASS
+TC-517 curved outside rail contains the ball PASS
+TC-517 both bend joins cross in both directions FAIL
+TC-517 continuous M2 checkpoint bend and goal PASS
+TC-517 auto respawn continues from checkpoint to M2 goal PASS
+TC-504 calibration-session-and-axes PASS
+TC-504 clock-wrap-catchup-heartbeat PASS
+TC-504 input-timeout-and-old-run PASS
+TC-506 gentle-input-and-full-uphill-range PASS
+TC-507 oblique-right-up-input PASS
+TC-508 first-sample-tilt-reverse-neutral PASS
+TC-511 running-input-faults-and-restart PASS
+TC-512 light-first-sample-medium-full-tilt PASS
+TC-514 midrange-and-diagonal-cap PASS
+TC-514 flat-neutral-brake PASS
+TC-514 slope-air-and-counter-tilt PASS
+TC-515 auto-start-at-600ms PASS
+TC-515 auto-checkpoint-fresh-wrap-and-counters PASS
+TC-515 manual-respawn-still-available PASS
+roll3 summary FAIL failures=1
