@@ -242,12 +242,15 @@ static void draw_bend(r3_raster_t *target, const r3_bend_t *bend, r3_vec_t focus
         {-0.923879533f,0.382683432f},{-0.965925826f,0.258819045f},{-0.991444861f,0.130526192f},
         {-1.000000000f,0.000000000f},
     };
-    enum { lanes=4 };
+    enum { tile_lanes=4, max_lanes=8 };
+    const unsigned lanes=bend->trough_depth>0?max_lanes:tile_lanes;
+    const unsigned strips_per_tile=lanes/tile_lanes;
+    const bool has_rail=bend->rail_height>0;
     const uint32_t rail=style?0xb964d1:0xa071bc;
     const uint32_t light_tile=style?style->light_tile:0xf2e6d5;
     r3_vec_t eye=add(focus,eye_offset);
     for(unsigned i=0;i+1<sizeof(ring)/sizeof(*ring);++i){
-        r3_vec_t floor[2][lanes+1],bottom[2][2],lip[2],rail_outer[2],rail_base[2];
+        r3_vec_t floor[2][max_lanes+1],bottom[2][2],lip[2],rail_outer[2],rail_base[2];
         for(unsigned end=0;end<2;++end){
             float c=ring[i+end][0],s=ring[i+end][1];
             for(unsigned j=0;j<=lanes;++j){
@@ -258,23 +261,29 @@ static void draw_bend(r3_raster_t *target, const r3_bend_t *bend, r3_vec_t focus
                 bottom[end][edge]=sub(floor[end][edge*lanes],(r3_vec_t){0,0,R3_BEND_DEPTH});
             if(style)
                 for(unsigned edge=0;edge<2;++edge)bottom[end][edge].z=fminf(bottom[end][edge].z,style->skirt_z);
-            lip[end]=add(floor[end][lanes],(r3_vec_t){0,0,bend->rail_height*s*s});
-            float outer=bend->radius+bend->half_width+R3_BEND_RAIL_WIDTH;
-            rail_outer[end]=r3_bend_point(bend,c,s,outer,lip[end].z);
-            rail_base[end]=r3_bend_point(bend,c,s,outer,bottom[end][1].z);
+            if(has_rail){
+                lip[end]=add(floor[end][lanes],(r3_vec_t){0,0,bend->rail_height*s*s});
+                float outer=bend->radius+bend->half_width+R3_BEND_RAIL_WIDTH;
+                rail_outer[end]=r3_bend_point(bend,c,s,outer,lip[end].z);
+                rail_base[end]=r3_bend_point(bend,c,s,outer,bottom[end][1].z);
+            }
         }
         for(unsigned j=0;j<lanes;++j)
             bend_quad(target,floor[0][j],floor[0][j+1],floor[1][j+1],floor[1][j],
-                      (i+j)%2?bend->color:light_tile,focus);
+                      (i+j/strips_per_tile)%2?bend->color:light_tile,focus);
         r3_vec_t radial=add(mul(bend->radial_start,ring[i][0]+ring[i+1][0]),
                             mul(bend->sweep_axis,ring[i][1]+ring[i+1][1]));
         if(!style||dot(sub(eye,floor[0][0]),radial)<0)
             bend_quad(target,floor[0][0],floor[1][0],bottom[1][0],bottom[0][0],bend->color,focus);
-        if(!style||dot(sub(eye,floor[0][lanes]),radial)<0)
-            bend_quad(target,floor[0][lanes],floor[1][lanes],lip[1],lip[0],rail,focus);
-        bend_quad(target,lip[0],lip[1],rail_outer[1],rail_outer[0],rail,focus);
-        if(!style||dot(sub(eye,rail_outer[0]),radial)>0)
-            bend_quad(target,rail_outer[0],rail_outer[1],rail_base[1],rail_base[0],rail,focus);
+        if(has_rail){
+            if(!style||dot(sub(eye,floor[0][lanes]),radial)<0)
+                bend_quad(target,floor[0][lanes],floor[1][lanes],lip[1],lip[0],rail,focus);
+            bend_quad(target,lip[0],lip[1],rail_outer[1],rail_outer[0],rail,focus);
+            if(!style||dot(sub(eye,rail_outer[0]),radial)>0)
+                bend_quad(target,rail_outer[0],rail_outer[1],rail_base[1],rail_base[0],rail,focus);
+        }else if(!style||dot(sub(eye,floor[0][lanes]),radial)>0){
+            bend_quad(target,floor[0][lanes],floor[1][lanes],bottom[1][1],bottom[0][1],bend->color,focus);
+        }
     }
 }
 

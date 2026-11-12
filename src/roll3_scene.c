@@ -95,7 +95,7 @@ static const r3_bend_t m3_bend = {
     .origin=LOCAL(2.225f,19.10f,1.25f),
     .radial_start=LOCAL(1,0,0),.sweep_axis=LOCAL(0,1,0),
     .radius=2.125f,.half_width=1.28f,.exit_z=.86f,
-    .bank=.23f,.rail_height=.42f,.color=0xe399b7
+    .trough_depth=.50f,.color=0xe399b7
 };
 
 #include "roll3_stage_art.h"

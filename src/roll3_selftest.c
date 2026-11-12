@@ -403,9 +403,8 @@ static bool m2_rail(void)
     return true;
 }
 
-static bool m2_crossings(void)
+static bool bend_crossings(const r3_world_t *w)
 {
-    const r3_world_t *w=r3_m2_world();
     const r3_bend_t *b=w->bend;
     r3_vec_t origin=to_uv(b->origin);
     for(unsigned end=0;end<2;++end){
@@ -561,6 +560,51 @@ static bool m3_replay(void)
     return true;
 }
 
+static bool m3_trough_profile(void)
+{
+    const r3_world_t *w=r3_demo_world();
+    const r3_bend_t *b=w->bend;
+    CHECK(b&&b->bank==0&&b->rail_height==0);
+    r3_bend_profile_t center=r3_bend_profile(b,0,1,b->radius);
+    CHECK(near(center.radial_grade,0,.0001f));
+    for(int side=-1;side<=1;side+=2){
+        float r=b->radius+side*b->half_width;
+        r3_bend_profile_t edge=r3_bend_profile(b,0,1,r);
+        CHECK(near(edge.height-center.height,.50f,.001f));
+        CHECK(side*edge.radial_grade>.6f);
+    }
+    for(unsigned end=0;end<2;++end){
+        float c=end?-1.f:1.f,z=end?b->exit_z:b->origin.z;
+        for(int side=-1;side<=1;++side){
+            float r=b->radius+side*b->half_width;
+            r3_bend_profile_t sample=r3_bend_profile(b,c,0,r);
+            CHECK(near(sample.height,z,.001f)&&sample.radial_grade==0&&sample.angular_rise==0);
+            CHECK(top_point(&w->boxes[7+end],r3_bend_point(b,c,0,r,sample.height),1));
+        }
+    }
+    return true;
+}
+
+static bool m3_trough_returns(int side)
+{
+    r3_game_t g;CHECK(start(&g,r3_demo_world()));
+    const r3_bend_t *b=g.world->bend;
+    float lateral=.88f*side,r=b->radius+lateral;
+    r3_bend_profile_t profile=r3_bend_profile(b,0,1,r);
+    float z=profile.height+R3_RADIUS*sqrtf(1+profile.radial_grade*profile.radial_grade+
+                                           profile.angular_rise*profile.angular_rise/(r*r));
+    g.s.position=r3_bend_point(b,0,1,r,z+.008f);
+    for(unsigned i=0;i<240;++i){
+        CHECK(steps(&g,&gravity,1)&&g.s.state==R3_RUNNING&&!g.s.limited&&!g.s.speed_limited);
+        r3_vec_t p=to_uv(g.s.position),o=to_uv(b->origin);
+        float current=hypotf(p.x-o.x,p.y-o.y)-b->radius;
+        CHECK(fabsf(current)<b->half_width);
+        if(g.s.grounded&&fabsf(current)<.25f)
+            return g.s.position.z<z-.10f;
+    }
+    return false;
+}
+
 int r3_selftest_run(maze_test_report_t report) {
     int failures=0;
 #define RUN(name,expr) do {bool passed=(expr);if(!passed)++failures;if(report)report(name,passed);}while(0)
@@ -602,11 +646,15 @@ int r3_selftest_run(maze_test_report_t report) {
     RUN("TC-506 level-coast-stops-without-energy-gain",tuned_coast());
     RUN("TC-517 smooth banked bend geometry and flush ends",m2_bend_geometry());
     RUN("TC-517 curved outside rail contains the ball",m2_rail());
-    RUN("TC-517 both bend joins cross in both directions",m2_crossings());
+    RUN("TC-517 both bend joins cross in both directions",bend_crossings(r3_m2_world()));
     RUN("TC-517 continuous M2 checkpoint bend and goal",m2_route(false));
     RUN("TC-517 auto respawn continues from checkpoint to M2 goal",m2_route(true));
     RUN("TC-518 both M3 guide rails stop the ball",m3_guide_rails());
     RUN("TC-518 M3 two turns landing checkpoint U bend and goal",m3_replay());
+    RUN("TC-519 symmetric trough with flat flush joins",m3_trough_profile());
+    RUN("TC-519 both trough joins cross in both directions",bend_crossings(r3_demo_world()));
+    RUN("TC-519 gravity returns ball from inner slope",m3_trough_returns(-1));
+    RUN("TC-519 gravity returns ball from outer slope",m3_trough_returns(1));
 #undef RUN
     return failures;
 }

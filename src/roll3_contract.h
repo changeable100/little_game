@@ -24,6 +24,7 @@ typedef struct {
 typedef struct {
     r3_vec_t origin, radial_start, sweep_axis;
     float radius, half_width, exit_z, bank, rail_height;
+    float trough_depth; /* Edge rise in metres at the middle of the bend. */
     uint32_t color;
 } r3_bend_t; /* Half-annulus; radial_start points to the entry. */
 

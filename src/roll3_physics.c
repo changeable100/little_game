@@ -64,6 +64,7 @@ static bool bend_valid(const r3_bend_t *b)
         isfinite(b->radius)&&b->radius<=20&&isfinite(b->half_width)&&b->half_width>R3_RADIUS&&
         b->radius-b->half_width>2*R3_RADIUS&&isfinite(b->bank)&&b->bank>=0&&b->bank<=.5f&&
         isfinite(b->rail_height)&&b->rail_height>=0&&b->rail_height<=1&&b->color<=0xffffffu&&
+        isfinite(b->trough_depth)&&b->trough_depth>=0&&b->trough_depth<=.75f&&
         finite_vec(b->radial_start)&&finite_vec(b->sweep_axis)&&
         fabsf(b->radial_start.z)<.0001f&&fabsf(b->sweep_axis.z)<.0001f&&
         fabsf(dot(b->radial_start,b->radial_start)-1)<.0001f&&
@@ -75,6 +76,7 @@ static bool bend_valid(const r3_bend_t *b)
  * straight decks handle the opposite side of the common end line. */
 static float bend_gap(const r3_bend_t *b, bend_surface_t surface, r3_vec_t p, r3_vec_t *normal)
 {
+    if(surface==BEND_RAIL&&b->rail_height==0)return FLT_MAX;
     r3_vec_t offset=sub(p,b->origin);
     float outer=b->radius+b->half_width;
     float bound=outer+R3_BEND_RAIL_WIDTH+R3_RADIUS;
@@ -105,7 +107,8 @@ static float bend_gap(const r3_bend_t *b, bend_surface_t surface, r3_vec_t p, r3
     }
 
     float floor_radius=clamp(radius,inner,outer);
-    float height=r3_bend_height(b,cosine,sine,floor_radius);
+    r3_bend_profile_t profile=r3_bend_profile(b,cosine,sine,floor_radius);
+    float height=profile.height;
     if(p.z<height-R3_BEND_DEPTH)return FLT_MAX;
     float dr=radius-floor_radius;
     if(dr!=0){
@@ -115,10 +118,8 @@ static float bend_gap(const r3_bend_t *b, bend_surface_t surface, r3_vec_t p, r3
         return distance-R3_RADIUS;
     }
     r3_vec_t tangent=add(mul(b->radial_start,-sine),mul(b->sweep_axis,cosine));
-    float slope_r=b->bank*sine*sine;
-    float slope_a=((b->exit_z-b->origin.z)*.5f*sine+
-        2*b->bank*sine*cosine*(radius-b->radius))/radius;
-    r3_vec_t n=sub(sub((r3_vec_t){0,0,1},mul(radial,slope_r)),mul(tangent,slope_a));
+    r3_vec_t n=sub(sub((r3_vec_t){0,0,1},mul(radial,profile.radial_grade)),
+                   mul(tangent,profile.angular_rise/radius));
     *normal=mul(n,1/length(n));
     return (p.z-height)*normal->z-R3_RADIUS;
 }
