@@ -2,7 +2,7 @@ submission:
   student_id: null
   student_name: 王若豪（A）；成员 B 姓名待提供
   group_id: null
-  milestone: M2关键技术验证；A第二阶段软件完成，真实IMU与整机待验证
+  milestone: M4三维滚球迭代；M3像素版软件完成，新真机验收待证据
   submitted_at: null
 dev_agent:
   tool: Codex；历史B开发工具Copilot SDK in VS Code保留于原提交
@@ -16,6 +16,29 @@ requirements:
 design:
   architecture_doc_path: docs/02-方案设计说明.md
   key_decisions:
+  - decision: ADR-0017 满屏构图缩小与粉紫像素界面
+    alternatives_considered: B保留柔和圆角并缩小控件、降低对比，颗粒差异仍在
+    rationale: 负责人认为场景放大、计时菜单和结算过于清晰而脱离游戏，选择块状字形/阶梯轮廓/硬边阴影
+    adr: docs/adr/0017-roll3-pixel-ui-framing.md
+    decided_by: 负责人2026-11-12交互选择A，场景缩小约25%且保持满屏斜俯角
+  - decision: ADR-0016 结算锁定成绩并保留球体自然运动
+    alternatives_considered: 必须一直停留绿色直到动画完成，滚出取消结算
+    rationale: 负责人要求球继续滚动且0.8秒渐入面板，并明确滚出不撤销；下一关本轮置灰
+    adr: docs/adr/0016-roll3-moving-settlement.md
+    decided_by: 负责人2026-11-11交互确认首次踩绿锁定及先完成界面
+  - decision: ADR-0015 M3 整关结构与场景同时修改
+    alternatives_considered: B 先改画面并在 M2 路线上验证，再重做路线
+    rationale: 负责人明确指出关卡结构与画面都需要接近参考
+    decided_by: 负责人2026-11-10交互选择A
+  - decision: ADR-0014 M2 使用连续弧形槽
+    alternatives_considered: A 用相连宽平台组成回头弯，沿用原碰撞
+    rationale: 复现参考关卡连续下坡回转、外侧抬高及低处终点
+    adr: docs/adr/0014-roll3-m2-banked-bend.md
+    decided_by: 负责人2026-11-10交互选择B
+  - decision: ADR-0013 H1 中段减弱、水平合力限制与平平台回平制动
+    alternatives_considered: H2 只降低输入加速
+    rationale: 分开处理加速偏大和回平难收速，斜坡保留自然下滑
+    decided_by: 负责人2026-11-10交互选择H1
   - decision: ADR-0011 局部四点边缘覆盖
     alternatives_considered: 240×200或360×300整帧四点
     rationale: 主机对照显示几何覆盖改善轮廓，局部方案复用深度缓冲并限制工作区
@@ -77,6 +100,31 @@ code:
   commit_range: A阶段二f4610d7与B已发布main e6bd646合并；本次合并版本未上板，HEAD见git log
   a_model_source: origin/feat/req-301-maze-model@9595000；模型实现源提交 77b15d3
 physical_verification:
+- item: TC-524/525 M3满屏游玩与结算静态页面、视觉整改反馈
+  required_action: 真机游玩并回传满屏UI、结算及菜单动作证据
+  executed_at: 2026-11-12收到两张原始照片
+  evidence_path: evidence/M4/roll3-immersive-2026-11-12/board-run01/analysis.md
+  agent_conclusion: 实拍支持满屏游玩、计时和菜单显示及01:07.96结算/下一关置灰；负责人不接受镜头尺寸与控件风格，待整改。无独立固件指纹，静态照片不证明800ms动画、自然滚动、暂停回点或流畅度，整项未通过。
+- item: TC-521 M3弧槽后半段游玩与终点接近画面（限定验收）
+  required_action: 按上轮烧录指引在真机游玩并回传视频或串口
+  executed_at: 2026-11-11收到VID_20261111_222004.mp4
+  evidence_path: evidence/M4/roll3-fluid-2026-11-11/board-run01/analysis.md
+  agent_conclusion: 实拍支持弧槽和终点附近持续游玩，片尾球离道路，无通关。缺独立固件指纹和串口，不判原冲边清零/帧时/整体流畅度通过；新需求REQ-522/523另开发验收。
+- item: TC-518 M3 后半段游玩、复活与通关
+  required_action: 在真机经过检查点和弯道并回传视频或串口
+  executed_at: 2026-11-10收到视频
+  evidence_path: evidence/M4/roll3-m3-stage-2026-11-10/board-run01/analysis.md
+  agent_conclusion: 片段可见掉落6到7次、返回检查点1、通过旧回旋弯并显示通关187秒；前半段与定量帧时未覆盖。
+- item: TC-515 旧地图真机掉落后自动回检查点1
+  required_action: 真机掉落并观察自动返回，回传视频或串口
+  executed_at: 2026-11-10收到视频
+  evidence_path: evidence/M4/roll3-auto-respawn-2026-11-10/board-run01/analysis.md
+  agent_conclusion: 负责人确认自动复活通过；实拍支持检查点1等待后自动返回与恢复游玩，缺检查点0、顶部计时、串口和独立固件指纹。
+- item: TC-514 H1 真机游玩与手感反馈
+  required_action: 真机测试H1并回传画面与体验
+  executed_at: 2026-11-10收到视频
+  evidence_path: evidence/M4/roll3-h1-2026-11-10/board-run01/analysis.md
+  agent_conclusion: 可见游玩和掉落界面，学生接受当前手感。缺独立指纹、串口及制动定量证据，自动复活待新版板测。
 - item: TC-512 提速版可玩及通关画面
   required_action: 真机游玩并回传视频与手感
   executed_at: 2026-11-10收到视频
@@ -497,6 +545,11 @@ test_results:
   pass: true
   evidence_path: evidence/M3/chinese-loading-transition-fix-2026-11-08/ui_board_buffer.txt
 known_issues:
+- REQ-526：按负责人A选择完成75%构图与粉紫像素界面候选，162核心、SDK LVGL/20轮/字形/两档边缘与SDK编译通过，最终指纹已归档。新真机视觉/触摸/动态验收待证据，旧25%性能目标未完成。
+- REQ-524/525实拍反馈：镜头偏近，计时/菜单/结算的高分辨率圆角字形与低分辨率粉紫赛道不协调，负责人要求整改。源码诊断同深度屏幕投影约放大1.5467倍；新风格/构图计划待确认。两张照片仅覆盖静态显示，动态验收未完成。
+- REQ-524/525：满屏HUD/暂停菜单/800ms动态结算通过162项核心、SDK LVGL/20轮、232行尾带与800冲边、SDK编译；后续两张实拍只支持静态页面，负责人不接受风格，动态未验收。下一关按负责人选择置灰；旧25%性能目标保持未完成。新世界标记/私有暂停运动和字库必须完整重编，Git src仍待集成。
+- REQ-522/523：0.32m弧槽、绿色承载面接触锁定、三边护栏和1000ms提示已通过157项核心/SDK LVGL/SDK编译；新板证待回传。世界结构新增可选终点盒索引，整合需完整重编；Git src仍未集成完整最新关卡。前版实拍不作为新功能验收，REQ-521原25%性能目标仍FAIL。
+- REQ-521/TC-521：m3-slim版严重卡顿由负责人文字确认，无新视频/串口。独立m3-fluid-20261111修复曲面微接触耗尽后速度清零，151项核心、800组冲边、SDK LVGL和编译通过；主机绘制仅降低约16.2%，原25%目标仍FAIL，实际流畅度与新33ms请求周期待实机，TC-521整项未通过。Git src仍未集成最新完整关卡，旧快照与工作区保留。
 - 最新中文board-run01出现四次真实TIMING，旧主机和英文run03不能覆盖。将准备层缩为局部卡片并补PARTIAL切换重绘预算测试，仍需新镜像实测才能判断时序恢复；不改校准/100ms或重锚时间。
 - 最新中文界面/准备/失败重载软件已实现并通过主机及SDK编译，仍待本批真实屏幕、触摸和准备重试日志。旧英文版run03与恢复/重开/返回的文字反馈不替代新功能物理验收；字体/遮罩新增后的板端时序需继续观察，100ms判据未改。
 - 最新run03已通过运行/倾斜移动/屏幕PAUSE冻结子项，run01/02失败保留为历史；RESUME/RESTART/BACK、回平输入与四向标签、真实WON/资源复用仍待证据。偏置-172,-55与末段tilt0,-413不证明平放漂移，缺该时刻水平姿态确认。新启动/板端独立指纹未提供，不扩大为完整M3或最坏耗时通过。
@@ -742,8 +795,126 @@ roll3_responsive_play_20261110:
   physical: 新视频支持可玩和通关画面，帧时未测，手感仍需调整
 
 downhill_plan_20261110:
-  status: 文档已准备，M1与H1待负责人选择，未实现
+  status: H1收到可玩反馈，B已推送M1；两侧源码在独立副本通过核心测试
   a: docs/guides/A三维下坡关卡-操控与集成任务书.md
   b: docs/guides/B三维下坡关卡-路线与画面任务书.md
   next_requirements: REQ-513/514待确认
   baseline: d422c3cc8c17bb2133a6d46b794306cd756f34e8
+
+roll3_h1_20261110:
+  requirements: REQ-514 / TC-514 / ADR-0013
+  branch: codex/roll3-downhill-a
+  development_base: 1ab64e22b9066e1d8d95086a2855b19399398827
+  software: 125项主机核心PASS，保留旧版2项TC-514失败
+  evidence: evidence/M4/roll3-h1-2026-11-10/README.md
+  fingerprint: evidence/M4/roll3-h1-2026-11-10/firmware.json
+  physical: 视频支持游玩及掉落，学生接受当前手感；未测定量制动
+
+roll3_auto_respawn_20261110:
+  requirements: REQ-515 / TC-515
+  branch: codex/roll3-downhill-a
+  software: A侧129项核心与LVGL 20轮通过，SDK编译通过
+  b_review_commit: 4ae63b221e521975d35b627c38eeb98f05c937fb
+  b_review: M1原版129项核心通过，独立副本叠加A侧136项核心通过
+  evidence: evidence/M4/roll3-auto-respawn-2026-11-10/README.md
+  fingerprint: evidence/M4/roll3-auto-respawn-2026-11-10/firmware.json
+  physical: 负责人确认旧地图自动复活通过；视频覆盖检查点1，详见 physical_verification
+
+roll3_m1_preview_20261110:
+  requirements: REQ-513 / TC-513, REQ-515 / TC-515
+  software: 与上轮136项核心验证的工程和源码一致，独立试玩版SDK编译通过
+  source_b_commit: 4ae63b221e521975d35b627c38eeb98f05c937fb
+  fingerprint: evidence/M4/roll3-auto-respawn-2026-11-10/m1-preview-firmware.json
+  physical: M1试玩版待实机观察路线、转角、回点与终点
+
+roll3_m1_view_20261110:
+  requirements: REQ-516 / TC-516
+  source_b_commit: 4ae63b221e521975d35b627c38eeb98f05c937fb
+  software: 136项核心及SDK LVGL 20轮通过，起点可见双侧，慢移平方差降低68.9%，SDK编译通过
+  evidence: evidence/M4/roll3-m1-view-2026-11-10/README.md
+  fingerprint: evidence/M4/roll3-m1-view-2026-11-10/firmware.json
+  physical: 负责人反馈上轮M1像素跳动，修订版实际帧间隔、画面和手感待测
+
+roll3_m2_bend_20261110:
+  requirements: REQ-517 / TC-517 / ADR-0014
+  software: 141项核心、SDK LVGL七态和20轮、36帧两内存档一致及SDK编译通过
+  evidence: evidence/M4/roll3-m2-bend-2026-11-10/README.md
+  fingerprint: evidence/M4/roll3-m2-bend-2026-11-10/firmware.json
+  physical: M2独立试玩版待测长坡、弧槽、复活、终点与帧时
+
+roll3_m3_stage_20261110:
+  requirements: REQ-518 / TC-518 / ADR-0015
+  software: 143项核心、SDK LVGL 20轮与6处主机预览、两内存档一致、SDK编译通过
+  evidence: evidence/M4/roll3-m3-stage-2026-11-10/README.md
+  fingerprint: evidence/M4/roll3-m3-stage-2026-11-10/firmware.json
+  physical: 负责人确认旧M3可玩，实拍支持后半段、检查点回点和通关，见physical_verification
+
+roll3_m3_slim_20261110:
+  requirements: REQ-520 / TC-520
+  software: 147项核心、LVGL 20轮、两内存档36帧一致与SDK编译通过
+  evidence: evidence/M4/roll3-m3-slim-2026-11-10/README.md
+  fingerprint: evidence/M4/roll3-m3-slim-2026-11-10/firmware.json
+  physical: 本轮反馈来自旧版主机对照；细长版的实机回落、操控和帧时待测
+
+roll3_fluid_20261111:
+  requirements: REQ-521 / TC-521
+  status: 软件碰撞与回归通过，25%绘制目标失败，物理待证据
+  complete_source: D:/course_starter/build/m3-fluid-20261111
+  source_baseline: D:/course_starter/build/m3-slim-20261110
+  software: 151项核心、800组冲边无预算耗尽、LVGL七态与20轮、画面两档一致及SDK编译通过
+  performance: 42帧旧新像素一致，主机六处平均0.4937到0.4137ms，约降低16.2%，未达到25%原定目标
+  evidence: evidence/M4/roll3-fluid-2026-11-11/README.md
+  fingerprint: evidence/M4/roll3-fluid-2026-11-11/firmware.json
+  physical: 后续收到10.93秒实拍，支持后半段游玩及终点接近，片尾离道路；缺独立指纹/串口，TC-521整体仍待验收，详见physical_verification与board-run01
+
+roll3_finish_20261111:
+  requirements: REQ-522 / TC-522, REQ-523 / TC-523
+  status: 软件验证及编译完成，新物理验证待证据
+  complete_source: D:/course_starter/build/m3-finish-20261111
+  source_baseline: D:/course_starter/build/m3-fluid-20261111
+  software: 157条核心TC、真实SDK LVGL七态/20轮/999至1000ms和取消/回绕、两档边缘/800组冲边及SDK编译通过
+  firmware_sha256: 0d193b19635cd67718234127a5612573bf4f059a70cc06052e3c95c392b97ab3
+  evidence: evidence/M4/roll3-finish-2026-11-11/README.md
+  fingerprint: evidence/M4/roll3-finish-2026-11-11/firmware.json
+  physical: 新固件尚未烧录，无新视频或串口，不记物理通过；上轮视频另见roll3-fluid的board-run01
+
+roll3_immersive_20261111:
+  requirements: REQ-524 / TC-524, REQ-525 / TC-525 / ADR-0016
+  status: 软件与最终编译完成，11月12日收到静态实拍；镜头/界面风格待整改，动态验收未完成
+  complete_source: D:/course_starter/build/m3-immersive-20261111
+  source_baseline: D:/course_starter/build/m3-finish-20261111
+  software: 162条核心、SDK LVGL满屏/800ms/菜单/旧事件/20轮、字体195字三字号、两档尾带/800冲边及SDK编译通过
+  frame_buffers: 常规142544字节，低内存122544字节，主机新增绘图缓冲申请0
+  firmware_sha256: b3351d4c291309dbbb105ea2890d0e6f8f41ee6ed3b2f18ab299f09fe38404d8
+  evidence: evidence/M4/roll3-immersive-2026-11-12/README.md
+  fingerprint: evidence/M4/roll3-immersive-2026-11-12/firmware.json
+  physical: 两张实拍支持游玩和结算显示，负责人指出镜头过近和UI风格不协调；无独立镜像指纹或动态/串口，不判整体验收通过，见board-run01
+
+roll3_pixel_20261112:
+  requirements: REQ-526 / TC-526 / ADR-0017，保留REQ-524/525
+  status: 软件与SDK整机编译完成，新真机验收待证据
+  complete_source: D:/course_starter/build/m3-pixel-20261112
+  source_baseline: D:/course_starter/build/m3-immersive-20261111
+  software: 原162核心、同源75%构图及196字三字号2x2单色字形、真实SDK LVGL七态/20轮/动作/800ms、两档尾带/原质量阈值和严格编译通过
+  firmware_bytes: 1244176
+  firmware_sha256: aefb41ff3731fc25f60191a69d7ab99a17eb81a1ebb0ae1129beb1fee32fc56d
+  evidence: evidence/M4/roll3-pixel-2026-11-12/README.md
+  fingerprint: evidence/M4/roll3-pixel-2026-11-12/firmware.json
+  physical: 本版未烧录，待同位置风格/视野及动态验收；前版两张照片不冒作本版通过
+
+publication_20261112:
+  requested_by: 负责人2026-11-12明确要求保存并推送到本地与远程仓库
+  branch: codex/roll3-release-20261112
+  source: src/下完整m3-pixel-20261112源码，工程与字库/测试同时集成
+  worktree: D:/course_starter/build/roll3-publish-20261112
+  previous_worktree: D:/course_starter/build/maze-integration，原改动保持
+  backup: D:/course_starter/build/git-publish-backup-20261112，292个原改动文件及binary diff
+  status: 集成核心/SDK LVGL/SDK整机编译通过，三镜像同试玩指纹，11条提交正文待实际阅读确认，尚未提交或推送
+  evidence: evidence/M4/git-publish-2026-11-12/README.md
+
+map_creation_handoff_20261112:
+  requested_by: 负责人明确后续地图由B创作，要求说明随推送供B从GitHub下载
+  guide: docs/guides/B后续地图创作与交付规范-2026-11-12.md
+  baseline_branch: codex/roll3-release-20261112，推送后由B确认实际提交SHA
+  ownership: B负责新地图路线/几何/装饰与地图测试，A负责物理核心/输入/镜头/菜单结算与最终集成
+  delivery: 独立分支与SHA、REQ/TC/ADR、路线预算、连续通关回放、实际SDK预览、失败重测与构建指纹

@@ -6,3 +6,15 @@
 /src/lcpu_img.c
 __pycache__/
 *.py[cod]
+
+# 本地固件/工具输出与大体积原始素材；源码和小体积取证保留入库。
+*.o
+*.elf
+*.bin
+*.hex
+*.map
+*.exe
+*.mp4
+*.mov
+*.zip
+*.7z

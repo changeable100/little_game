@@ -1,4 +1,28 @@
-> 当前默认启动已改为体感迷宫独立游戏UI：游戏首页 → 迷宫 / 玩法说明。Peripheral Lab测试页面与其任务不再作为开机流程。独立UI说明见 [maze-standalone-ui](docs/maze-standalone-ui.md)；下方Lab文档保留为历史排障资料。当前运动控制仍未接入，界面明确标注PREVIEW。
+# 黄山派三维体感滚球
+
+本分支集成截至2026-11-12的完整M3关卡与粉紫像素界面：细长双侧U槽、绿色终点三边护栏、首次踩绿锁定耗时并继续自然滚动、800ms结算、满屏计时和暂停菜单。下一关本轮置灰。场景投影比上一满屏版缩小25%，计时/菜单/弹窗使用块状字形、阶梯框和硬边阴影。
+
+![实际SDK主机模拟，非实拍](evidence/M4/roll3-pixel-2026-11-12/PIXEL-gallery-final.png)
+
+工程：SiFli SDK v2.5.1，板型sf32lb52-lchspi-ulp，390×450，RT-Thread/LVGL v9。完整源码在src/，工程在project/；原课程检查脚本、钩子和配置已原样补齐。默认游戏入口提供“3D挑战”，原二维迷宫保留。
+
+```powershell
+. 'D:\SiFli-SDK\v2.5.1\export.ps1'
+python scripts/build_firmware.py
+& '.\project\build_sf32lb52-lchspi-ulp_hcpu\uart_download.bat'
+```
+
+下载前关闭串口助手，提示COM号时输入数字，运行日志波特率1000000；本版入口标记build=m3-pixel-20261112。编译产物和原始视频保留本地，Git记录源码、测试、补丁、日志、截图和镜像指纹。
+
+软件核心162项、真实SDK LVGL七态/20轮/菜单/结算、镜头与点阵检查通过；新像素版真机验收待证据。上版两张静态照片只能支持页面显示，负责人要求的视觉整改已在本版实现，不能据此认定本版流畅度/动画/触摸通过。旧25%绘制性能目标仍未达成。课程历史8条提交规范、14天间隔及清单4项待填问题保留。
+
+开发与证据见[项目计划](docs/00-项目计划与里程碑.md)、[像素版验收](evidence/M4/roll3-pixel-2026-11-12/README.md)、[发布整理记录](evidence/M4/git-publish-2026-11-12/README.md)。
+
+后续地图由B创作，先读[B地图创作与交付规范](docs/guides/B后续地图创作与交付规范-2026-11-12.md)，从本完整分支建立新地图分支，保留M3，由A负责最终接入与关卡切换。
+
+## 历史外设验证资料
+
+以下记录早期Peripheral Lab与二维迷宫接入过程，保留供排障追溯。
 
 # Peripheral Lab · 黄山派外设验证台
 
