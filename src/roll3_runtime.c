@@ -12,6 +12,7 @@ ALIGN(RT_ALIGN_SIZE) static uint8_t physics_stack[4096];
 static struct {
     r3_snapshot_t snapshot;
     uint32_t heartbeat, action_run, sample_stamp;
+    uint32_t cycle_max_ms, steps_max;
     r3_action_kind_t action;
     r3_result_t result;
     bool occupied, page, pending, failed, have_sample;
@@ -77,6 +78,8 @@ static void run_cycle(void)
     if (!occupied) return;
 
     uint32_t now = now_ms();
+    uint32_t cycle_started=now;
+    uint32_t previous_elapsed=session.game.s.elapsed_ms;
     r3_state_t previous_state = session.game.s.state;
     uint32_t previous_run = session.game.s.run;
     r3_result_t result = R3_OK;
@@ -101,6 +104,11 @@ static void run_cycle(void)
             automatically_respawned = roll3_session_try_auto_respawn(&session, respawn_now);
     }
     mailbox.snapshot = session.game.s;
+    uint32_t cycle_ms=now_ms()-cycle_started;
+    uint32_t steps=previous_run==session.game.s.run&&session.game.s.elapsed_ms>=previous_elapsed?
+        (session.game.s.elapsed_ms-previous_elapsed)/R3_STEP_MS:0;
+    if(cycle_ms>mailbox.cycle_max_ms)mailbox.cycle_max_ms=cycle_ms;
+    if(steps>mailbox.steps_max)mailbox.steps_max=steps;
     mailbox.have_sample = session.sequence != 0;
     mailbox.sample_stamp = session.stamp;
     if (pending && mailbox.page) {
@@ -178,6 +186,7 @@ bool roll3_runtime_open(void)
         mailbox.occupied = mailbox.page = true;
         mailbox.pending = false;
         mailbox.result = R3_OK;
+        mailbox.cycle_max_ms=mailbox.steps_max=0;
         mailbox.heartbeat = now_ms();
     }
     release();
@@ -213,13 +222,17 @@ bool roll3_runtime_read(r3_snapshot_t *snapshot, bool *pending, r3_result_t *res
 void roll3_runtime_report_frame(uint32_t frames, uint32_t sample_age_ms,
                                 uint32_t draw_ms, uint32_t frame_gap_ms)
 {
-    rt_kprintf("[roll3:frame] frames=%u sample_age_max_ms=%u draw_max_ms=%u gap_max_ms=%u\n",
-               frames, sample_age_ms, draw_ms, frame_gap_ms);
+    acquire();
+    uint32_t cycle=mailbox.cycle_max_ms,steps=mailbox.steps_max,limited_steps=mailbox.snapshot.limited_steps;
+    mailbox.cycle_max_ms=mailbox.steps_max=0;
+    release();
+    rt_kprintf("[roll3:frame] frames=%u sample_age_max_ms=%u draw_max_ms=%u gap_max_ms=%u cycle_max_ms=%u catchup_steps_max=%u limited_steps=%u\n",
+               frames, sample_age_ms, draw_ms, frame_gap_ms,cycle,steps,limited_steps);
 }
 
 void roll3_runtime_report_open(int result,unsigned depth_rows)
 {
-    rt_kprintf("[roll3:open] result=%d depth_rows=%u\n",result,depth_rows);
+    rt_kprintf("[roll3:open] result=%d depth_rows=%u build=m3-fluid-20261111 refresh_ms=33\n",result,depth_rows);
 }
 
 bool roll3_runtime_submit(r3_action_kind_t kind, uint32_t run)

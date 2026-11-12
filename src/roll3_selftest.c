@@ -614,6 +614,31 @@ static bool m3_trough_returns(int side)
     return false;
 }
 
+/* A real M3 approach which exhausted eight microscopic floor recontacts. */
+static bool m3_fast_bend_contact(float speed,float angle) {
+    r3_game_t g;CHECK(start(&g,r3_demo_world()));
+    const r3_box_t *b=&g.world->boxes[7];
+    g.s.position=b->center;
+    const float offsets[]={b->half.x-.25f,0,b->half.z+R3_RADIUS+.00002f};
+    for(unsigned j=0;j<3;++j){
+        g.s.position.x+=b->axis[j].x*offsets[j];
+        g.s.position.y+=b->axis[j].y*offsets[j];
+        g.s.position.z+=b->axis[j].z*offsets[j];
+    }
+    float forward=speed*cosf(angle),sideways=speed*sinf(angle);
+    g.s.velocity=(r3_vec_t){b->axis[0].x*forward+b->axis[1].x*sideways,
+        b->axis[0].y*forward+b->axis[1].y*sideways,b->axis[0].z*forward+b->axis[1].z*sideways};
+    r3_vec_t n=b->axis[2],v=g.s.velocity;
+    g.s.omega=(r3_vec_t){(n.y*v.z-n.z*v.y)/R3_RADIUS,
+        (n.z*v.x-n.x*v.z)/R3_RADIUS,(n.x*v.y-n.y*v.x)/R3_RADIUS};
+    for(unsigned i=0;i<150;++i){
+        float before=norm2(g.s.velocity);
+        CHECK(steps(&g,&gravity,1)&&g.s.state==R3_RUNNING&&!g.s.limited);
+        CHECK(norm2(g.s.velocity)>=before*.75f*.75f);
+    }
+    return true;
+}
+
 int r3_selftest_run(maze_test_report_t report) {
     int failures=0;
 #define RUN(name,expr) do {bool passed=(expr);if(!passed)++failures;if(report)report(name,passed);}while(0)
@@ -664,6 +689,10 @@ int r3_selftest_run(maze_test_report_t report) {
     RUN("TC-519 both trough joins cross in both directions",bend_crossings(r3_demo_world()));
     RUN("TC-519 gravity returns ball from inner slope",m3_trough_returns(-1));
     RUN("TC-519 gravity returns ball from outer slope",m3_trough_returns(1));
+    RUN("TC-521 M3 5mps smooth floor keeps moving",m3_fast_bend_contact(5,0));
+    RUN("TC-521 M3 7.5mps smooth floor keeps moving",m3_fast_bend_contact(7.5f,0));
+    RUN("TC-521 M3 fast negative-angle curve keeps moving",m3_fast_bend_contact(7.5f,-.261799388f));
+    RUN("TC-521 M3 fast positive-angle curve keeps moving",m3_fast_bend_contact(7.5f,.261799388f));
 #undef RUN
     return failures;
 }

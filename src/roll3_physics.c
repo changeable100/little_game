@@ -291,6 +291,26 @@ static void sweep_box(hit_t *hit,const r3_box_t *b,r3_vec_t start,r3_vec_t delta
         root_candidate(hit,b,p,d,dot(d,d),2*dot(offset,d),dot(offset,offset)-R3_RADIUS*R3_RADIUS);
     }
 }
+/* Shallow persistent support is integrated on the smooth manifold, then
+ * projected by depenetrate. Subdivide its travel (not the collision budget)
+ * until endpoint correction is <=1mm and the normal changes by <6 degrees.
+ * Normal impacts, lips, and large penetrations retain continuous sweeps. */
+static bool bend_support_move(const r3_bend_t *bend,r3_vec_t start,r3_vec_t velocity,float *duration)
+{
+    r3_vec_t n;
+    float gap=bend_gap(bend,BEND_FLOOR,start,&n);
+    if(gap < -SKIN||gap>.001f||n.z<=.25f||fabsf(dot(velocity,n))>.15f)return false;
+    float span=*duration;
+    for(unsigned split=0;split<5;++split){
+        r3_vec_t end_normal;
+        float end_gap=bend_gap(bend,BEND_FLOOR,add(start,mul(velocity,span)),&end_normal);
+        if(end_gap>0)return false;
+        if(end_gap>=-.001f&&dot(n,end_normal)>.995f){*duration=span;return true;}
+        span*=.5f;
+    }
+    return false;
+}
+
 static void sweep_bend(hit_t *hit, const r3_bend_t *bend, bend_surface_t surface,
     r3_vec_t start, r3_vec_t delta)
 {
@@ -393,15 +413,21 @@ r3_result_t r3_step(r3_game_t *g,const r3_input_t *input,uint32_t dt_ms) {
     depenetrate(g);
     float remaining=DT;
     for(unsigned impact=0;impact<IMPACTS&&remaining>1e-8f;impact++) {
-        r3_vec_t delta=mul(g->s.velocity,remaining);
+        float span=remaining;
+        bool support=g->world->bend&&bend_support_move(g->world->bend,g->s.position,g->s.velocity,&span);
+        r3_vec_t delta=mul(g->s.velocity,span);
         hit_t hit={false,1,{0,0,0},0};
         for(unsigned i=0;i<g->world->box_count;i++)sweep_box(&hit,&g->world->boxes[i],g->s.position,delta);
         if(g->world->bend)
             for(bend_surface_t i=BEND_FLOOR;i<BEND_SURFACES;++i)
-                sweep_bend(&hit,g->world->bend,i,g->s.position,delta);
-        if(!hit.found) {g->s.position=add(g->s.position,delta);remaining=0;break;}
+                if(i!=BEND_FLOOR||!support)sweep_bend(&hit,g->world->bend,i,g->s.position,delta);
+        if(!hit.found) {
+            g->s.position=add(g->s.position,delta);remaining-=span;
+            if(remaining>1e-8f)depenetrate(g);
+            continue;
+        }
         g->s.position=add(add(g->s.position,mul(delta,hit.t)),mul(hit.normal,SKIN));
-        remaining*=1-hit.t;impulse(&g->s,hit.material,hit.normal);
+        remaining-=span*hit.t;impulse(&g->s,hit.material,hit.normal);
     }
     if(remaining>1e-8f)limited(&g->s);
     depenetrate(g);cap_motion(&g->s);orientation(&g->s);

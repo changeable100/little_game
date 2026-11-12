@@ -3,6 +3,7 @@
 #include "roll3_camera_basis.h"
 #include "roll3_physics.h"
 #include <math.h>
+#include <float.h>
 #include <stddef.h>
 #include <string.h>
 
@@ -80,6 +81,23 @@ typedef struct {
 
 enum { EDGE_SAMPLES = 4 };
 
+/* Conservative homogeneous frustum planes, including the active depth band.
+ * Test before lighting/clipping or generating hundreds of offscreen tiles.
+ * The one-pixel guard retains the rasterizer's inclusive bounds/edge epsilon. */
+static unsigned outside_planes(const r3_raster_t *target,r3_vec_t p)
+{
+    float top=target->end_row?(float)target->first_row:0;
+    float bottom=target->end_row?(float)target->end_row:R3_VIEW_H;
+    unsigned mask=0;
+    if(p.z<NEAR_Z-.001f)mask|=1;
+    if(p.z>FAR_Z+.001f)mask|=2;
+    if(p.x<-(R3_VIEW_W*.5f+1)/FOCAL*p.z-.001f)mask|=4;
+    if(p.x> (R3_VIEW_W*.5f+1)/FOCAL*p.z+.001f)mask|=8;
+    if(p.y>(R3_VIEW_H*.5f-top+1)/FOCAL*p.z+.001f)mask|=16;
+    if(p.y<(R3_VIEW_H*.5f-bottom-1)/FOCAL*p.z-.001f)mask|=32;
+    return mask;
+}
+
 static bool valid_depth_rows(unsigned rows)
 {
     return rows>=2*EDGE_SAMPLES&&rows<=R3_VIEW_H;
@@ -93,19 +111,41 @@ static unsigned count_bits(uint32_t bits)
     return (bits * 0x01010101u) >> 24;
 }
 
-static inline void shade_sample(r3_raster_t *target, unsigned index, float u, float v,
-    const float iz[3], uint16_t paint)
+static inline __attribute__((always_inline)) void depth_value(r3_raster_t *target,unsigned index,float invz,uint16_t paint)
 {
-    float w=1-u-v;
-    if(u<-.00001f||v<-.00001f||w<-.00001f)return;
     const float inv_far=1.0f/FAR_Z;
     const float depth_scale=65534.0f/(1.0f/NEAR_Z-inv_far);
-    float invz=u*iz[0]+v*iz[1]+w*iz[2];
-    uint16_t d=(uint16_t)fmaxf(0,fminf(65534,65534.0f-(invz-inv_far)*depth_scale));
+    /* Clipped, finite vertices make invz finite. A plain clamp avoids the
+     * libm NaN handling path in this per-covered-pixel operation. */
+    float value=65534.0f-(invz-inv_far)*depth_scale;
+    if(value<0)value=0;
+    if(value>65534)value=65534;
+    uint16_t d=(uint16_t)value;
     if(d<target->depth[index]){
         target->depth[index]=d;
         target->color[index]=paint;
     }
+}
+
+static inline __attribute__((always_inline)) void depth_sample(r3_raster_t *target,unsigned index,float u,float v,
+    const float iz[3],uint16_t paint)
+{depth_value(target,index,iz[2]+u*iz[0]+v*iz[1],paint);}
+
+static inline __attribute__((always_inline)) void shade_sample(r3_raster_t *target, unsigned index, float u, float v,
+    const float iz[3], uint16_t paint)
+{
+    float w=1-u-v;
+    if(u<-.00001f||v<-.00001f||w<-.00001f)return;
+    depth_sample(target,index,u,v,iz,paint);
+}
+
+static void coverage_span(float value,float gradient,float inverse,int width,float threshold,int guard,int *first,int *last)
+{
+    if(fabsf(gradient)<1e-12f){if(guard<0&&value<threshold)*first=width+1;return;}
+    float crossing=(threshold-value)*inverse;
+    crossing=fmaxf(-2,fminf((float)width+2,crossing));
+    if(gradient>0){int bound=(int)floorf(crossing)-guard;if(bound>*first)*first=bound;}
+    else{int bound=(int)ceilf(crossing)+guard;if(bound<*last)*last=bound;}
 }
 
 static void raster(r3_raster_t *target,r3_vec_t a,r3_vec_t b,r3_vec_t c,uint16_t paint)
@@ -118,6 +158,7 @@ static void raster(r3_raster_t *target,r3_vec_t a,r3_vec_t b,r3_vec_t c,uint16_t
         y[i]=R3_VIEW_H*.5f-FOCAL*v[i].y*iz[i];
         if(!isfinite(x[i])||!isfinite(y[i]))return;
     }
+    iz[0]-=iz[2];iz[1]-=iz[2];
     float area=edge(x[0],y[0],x[1],y[1],x[2],y[2]);
     if(!isfinite(area)||fabsf(area)<1e-5f)return;
     float minx=fminf(x[0],fminf(x[1],x[2])),maxx=fmaxf(x[0],fmaxf(x[1],x[2]));
@@ -132,6 +173,10 @@ static void raster(r3_raster_t *target,r3_vec_t a,r3_vec_t b,r3_vec_t c,uint16_t
     }
     float inv_area=1.0f/area;
     float du=(y[2]-y[1])*inv_area,dv=(y[0]-y[2])*inv_area;
+    float dw=-du-dv;
+    float inverse_du=fabsf(du)>1e-12f?1/du:0;
+    float inverse_dv=fabsf(dv)>1e-12f?1/dv:0;
+    float inverse_dw=fabsf(dw)>1e-12f?1/dw:0;
     const float ux=.5f*du, vx=.5f*dv;
     const float uy=.5f*(x[1]-x[2])*inv_area, vy=.5f*(x[2]-x[0])*inv_area;
     for(int py=top;py<=bottom;++py){
@@ -139,8 +184,35 @@ static void raster(r3_raster_t *target,r3_vec_t a,r3_vec_t b,r3_vec_t c,uint16_t
         float u=edge(x[1],y[1],x[2],y[2],sx,sy)*inv_area;
         float v0=edge(x[2],y[2],x[0],y[0],sx,sy)*inv_area;
         if(!target->edges){
-            unsigned index=(unsigned)(py-target->first_row)*R3_VIEW_W+(unsigned)left;
-            for(int px=left;px<=right;++px,++index,u+=du,v0+=dv)
+            int first=0,last=right-left;
+            int inner_first=right-left+1,inner_last=-1;
+            if(last>=12){
+                coverage_span(u,du,inverse_du,last,-.0001f,2,&first,&last);
+                coverage_span(v0,dv,inverse_dv,right-left,-.0001f,2,&first,&last);
+                coverage_span(1-u-v0,dw,inverse_dw,right-left,-.0001f,2,&first,&last);
+                if(first>last)continue;
+                /* Inside all three half-planes, omit per-pixel coverage tests.
+                 * Bound the error from the original sequential float adds;
+                 * near edges still run the exact original comparisons. */
+                float error=.0001f+4*FLT_EPSILON*(right-left+1)*
+                    (1+fabsf(u)+fabsf(v0)+(fabsf(du)+fabsf(dv))*(right-left));
+                inner_first=first;inner_last=last;
+                coverage_span(u,du,inverse_du,right-left,error,-2,&inner_first,&inner_last);
+                coverage_span(v0,dv,inverse_dv,right-left,error,-2,&inner_first,&inner_last);
+                coverage_span(1-u-v0,dw,inverse_dw,right-left,error,-2,&inner_first,&inner_last);
+                /* Preserve the original additions exactly: a direct jump
+                 * u += first*du changes float rounding at shared edges. */
+                for(int skipped=0;skipped<first;++skipped){u+=du;v0+=dv;}
+            }
+            unsigned index=(unsigned)(py-target->first_row)*R3_VIEW_W+(unsigned)(left+first);
+            int px=first;
+            for(;px<=last&&px<inner_first;++px,++index,u+=du,v0+=dv)
+                shade_sample(target,index,u,v0,iz,paint);
+            float inverse_depth=iz[2]+u*iz[0]+v0*iz[1];
+            float depth_increment=du*iz[0]+dv*iz[1];
+            for(;px<=inner_last;++px,++index,u+=du,v0+=dv,inverse_depth+=depth_increment)
+                depth_value(target,index,inverse_depth,paint);
+            for(;px<=last;++px,++index,u+=du,v0+=dv)
                 shade_sample(target,index,u,v0,iz,paint);
             continue;
         }
@@ -183,18 +255,30 @@ static unsigned clip(const r3_vec_t *in,unsigned n,r3_vec_t *out,float plane,boo
     }
     return count;
 }
-static void triangle(r3_raster_t *target,r3_vec_t a,r3_vec_t b,r3_vec_t c,uint32_t paint,r3_vec_t focus)
+static bool triangle_visible(const r3_raster_t *target,r3_vec_t pa,r3_vec_t pb,r3_vec_t pc)
 {
+    if(!finite_vec(pa)||!finite_vec(pb)||!finite_vec(pc))return false;
+    unsigned outside=outside_planes(target,pa);
+    return !(outside&&(outside&=outside_planes(target,pb))&&(outside&outside_planes(target,pc)));
+}
+static void clipped_triangle(r3_raster_t *target,r3_vec_t pa,r3_vec_t pb,r3_vec_t pc,uint16_t shade)
+{
+    r3_vec_t p[8]={pa,pb,pc},temp[8];
+    unsigned n=clip(p,3,temp,NEAR_Z,true);if(n<3)return;
+    n=clip(temp,n,p,FAR_Z,false);if(n<3)return;
+    for(unsigned i=1;i+1<n;++i)raster(target,p[0],p[i],p[i+1],shade);
+}
+static void triangle_view(r3_raster_t *target,r3_vec_t a,r3_vec_t b,r3_vec_t c,uint32_t paint,
+    r3_vec_t pa,r3_vec_t pb,r3_vec_t pc)
+{
+    if(!triangle_visible(target,pa,pb,pc))return;
     r3_vec_t normal=cross(sub(b,a),sub(c,a));float length=sqrtf(dot(normal,normal));
     if(!isfinite(length)||length<1e-8f)return;
     float light=.35f+.65f*fabsf(dot(mul(normal,1/length),(r3_vec_t){.3f,-.4f,.8660254f}));
-    r3_vec_t p[8]={camera(a,focus),camera(b,focus),camera(c,focus)},temp[8];
-    if(!finite_vec(p[0])||!finite_vec(p[1])||!finite_vec(p[2]))return;
-    unsigned n=clip(p,3,temp,NEAR_Z,true);if(n<3)return;
-    n=clip(temp,n,p,FAR_Z,false);if(n<3)return;
-    uint16_t shade=rgb(paint,light);
-    for(unsigned i=1;i+1<n;++i)raster(target,p[0],p[i],p[i+1],shade);
+    clipped_triangle(target,pa,pb,pc,rgb(paint,light));
 }
+static void triangle(r3_raster_t *target,r3_vec_t a,r3_vec_t b,r3_vec_t c,uint32_t paint,r3_vec_t focus)
+{triangle_view(target,a,b,c,paint,camera(a,focus),camera(b,focus),camera(c,focus));}
 static r3_vec_t rotate(r3_quat_t q,r3_vec_t p)
 {
     r3_vec_t u={q.x,q.y,q.z};r3_vec_t t=mul(cross(u,p),2);
@@ -251,11 +335,12 @@ static void draw_bend(r3_raster_t *target, const r3_bend_t *bend, r3_vec_t focus
     const uint32_t rail=style?0xb964d1:0xa071bc;
     const uint32_t light_tile=style?style->light_tile:0xf2e6d5;
     r3_vec_t eye=add(focus,eye_offset);
+    r3_vec_t floor[2][max_lanes+1];
     for(unsigned i=0;i+1<sizeof(ring)/sizeof(*ring);++i){
-        r3_vec_t floor[2][max_lanes+1],bottom[2][2],lip[2],rail_outer[2],rail_base[2];
+        r3_vec_t bottom[2][2],lip[2],rail_outer[2],rail_base[2];
         for(unsigned end=0;end<2;++end){
             float c=ring[i+end][0],s=ring[i+end][1];
-            for(unsigned j=0;j<=lanes;++j){
+            for(unsigned j=0;j<=lanes&&(i==0||end==1);++j){
                 float r=bend->radius+bend->half_width*(2.0f*j/lanes-1.0f);
                 floor[end][j]=r3_bend_point(bend,c,s,r,r3_bend_height(bend,c,s,r));
             }
@@ -286,6 +371,7 @@ static void draw_bend(r3_raster_t *target, const r3_bend_t *bend, r3_vec_t focus
         }else if(!style||dot(sub(eye,floor[0][lanes]),radial)>0){
             bend_quad(target,floor[0][lanes],floor[1][lanes],bottom[1][1],bottom[0][1],bend->color,focus);
         }
+        memcpy(floor[0],floor[1],sizeof(floor[0]));
     }
 }
 
@@ -303,6 +389,9 @@ static void draw_scene(r3_raster_t *target,const r3_snapshot_t *s,
             v[j]=add(v[j],mul(b->axis[k],(j&(1u<<k))?h:-h));}}
         if(style&&!solid&&!(style->thin_road_mask&(1u<<i)))
             for(unsigned j=0;j<4;++j)v[j].z=fminf(v[j].z,style->skirt_z);
+        unsigned outside=63;
+        for(unsigned j=0;j<8&&outside;++j)outside&=outside_planes(target,camera(v[j],focus));
+        if(outside)continue;
         /* Road tops use checker cells; rails are drawn as solid boxes. */
         for(unsigned j=0;j<12;j+=2){
             if(!solid&&j==2)continue;
@@ -312,18 +401,31 @@ static void draw_scene(r3_raster_t *target,const r3_snapshot_t *s,
             triangle(target,v[faces[j+1][0]],v[faces[j+1][1]],v[faces[j+1][2]],b->color,focus);
         }
         if(solid)continue;
+        /* The tall skirt can be visible while the entire checker top is off
+         * screen. Cull that plane separately before generating the tile grid. */
+        outside=63;
+        for(unsigned j=4;j<8&&outside;++j)outside&=outside_planes(target,camera(v[j],focus));
+        if(outside)continue;
         unsigned nx=(unsigned)fmaxf(1,fminf(16,ceilf(b->half.x*4)));
         unsigned ny=(unsigned)fmaxf(1,fminf(16,ceilf(b->half.y*4)));
-        for(unsigned cy=0;cy<ny;++cy)for(unsigned cx=0;cx<nx;++cx){
-            r3_vec_t q[4];
-            for(unsigned k=0;k<4;++k){
-                float u=-b->half.x+2*b->half.x*(cx+(k==1||k==2))/(float)nx;
-                float v0=-b->half.y+2*b->half.y*(cy+(k>=2))/(float)ny;
-                q[k]=add(add(add(b->center,mul(b->axis[2],b->half.z)),mul(b->axis[0],u)),mul(b->axis[1],v0));
+        float normal_length=sqrtf(dot(b->axis[2],b->axis[2]));
+        float light=.35f+.65f*fabsf(dot(mul(b->axis[2],1/normal_length),(r3_vec_t){.3f,-.4f,.8660254f}));
+        uint16_t tile_colors[]={rgb(light_tile,light),rgb(b->color,light)};
+        r3_vec_t tile_rows[2][17];
+        for(unsigned cy=0;cy<ny;++cy){
+            for(unsigned row=cy?1:0;row<2;++row)for(unsigned cx=0;cx<=nx;++cx){
+                float u=-b->half.x+2*b->half.x*cx/(float)nx;
+                float v0=-b->half.y+2*b->half.y*(cy+row)/(float)ny;
+                r3_vec_t point=add(add(add(b->center,mul(b->axis[2],b->half.z)),mul(b->axis[0],u)),mul(b->axis[1],v0));
+                tile_rows[row][cx]=camera(point,focus);
             }
-            uint32_t paint=(cx+cy)%2?b->color:light_tile;
-            triangle(target,q[0],q[1],q[2],paint,focus);
-            triangle(target,q[0],q[2],q[3],paint,focus);
+            for(unsigned cx=0;cx<nx;++cx){
+                uint16_t paint=tile_colors[(cx+cy)%2];
+                r3_vec_t a=tile_rows[0][cx],b0=tile_rows[0][cx+1],c=tile_rows[1][cx+1],d=tile_rows[1][cx];
+                if(triangle_visible(target,a,b0,c))clipped_triangle(target,a,b0,c,paint);
+                if(triangle_visible(target,a,c,d))clipped_triangle(target,a,c,d,paint);
+            }
+            memcpy(tile_rows[0],tile_rows[1],sizeof(tile_rows[0]));
         }
     }
     if(world->bend)draw_bend(target,world->bend,focus,style);
@@ -333,11 +435,17 @@ static void draw_scene(r3_raster_t *target,const r3_snapshot_t *s,
             const r3_vec_t *v=face->vertices;
             bend_quad(target,v[0],v[1],v[2],v[3],face->color,focus);
         }
-    for(unsigned lat=0;lat<6;++lat)for(unsigned lon=0;lon<12;++lon){
-        r3_vec_t a=sphere_point(lat,lon,s->radius,q,s->position),b=sphere_point(lat+1,lon,s->radius,q,s->position);
-        r3_vec_t c=sphere_point(lat+1,lon+1,s->radius,q,s->position),d=sphere_point(lat,lon+1,s->radius,q,s->position);
-        uint32_t paint=(lon/3)%2?0xffe6aa:0xee648b;
-        triangle(target,a,b,c,paint,focus);triangle(target,a,c,d,paint,focus);
+    r3_vec_t sphere_rows[2][13];
+    for(unsigned lon=0;lon<=12;++lon)sphere_rows[0][lon]=sphere_point(0,lon,s->radius,q,s->position);
+    for(unsigned lat=0;lat<6;++lat){
+        for(unsigned lon=0;lon<=12;++lon)sphere_rows[1][lon]=sphere_point(lat+1,lon,s->radius,q,s->position);
+        for(unsigned lon=0;lon<12;++lon){
+            r3_vec_t a=sphere_rows[0][lon],b=sphere_rows[1][lon];
+            r3_vec_t c=sphere_rows[1][lon+1],d=sphere_rows[0][lon+1];
+            uint32_t paint=(lon/3)%2?0xffe6aa:0xee648b;
+            triangle(target,a,b,c,paint,focus);triangle(target,a,c,d,paint,focus);
+        }
+        memcpy(sphere_rows[0],sphere_rows[1],sizeof(sphere_rows[0]));
     }
 }
 static uint16_t average_rgb565(uint16_t first,uint16_t second)
@@ -360,22 +468,42 @@ static bool color_edge(uint16_t a, uint16_t b)
 static uint16_t mix_play_edge(uint16_t center, uint16_t left, uint16_t right,
     uint16_t above, uint16_t below)
 {
-    unsigned red=4u*(center>>11)+(left>>11)+(right>>11)+(above>>11)+(below>>11);
-    unsigned green=4u*((center>>5)&63u)+((left>>5)&63u)+((right>>5)&63u)+
-        ((above>>5)&63u)+((below>>5)&63u);
-    unsigned blue=4u*(center&31u)+(left&31u)+(right&31u)+(above&31u)+(below&31u);
-    return (uint16_t)((((red+4u)>>3)<<11)|(((green+4u)>>3)<<5)|((blue+4u)>>3));
+    /* The six unused bits between B and R keep the weighted sums separate. */
+    unsigned rb=4u*(center&0xf81fu)+(left&0xf81fu)+(right&0xf81fu)+
+        (above&0xf81fu)+(below&0xf81fu)+0x2004u;
+    unsigned g=4u*(center&0x07e0u)+(left&0x07e0u)+(right&0x07e0u)+
+        (above&0x07e0u)+(below&0x07e0u)+0x80u;
+    return (uint16_t)(((rb>>3)&0xf81fu)|((g>>3)&0x07e0u));
+}
+
+typedef struct {unsigned first,last;} row_bounds_t;
+static row_bounds_t row_bounds(const uint16_t *row,uint16_t background)
+{
+    row_bounds_t bounds={0,R3_VIEW_W};
+    while(bounds.first<bounds.last&&row[bounds.first]==background)++bounds.first;
+    while(bounds.last>bounds.first&&row[bounds.last-1]==background)--bounds.last;
+    return bounds;
 }
 
 static void smooth_play_edges(uint16_t *color, uint16_t *scratch)
 {
     uint16_t *above=scratch,*current=scratch+R3_VIEW_W;
     memcpy(above,color,R3_VIEW_W*sizeof(*color));
+    uint16_t background=color[0];
+    row_bounds_t previous_bounds=row_bounds(color,background),current_bounds=previous_bounds;
     for(unsigned y=0;y<R3_VIEW_H;++y){
         uint16_t *row=color+y*R3_VIEW_W;
         memcpy(current,row,R3_VIEW_W*sizeof(*color));
         const uint16_t *below=y+1<R3_VIEW_H?row+R3_VIEW_W:current;
-        for(unsigned x=0;x<R3_VIEW_W;++x){
+        row_bounds_t next_bounds=y+1<R3_VIEW_H?row_bounds(below,background):current_bounds;
+        unsigned first=previous_bounds.first,last=previous_bounds.last;
+        if(current_bounds.first<first)first=current_bounds.first;
+        if(next_bounds.first<first)first=next_bounds.first;
+        if(current_bounds.last>last)last=current_bounds.last;
+        if(next_bounds.last>last)last=next_bounds.last;
+        if(first) --first;
+        if(last<R3_VIEW_W) ++last;
+        for(unsigned x=first;x<last;++x){
             uint16_t center=current[x];
             uint16_t left=x?current[x-1]:center,right=x+1<R3_VIEW_W?current[x+1]:center;
             uint16_t top=above[x],bottom=below[x];
@@ -387,6 +515,7 @@ static void smooth_play_edges(uint16_t *color, uint16_t *scratch)
         uint16_t *previous=above;
         above=current;
         current=previous;
+        previous_bounds=current_bounds;current_bounds=next_bounds;
     }
 }
 
