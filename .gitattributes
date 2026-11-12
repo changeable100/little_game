@@ -4,3 +4,23 @@ evidence/M3/dynamic-ui/run03/original.txt -text
 evidence/M3/chinese-loading-2026-11-08/board-run01/user_log_original.txt -text
 evidence/M4/p0-delay-2026-11-08/board-run01/startup_original.txt -text
 evidence/M4/p0-delay-2026-11-08/board-run01/running_inline_excerpt.txt -text
+
+# Course scripts keep LF; new evidence keeps original bytes and patch/log spacing.
+.githooks/* text eol=lf
+*.py text eol=lf
+evidence/M4/git-publish-2026-11-12/** -text -whitespace
+evidence/M4/roll3-auto-respawn-2026-11-10/** -text -whitespace
+evidence/M4/roll3-finish-2026-11-11/** -text -whitespace
+evidence/M4/roll3-fluid-2026-11-11/** -text -whitespace
+evidence/M4/roll3-h1-2026-11-10/** -text -whitespace
+evidence/M4/roll3-immersive-2026-11-12/** -text -whitespace
+evidence/M4/roll3-m1-view-2026-11-10/** -text -whitespace
+evidence/M4/roll3-m2-bend-2026-11-10/** -text -whitespace
+evidence/M4/roll3-m3-slim-2026-11-10/** -text -whitespace
+evidence/M4/roll3-m3-stage-2026-11-10/** -text -whitespace
+evidence/M4/roll3-m3-trough-2026-11-10/** -text -whitespace
+evidence/M4/roll3-pixel-2026-11-12/** -text -whitespace
+evidence/M2/maze_adapter/host_2026-11-10_135923.txt -text -whitespace
+evidence/M2/maze_adapter/host_2026-11-10_140018.txt -text -whitespace
+evidence/M2/maze_adapter/host_2026-11-10_155625.txt -text -whitespace
+evidence/M2/maze_adapter/host_2026-11-12_223928.txt -text -whitespace
