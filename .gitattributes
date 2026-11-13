@@ -25,3 +25,28 @@ evidence/M2/maze_adapter/host_2026-11-10_135923.txt -text -whitespace
 evidence/M2/maze_adapter/host_2026-11-10_140018.txt -text -whitespace
 evidence/M2/maze_adapter/host_2026-11-10_155625.txt -text -whitespace
 evidence/M2/maze_adapter/host_2026-11-12_223928.txt -text -whitespace
+
+# Preserve 2026-11-13 raw software evidence bytes and original diagnostic spacing.
+evidence/M2/maze_adapter/host_2026-11-13_001418.txt -text -whitespace
+evidence/M2/maze_adapter/host_2026-11-13_005013.txt -text -whitespace
+evidence/M2/maze_adapter/host_2026-11-13_005049.txt -text -whitespace
+evidence/M2/maze_adapter/host_2026-11-13_005120.txt -text -whitespace
+evidence/M2/maze_adapter/host_2026-11-13_005229.txt -text -whitespace
+evidence/M2/maze_adapter/host_2026-11-13_005332.txt -text -whitespace
+evidence/M2/maze_adapter/host_2026-11-13_005654.txt -text -whitespace
+evidence/M2/maze_adapter/host_2026-11-13_005813.txt -text -whitespace
+evidence/M2/maze_adapter/host_2026-11-13_010148.txt -text -whitespace
+evidence/M2/maze_adapter/host_2026-11-13_010258.txt -text -whitespace
+evidence/M2/maze_adapter/host_2026-11-13_010803.txt -text -whitespace
+evidence/M2/maze_adapter/host_2026-11-13_021647.txt -text -whitespace
+evidence/M2/maze_adapter/host_2026-11-13_021801.txt -text -whitespace
+evidence/M2/maze_adapter/host_2026-11-13_023210.txt -text -whitespace
+evidence/M2/roll3_product/** -text -whitespace
+evidence/M4/game-menu-records-2026-11-13/** -text -whitespace
+evidence/M4/level2-2026-11-13/** -text -whitespace
+evidence/M4/level2-blue-2026-11-13/** -text -whitespace
+evidence/M4/level2-compact-2026-11-13/** -text -whitespace
+evidence/M4/level2-compact-pillars-2026-11-13/** -text -whitespace
+evidence/M4/level2-pc-model-2026-11-13/** -text -whitespace
+evidence/M4/level2-planning-2026-11-13/** -text -whitespace
+evidence/M4/level2-port-2026-11-13/** -text -whitespace

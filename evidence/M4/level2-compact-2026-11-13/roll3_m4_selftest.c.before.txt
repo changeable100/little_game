@@ -1,0 +1,183 @@
+#include "roll3_scene.h"
+#include "roll3_physics.h"
+#include "roll3_bend.h"
+#include "maze_selftest.h"
+#include <math.h>
+#include <stdio.h>
+
+#define CHECK(x) do{if(!(x)){printf("M4 check line %d failed\n",__LINE__);return false;}}while(0)
+static r3_vec_t uv(float u,float v,float z){return (r3_vec_t){u*R3_M1_COS-v*R3_M1_SIN,-u*R3_M1_SIN-v*R3_M1_COS,z};}
+static r3_vec_t local(r3_vec_t p){return (r3_vec_t){p.x*R3_M1_COS-p.y*R3_M1_SIN,-p.x*R3_M1_SIN-p.y*R3_M1_COS,p.z};}
+static float dot(r3_vec_t a,r3_vec_t b){return a.x*b.x+a.y*b.y+a.z*b.z;}
+static r3_result_t action(r3_game_t *g,r3_action_kind_t k){r3_action_t a={k,g->s.run,g->last_request+1};return r3_action(g,&a);}
+static bool start(r3_game_t *g){return r3_init(g,r3_m4_world())==R3_OK&&action(g,R3_START)==R3_OK&&r3_calibrated(g,g->s.run)==R3_OK;}
+static bool geometry(void){
+    const r3_world_t *w=r3_m4_world();r3_game_t g;
+    CHECK(r3_world_validate(w)==R3_OK&&start(&g));
+    CHECK(w->box_count==30&&w->extra_bend_count==2&&w->style->face_count<=144);
+    r3_world_t bad=*w;bad.extra_bends=NULL;CHECK(r3_world_validate(&bad)==R3_INVALID);
+    bad=*w;bad.extra_bend_count=R3_MAX_EXTRA_BENDS+1;CHECK(r3_world_validate(&bad)==R3_INVALID);
+    bad=*w;bad.goal_boxes_mask=1u<<31;CHECK(r3_world_validate(&bad)==R3_INVALID);
+    r3_input_t gravity={{0,0,-9.81f},true};
+    for(unsigned i=0;i<200;i++)CHECK(r3_step(&g,&gravity,5)==R3_OK&&!g.s.limited);
+    CHECK(fabsf(g.s.position.z-w->spawn.z)<.001f);
+    g.s.checkpoint=1;g.s.position.z=-5;CHECK(r3_step(&g,&gravity,5)==R3_OK&&g.s.state==R3_FALLEN);
+    CHECK(action(&g,R3_RESPAWN)==R3_OK);
+    for(unsigned i=0;i<200;i++)CHECK(r3_step(&g,&gravity,5)==R3_OK&&!g.s.limited);
+    CHECK(fabsf(g.s.position.z-w->checkpoint_spawn.z)<.001f);return true;
+}
+static bool seams(void){
+    const r3_world_t *w=r3_m4_world();
+    /* Independent authored end planes; checks whole width at each bend end. */
+    for(unsigned i=0;i<2;i++)for(unsigned e=0;e<2;e++)for(int side=-1;side<=1;side+=2){
+        const r3_bend_t *b=&w->extra_bends[i];
+        r3_vec_t p=r3_bend_point(b,e?-1:1,0,b->radius+side*b->half_width,e?b->exit_z:b->origin.z);
+        const r3_box_t *box=&w->boxes[i?(e?7:6):(e?2:1)];
+        r3_vec_t d={p.x-box->center.x,p.y-box->center.y,p.z-box->center.z};
+        CHECK(fabsf(dot(d,box->axis[2])-box->half.z)<.00005f);
+        CHECK(fabsf(fabsf(dot(d,box->axis[0]))-box->half.x)<.00005f);
+        CHECK(fabsf(fabsf(dot(d,box->axis[1]))-box->half.y)<.00005f);
+    }
+    /* Authored independent shared endpoints, including both chute outlets. */
+    static const float joins[][9]={
+        {0,1,-1.25f,1,1.25f,1,9,0,0},{2,3,3.55f,1,6.05f,1,6.6f,0,0},
+        {3,4,9.6f,-.6f,9.6f,.6f,6.6f,0,0},{4,5,11.6f,-.6f,11.6f,.6f,6.6f,0,0},
+        {5,6,11.6f,1.2f,14,1.2f,6.6f,0,0},{7,8,16.4f,1,18.8f,1,4.2f,0,0},
+        {8,9,22,-.65f,22,.65f,4.2f,0,0},{9,10,26,-.65f,26,.65f,4.2f,0,0},
+        {10,11,28,-1.5f,28,0,4.2f,0,0},{11,13,28,0,29,0,4.2f,0,0},
+        {13,14,28,1.6f,29,1.6f,1.8f,0,0},{14,17,28,5.6f,29,5.6f,1.8f,0,0},
+        {17,18,28,7.2f,29,7.2f,-.6f,0,0}};
+    for(unsigned j=0;j<sizeof(joins)/sizeof(*joins);j++)for(unsigned side=0;side<2;side++)for(unsigned end=0;end<2;end++){
+        const float *a=joins[j];const r3_box_t *b=&w->boxes[(unsigned)a[side]];
+        r3_vec_t p=uv(a[2+2*end],a[3+2*end],a[6]);
+        r3_vec_t d={p.x-b->center.x,p.y-b->center.y,p.z-b->center.z};
+        CHECK(fabsf(dot(d,b->axis[2])-b->half.z)<.00005f);
+        CHECK(fabsf(dot(d,b->axis[0]))<b->half.x+.00005f&&fabsf(dot(d,b->axis[1]))<b->half.y+.00005f);
+    }
+    return true;
+}
+static bool goals(void){
+    const r3_world_t *w=r3_m4_world();r3_input_t gravity={{0,0,-9.81f},true};
+    for(unsigned i=18;i<23;i++){
+        r3_game_t g;CHECK(start(&g));const r3_box_t *b=&w->boxes[i];
+        /* Sample the exposed deck beside the chute outlet, not through it. */
+        r3_vec_t offset=uv(.8f,0,0);
+        g.s.position=(r3_vec_t){b->center.x+offset.x,b->center.y+offset.y,-.4f};
+        CHECK(r3_step(&g,&gravity,5)==R3_OK&&g.s.state==R3_WON);
+        CHECK(start(&g));g.s.position=(r3_vec_t){b->center.x,b->center.y,.6f};
+        CHECK(r3_step(&g,&gravity,5)==R3_OK&&g.s.state==R3_RUNNING);
+        CHECK(start(&g));
+        r3_vec_t edge=uv(b->half.x+R3_RADIUS,0,0);
+        g.s.position=(r3_vec_t){b->center.x+edge.x,b->center.y+edge.y,-.75f};
+        CHECK(r3_step(&g,&gravity,5)==R3_OK&&g.s.state==R3_RUNNING);
+    }
+    return true;
+}
+static float clamp(float a){return fmaxf(-4,fminf(4,a));}
+static bool fast_bends(void){
+    const float speeds[]={.5f,2,5,7.5f};
+    for(unsigned bi=0;bi<2;bi++)for(unsigned si=0;si<4;si++)for(int angle=-1;angle<=1;angle++){
+        r3_game_t g;CHECK(start(&g));const r3_box_t *b=&g.world->boxes[bi?6:1];
+        float a=angle*.261799388f;
+        const float offsets[]={b->half.x-.25f,0,b->half.z+R3_RADIUS+.00002f};
+        g.s.position=b->center;
+        for(unsigned j=0;j<3;j++){
+            g.s.position.x+=b->axis[j].x*offsets[j];
+            g.s.position.y+=b->axis[j].y*offsets[j];
+            g.s.position.z+=b->axis[j].z*offsets[j];
+        }
+        float forward=speeds[si]*cosf(a),side=speeds[si]*sinf(a);
+        g.s.velocity=(r3_vec_t){b->axis[0].x*forward+b->axis[1].x*side,
+            b->axis[0].y*forward+b->axis[1].y*side,b->axis[0].z*forward+b->axis[1].z*side};
+        r3_vec_t n=b->axis[2],v=g.s.velocity;
+        g.s.omega=(r3_vec_t){(n.y*v.z-n.z*v.y)/R3_RADIUS,(n.z*v.x-n.x*v.z)/R3_RADIUS,(n.x*v.y-n.y*v.x)/R3_RADIUS};
+        r3_input_t gravity={{0,0,-9.81f},true};
+        for(unsigned step=0;step<150;step++){
+            float before=dot(g.s.velocity,g.s.velocity);
+            CHECK(r3_step(&g,&gravity,5)==R3_OK&&!g.s.limited&&g.s.state==R3_RUNNING);
+            CHECK(dot(g.s.velocity,g.s.velocity)>=before*.75f*.75f);
+        }
+    }
+    return true;
+}
+static bool guards(void){
+    const r3_world_t *w=r3_m4_world();
+    const unsigned indices[]={23,24,25,26,27};
+    const float speeds[]={.5f,2,5,7.5f};
+    for(unsigned k=0;k<5;k++)for(unsigned speed=0;speed<4;speed++)for(unsigned angle=0;angle<2;angle++){
+        r3_game_t g;CHECK(start(&g));r3_world_t test=*w;
+        test.goal_box_plus_one=0;test.goal_boxes_mask=0;
+        test.goal=(r3_zone_t){{90,90,90},{91,91,91}};g.world=&test;
+        const r3_box_t *b=&w->boxes[indices[k]];
+        r3_vec_t c=local(b->center);
+        float sign=k==0||k==2?-1:1;
+        r3_vec_t p=k==4?(r3_vec_t){c.x,c.y-.06f-R3_RADIUS-.02f,-.4f}:
+            (r3_vec_t){c.x-sign*(.06f+R3_RADIUS+.02f),c.y,k<2?2:-.4f};
+        g.s.position=uv(p.x,p.y,p.z);
+        g.s.velocity=k==4?uv(angle?.15f*speeds[speed]:0,speeds[speed],0):
+            uv(sign*speeds[speed],angle?.15f*speeds[speed]:0,0);
+        bool hit=false;
+        r3_input_t gravity={{0,0,-9.81f},true};
+        for(unsigned i=0;i<40;i++){
+            CHECK(r3_step(&g,&gravity,5)==R3_OK&&!g.s.limited);
+            r3_vec_t at=local(g.s.position),velocity=local(g.s.velocity);
+            CHECK(k==4?at.y<c.y-.06f:sign*(at.x-c.x)<-.06f);
+            float outward=k==4?velocity.y:sign*velocity.x;
+            float gap=k==4?c.y-.06f-at.y:sign*(c.x-at.x)-.06f;
+            /* A later floor contact may replace contact_normal in the same step. */
+            if(outward<-.001f||(outward<.001f&&fabsf(gap-R3_RADIUS)<.005f))hit=true;
+        }
+        CHECK(hit);
+    }
+    return true;
+}
+static bool travel(r3_game_t *g,r3_vec_t target,unsigned *ticks){
+    for(unsigned i=0;i<12000;i++){
+        r3_vec_t p=local(g->s.position),v=local(g->s.velocity);
+        float du=target.x-p.x,dv=target.y-p.y;
+        if(du*du+dv*dv<.035f&&fabsf(p.z-target.z)<.55f)return true;
+        if(g->s.state==R3_WON)return true;
+        if(g->s.state!=R3_RUNNING)return false;
+        r3_vec_t n=local(g->s.contact_normal);
+        float cu=0,cv=0;
+        if(g->s.grounded&&n.z>.25f){cu=9.81f*n.x/n.z;cv=9.81f*n.y/n.z;}
+        float distance=sqrtf(du*du+dv*dv);
+        r3_input_t input={uv(clamp(3*du-3*v.x-cu+1.4f*du/distance),clamp(3*dv-3*v.y-cv+1.4f*dv/distance),-9.81f),true};
+        if(r3_step(g,&input,5)!=R3_OK||g->s.limited)return false;
+        ++*ticks;
+    }return false;
+}
+static bool route(void){
+    r3_game_t g;CHECK(start(&g));unsigned ticks=0;
+#define GO(uu,vv,zz) do{if(!travel(&g,(r3_vec_t){uu,vv,zz},&ticks)){printf("M4 route fail target=(%.2f %.2f %.2f) pose=(%.3f %.3f %.3f) state=%d limited=%u\n",(double)(uu),(double)(vv),(double)(zz),(double)local(g.s.position).x,(double)local(g.s.position).y,(double)g.s.position.z,g.s.state,g.s.limited_steps);return false;}}while(0)
+    GO(0,4.9f,8.225f);
+    for(unsigned b=0;b<2;b++){
+        if(b){GO(6.6f,0,6.8f);GO(10.6f,0,6.8f);GO(12.8f,0,6.8f);GO(12.8f,4.9f,5.825f);}
+        const r3_bend_t *bend=&r3_m4_world()->extra_bends[b];
+        for(unsigned i=1;i<=18;i++){
+            float a=3.14159265359f*i/18;
+            r3_vec_t p=local(r3_bend_point(bend,cosf(a),sinf(a),bend->radius,r3_bend_height(bend,cosf(a),sinf(a),bend->radius)+R3_RADIUS));
+            GO(p.x,p.y,p.z);
+        }
+        if(!b){GO(4.8f,0,6.8f);}else{GO(17.6f,0,4.4f);}
+    }
+    GO(19.2f,0,4.4f);CHECK(g.s.checkpoint==1);
+    GO(24,0,4.4f);GO(27,0,4.4f);GO(28.5f,-.6f,4.4f);
+    GO(28.5f,.8f,3.2f);GO(28.5f,2.2f,2);GO(28.5f,4.8f,2);
+    GO(28.5f,6.4f,.8f);GO(28.5f,8.3f,-.4f);
+    CHECK(g.s.state==R3_WON&&g.s.falls==0&&g.s.limited_steps==0);
+    printf("M4 continuous input route: time=%ums falls=%u limited=%u checkpoint=%u\n",ticks*5,g.s.falls,g.s.limited_steps,g.s.checkpoint);
+#undef GO
+    return true;
+}
+int r3_m4_selftest(maze_test_report_t report){
+    int failures=0;
+#define RUN(n,f) do{bool ok=(f);if(!ok)failures++;if(report)report(n,ok);}while(0)
+    RUN("TC-528 M4 validation spawn and checkpoint",geometry());
+    RUN("TC-528 both curved seam endpoints within 0.1mm",seams());
+    RUN("TC-528 five goal decks top contact and airborne guards",goals());
+    RUN("TC-528 five real guards at four speeds straight and oblique",guards());
+    RUN("TC-528 both bends four speeds and three approach angles",fast_bends());
+    RUN("TC-528 continuous two bends two chutes checkpoint goal",route());
+    return failures;
+}

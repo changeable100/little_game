@@ -1,0 +1,6 @@
+TC-504 runtime owner, single slot, calibration and stale run PASS
+TC-504 close discards pending action and waits for own IMU cleanup PASS
+TC-511 runtime owner loss diagnosed PASS
+TC-515 auto respawn requires live page and yields to restart/close PASS
+TC-524 worker releases IMU, rolls behind result and closes cleanly PASS
+PASS dedicated M4 runtime owns M4 model and keeps lifecycle/IMU/settlement behavior

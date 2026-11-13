@@ -1,0 +1,34 @@
+{
+  "tools\\build_m4_desktop_model.py": {
+    "bytes": 14645,
+    "sha256": "132ea400aaf8faead4702c9510adfdada0a5722ac5a3808ca8f4b927c39d2028"
+  },
+  "tools\\check_m4_desktop_model.py": {
+    "bytes": 3176,
+    "sha256": "78f1c31f25cd2d7dd3409f1efca5a7ea5cd3c0a9f45bc2e094f503acd2557047"
+  },
+  "tools\\m4_desktop_viewer.html": {
+    "bytes": 18275,
+    "sha256": "61e403539eae0a7e0150b28087731e722b07d03edceb0c84b54793a919c704dd"
+  },
+  "models\\level2-desktop\\source-seed.json": {
+    "bytes": 41077,
+    "sha256": "664dfaa8b8665faa07cfd9301b6dd4611cc0771c09925272ed91b6721184f5ff"
+  },
+  "models\\level2-desktop\\model.json": {
+    "bytes": 641253,
+    "sha256": "d8f195d8bd34edcf57f5189bf7181ded8c273b90e54bf3cd67a449a11b025ef9"
+  },
+  "models\\level2-desktop\\index.html": {
+    "bytes": 659514,
+    "sha256": "e8e17743ec3c9c3dbf0407ad2ab92c01282c2cf4da06a7ff88b0153cbb125da5"
+  },
+  "models\\level2-desktop\\level2-desktop.glb": {
+    "bytes": 445408,
+    "sha256": "7e96efcb2a6d7ef7cd3e9962f198c4b86afb56e7bc63cada8ebcda48a766e63b"
+  },
+  "models\\level2-desktop\\level2-desktop.obj": {
+    "bytes": 509209,
+    "sha256": "64b0c83ee87e65e7d84914a145a4751267e72e02fc5ed45bb1c9d5096b830ff7"
+  }
+}

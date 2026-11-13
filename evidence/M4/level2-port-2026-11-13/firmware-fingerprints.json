@@ -1,0 +1,17 @@
+[
+  {
+    "path": "D:\\peripheral_lab\\project\\build_sf32lb52-lchspi-ulp_hcpu\\main.bin",
+    "bytes": 1172332,
+    "sha256": "69b911b8618462f302938aaea942473584cb459ba0c5f029e6058f7138d43c5d"
+  },
+  {
+    "path": "D:\\peripheral_lab\\project\\build_sf32lb52-lchspi-ulp_hcpu\\bootloader\\bootloader.bin",
+    "bytes": 58496,
+    "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21"
+  },
+  {
+    "path": "D:\\peripheral_lab\\project\\build_sf32lb52-lchspi-ulp_hcpu\\ftab\\ftab.bin",
+    "bytes": 11288,
+    "sha256": "cfe5e35c2995af25bca205b6a456718c4a4576df50b57d8354b57a0938fd3f95"
+  }
+]

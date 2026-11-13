@@ -1,0 +1,11 @@
+{
+  "camera": {
+    "yaw": -2.4,
+    "pitch": 0.8,
+    "distance": 9
+  },
+  "samples": 354,
+  "rays": 1416,
+  "blocked": [],
+  "floorErrors": []
+}

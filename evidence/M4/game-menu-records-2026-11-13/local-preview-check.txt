@@ -1,0 +1,5 @@
+PASS local preview / 1722435 bytes
+PASS local preview /game-menu/index.html 1941 bytes
+PASS local preview /game-menu/GAME-HOME.png 4504 bytes
+
+Exit code: 0

@@ -1,0 +1,20 @@
+COMMAND C:\Users\23396\AppData\Local\Programs\Python\Python312\python.exe -m ziglang cc --version
+clang version 18.1.6 (https://github.com/ziglang/zig-bootstrap 98bc6bf4fc4009888d33941daf6b600d20a42a56)
+Target: x86_64-unknown-windows-gnu
+Thread model: posix
+InstalledDir: D:/peripheral_lab
+
+exit_code=0
+COMMAND C:\Users\23396\AppData\Local\Programs\Python\Python312\python.exe -m ziglang cc -std=c11 -Wall -Wextra -Werror -O2 -Itests/runtime_stubs -Isrc tests/roll3_main_host.c -o D:\peripheral_lab\build\roll3_main_host.exe
+tests/roll3_main_host.c:16:36: error: unused parameter 's' [-Werror,-Wunused-parameter]
+   16 | int littlevgl2rtt_init(const char *s){assert(!strcmp(s,"lcd"));call('D');return fail==3?-1:0;}
+      |                                    ^
+tests/roll3_main_host.c:19:28: error: unused parameter 'passed' [-Werror,-Wunused-parameter]
+   19 | int roll3_menu_create(bool passed){call('M');assert(passed==ready);return fail==5?-1:0;}
+      |                            ^
+tests/roll3_main_host.c:24:66: error: unused variable 'result' [-Werror,-Wunused-variable]
+   24 |  for(fail=0;fail<=5;++fail){n=0;calls[0]=0;if(!setjmp(done)){int result=game_main();assert(result==-1&&(fail==2||fail==3||fail==5));}
+      |                                                                  ^~~~~~
+3 errors generated.
+
+exit_code=1

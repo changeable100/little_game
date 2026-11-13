@@ -1,0 +1,46 @@
+Traceback (most recent call last):
+  File "D:\peripheral_lab\tools\run_game_sdk_ui.py", line 16, in <module>
+    runpy.run_path(str(root/'tests/render.py'),run_name='__main__')
+  File "<frozen runpy>", line 286, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\peripheral_lab\tests\render.py", line 59, in <module>
+    objects = list(pool.map(compile_one, enumerate(sources)))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\23396\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py", line 619, in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\23396\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py", line 317, in _result_or_cancel
+    return fut.result(timeout)
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\23396\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py", line 456, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\23396\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "C:\Users\23396\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\peripheral_lab\tests\render.py", line 55, in compile_one
+    raise RuntimeError(result.stderr)
+RuntimeError: D:\peripheral_lab\tests\roll3_view_test.c:443:80: error: redefinition of 'poses' with a different type: 'FILE *' (aka 'struct _iobuf *') vs 'const r3_vec_t[4]'
+  443 |     const char *pose_path=getenv("ROLL3_LEVEL2_POSES");assert(pose_path);FILE *poses=fopen(pose_path,"r");assert(poses);
+      |                                                                                ^
+D:\peripheral_lab\tests\roll3_view_test.c:313:20: note: previous definition is here
+  313 |     const r3_vec_t poses[]={m3->spawn,from_uv(0,2.7f,3.375f+R3_RADIUS),
+      |                    ^
+D:\peripheral_lab\tests\roll3_view_test.c:445:24: warning: incompatible pointer types passing 'const r3_vec_t[4]' to parameter of type 'FILE *' (aka 'struct _iobuf *') [-Wincompatible-pointer-types]
+  445 |         int got=fscanf(poses,"%u,%u,%u,%f,%f,%f,%f,%f,%f,%f",&ms,&state,&cp,&x,&y,&z,&qw,&qx,&qy,&qz);if(got!=10)break;
+      |                        ^~~~~
+C:\Users\23396\AppData\Local\uv\cache\archive-v0\-FokXgAUo4ErzUcR\ziglang\lib\libc\include\any-windows-any/stdio.h:526:42: note: passing argument to parameter '_File' here
+  526 |   int __cdecl fscanf(FILE * __restrict__ _File,const char * __restrict__ _Format,...);
+      |                                          ^
+D:\peripheral_lab\tests\roll3_view_test.c:453:13: warning: incompatible pointer types passing 'const r3_vec_t[4]' to parameter of type 'FILE *' (aka 'struct _iobuf *') [-Wincompatible-pointer-types]
+  453 |     }fclose(poses);assert(pi>=10);
+      |             ^~~~~
+C:\Users\23396\AppData\Local\uv\cache\archive-v0\-FokXgAUo4ErzUcR\ziglang\lib\libc\include\any-windows-any/stdio.h:626:28: note: passing argument to parameter '_File' here
+  626 |   int __cdecl fclose(FILE *_File);
+      |                            ^
+2 warnings and 1 error generated.
+
+

@@ -1,0 +1,2 @@
+PASS geometry/materials/indices unchanged after stripping RGB literals
+PASS green goal, green guards and light checker color unchanged

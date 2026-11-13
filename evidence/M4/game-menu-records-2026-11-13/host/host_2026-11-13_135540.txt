@@ -1,0 +1,38 @@
+COMMAND C:\Users\23396\AppData\Local\Programs\Python\Python312\python.exe -m ziglang cc --version
+clang version 18.1.6 (https://github.com/ziglang/zig-bootstrap 98bc6bf4fc4009888d33941daf6b600d20a42a56)
+Target: x86_64-unknown-windows-gnu
+Thread model: posix
+InstalledDir: D:/peripheral_lab
+
+exit_code=0
+COMMAND C:\Users\23396\AppData\Local\Programs\Python\Python312\python.exe -m ziglang cc -std=c11 -Wall -Wextra -Werror -O2 -Itests/runtime_stubs -Isrc tests/roll3_main_host.c -o D:\peripheral_lab\build\roll3_main_host.exe
+
+exit_code=0
+COMMAND D:\peripheral_lab\build\roll3_main_host.exe
+TC-532 actual main: 3D-only startup, selftest/display failures, records init and game menu PASS
+
+exit_code=0
+COMMAND C:\Users\23396\AppData\Local\Programs\Python\Python312\python.exe -m ziglang cc -std=c11 -Wall -Wextra -Werror -O2 -Isrc src/roll3_records.c src/roll3_records_selftest.c tests/roll3_records_host.c -o D:\peripheral_lab\build\roll3_records_host.exe
+
+exit_code=0
+COMMAND D:\peripheral_lab\build\roll3_records_host.exe
+TC-531 only first valid completed run; no error/zero/limited score PASS
+TC-531 time sorting / falls tie-break / top ten cap PASS
+TC-531 restart reload / new boot run / coalesced generations alternate physical slots PASS
+TC-531 CRC/truncation recovery / write and read-back failure never claim saved PASS
+
+exit_code=0
+COMMAND C:\Users\23396\AppData\Local\Programs\Python\Python312\python.exe -m ziglang cc -std=c11 -Wall -Wextra -Werror -O2 -Itests/runtime_stubs -Isrc src/roll3_records.c tests/roll3_records_service_host.c -o D:\peripheral_lab\build\roll3_records_service_host.exe
+
+exit_code=0
+COMMAND D:\peripheral_lab\build\roll3_records_service_host.exe
+TC-531 background-only storage, pending/error/saved, concurrent score retention PASS
+
+exit_code=0
+COMMAND C:\Users\23396\AppData\Local\Programs\Python\Python312\python.exe -m ziglang cc -std=c11 -Wall -Wextra -Werror -O2 -Isrc src/roll3_physics.c src/roll3_mesh.c src/roll3_scene_level2.c src/roll3_scene.c src/roll3_scene_m4.c src/roll3_m4_selftest.c src/roll3_selftest.c src/roll3_session.c src/roll3_session_selftest.c tests/roll3_host.c -o D:\peripheral_lab\build\roll3_host.exe
+src/roll3_selftest.c:16:80: error: missing field 'mesh' initializer [-Werror,-Wmissing-field-initializers]
+   16 |         {{-4,-4,0},{-2,-2,2}},{{9,9,0},{10,10,2}},-3,NULL,NULL,0,false,NULL,0,0};
+      |                                                                                ^
+1 error generated.
+
+exit_code=1

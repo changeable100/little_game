@@ -1,0 +1,11 @@
+PASS compact footprint 10.770 x 10.220 m
+PASS two tight bends with orthogonal axes
+PASS both checkpoint meshes reuse exact first-level vertices and colors
+PASS all 20 drivable decks: no positive-area plan overlap (0.000000000 m2 maximum)
+PASS overview start/end advance upper-left to lower-right
+PASS widened 2.6m / 2.8m platforms and matching solid supports
+PASS second bend: two planar short ramps joined to a level 4.20m semicircle, exact seams
+PASS 379 route positions / 1516 visible sphere rays; continuous floor
+PASS 47 parts / 6162 non-degenerate exported triangles
+PASS GLB 2.0 buffer ranges and 47 nodes
+NOT TESTED physics traversal of this PC mesh; board port deferred by user

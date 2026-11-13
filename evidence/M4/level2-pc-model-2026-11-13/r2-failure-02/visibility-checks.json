@@ -1,0 +1,62 @@
+{
+  "camera": {
+    "yaw": -2.4,
+    "pitch": 0.8,
+    "distance": 9
+  },
+  "samples": 354,
+  "rays": 1416,
+  "blocked": [
+    {
+      "sample": 274,
+      "point": [
+        -4.0,
+        0.40312499999999996,
+        3.153125
+      ],
+      "ray": "right",
+      "part": "HOLE1_CORNER0"
+    },
+    {
+      "sample": 328,
+      "point": [
+        -1.5833333333333333,
+        -1.2,
+        1.0416666666666665
+      ],
+      "ray": "top",
+      "part": "HOLE2_LIP"
+    },
+    {
+      "sample": 329,
+      "point": [
+        -1.5125,
+        -1.2,
+        0.98125
+      ],
+      "ray": "top",
+      "part": "HOLE2_LIP"
+    },
+    {
+      "sample": 330,
+      "point": [
+        -1.4416666666666667,
+        -1.2,
+        0.9208333333333333
+      ],
+      "ray": "top",
+      "part": "HOLE2_LIP"
+    },
+    {
+      "sample": 331,
+      "point": [
+        -1.3708333333333333,
+        -1.2,
+        0.8604166666666667
+      ],
+      "ray": "top",
+      "part": "HOLE2_LIP"
+    }
+  ],
+  "floorErrors": []
+}

@@ -1,0 +1,17 @@
+COMMAND C:\Users\23396\AppData\Local\Programs\Python\Python312\python.exe -m ziglang cc --version
+clang version 18.1.6 (https://github.com/ziglang/zig-bootstrap 98bc6bf4fc4009888d33941daf6b600d20a42a56)
+Target: x86_64-unknown-windows-gnu
+Thread model: posix
+InstalledDir: D:/peripheral_lab
+
+exit_code=0
+COMMAND C:\Users\23396\AppData\Local\Programs\Python\Python312\python.exe -m ziglang cc -std=c11 -Wall -Wextra -Werror -O2 -Isrc src/roll3_physics.c src/roll3_mesh.c src/roll3_scene_level2.c src/roll3_scene.c src/roll3_scene_m4.c src/roll3_level2_selftest.c tests/roll3_level2_host.c -o D:\peripheral_lab\build\roll3_level2_host.exe
+
+exit_code=0
+COMMAND D:\peripheral_lab\build\roll3_level2_host.exe
+TC-533 current PC r4 mesh / BVH / stationary spawn PASS
+TC-533 both checkpoint contacts and indexed respawn PASS
+TC-533 real green top wins / airborne excluded / score frozen PASS
+Assertion failed: hit, file tests/roll3_level2_host.c, line 20
+
+exit_code=3221226505

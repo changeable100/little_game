@@ -1,0 +1,7 @@
+PASS SAVE / DIAGONAL_RETURN: top overlap 0.000000000 m2
+PASS WEST_TURN / DIAGONAL_RETURN: top overlap 0.000000000 m2
+PASS SAVE / WEST_TURN: top overlap 0.000000000 m2
+PASS 101 parts / 3515 non-degenerate exported triangles
+PASS GLB 2.0 buffer ranges and 101 nodes
+PASS exact-height checkpoint/return/west attachment; start tower horizontal gap >=0.4m
+NOT TESTED physics traversal of this PC mesh; board port deferred by user

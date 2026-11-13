@@ -1,0 +1,10 @@
+
+     Uart Download
+
+please input the serial port num:com8
+PASS bootloader.bin 0x12010000
+PASS main.bin 0x12020000
+PASS ftab.bin 0x12000000
+PASS launched from C: with D: images, hashes unchanged; stub only, no device access
+
+exit_code=0

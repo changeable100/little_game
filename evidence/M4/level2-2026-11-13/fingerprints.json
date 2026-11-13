@@ -1,0 +1,54 @@
+{
+  "baseline": "932a8d0998770aed3e52d507daa5f00b26cb8051",
+  "branch": "codex/roll3-map-b",
+  "host_pass_lines": 168,
+  "source": {
+    "src\\roll3_bend.h": "9bdb100f382e9871564a6005d519277997bd58e68cdbd7e6b357e494755ad92f",
+    "src\\roll3_camera_basis.h": "9629b08a2df5929da7e6a98c7568b9daff5bb228cb5f6841898274f40eabe689",
+    "src\\roll3_contract.h": "ef44fc1072605390940a603e9554199cd249981fd6aa187a02292e1da4535d21",
+    "src\\roll3_font.h": "7fe52fac32d1575da4089e61f810ac7929a5f5cf7c6710863b491bde94047ad6",
+    "src\\roll3_font_16.c": "b7696d724aacc1e956118aaa7559b97a321b0c3a90294604f2446d04ae180f42",
+    "src\\roll3_font_20.c": "6db4f7a8260140998faf2980d74cfe148090e30730bd005792a6a621cc56f79f",
+    "src\\roll3_font_28.c": "df6368f0dc45b504ad8cce9856f432ffe8063c3a875daa6101c51b52d2fdbe35",
+    "src\\roll3_m4_selftest.c": "3cbb553d9f4f2da5b8a31932fd2a732ad5e2c72bce6df61f5d495f66af0ff27c",
+    "src\\roll3_page.c": "d917dace74e69b4b3762996026325c4e6301148aee5a0d3c6d52b3f211ebe353",
+    "src\\roll3_page.h": "814f94bc71680317ff3fcb868259e79bfad4dcb643091c06c84da3e7bf7ff0b1",
+    "src\\roll3_physics.c": "b979ae5ea6002433342ebcc0505b1f2d5fdf5bba963c3dfc4d19b5a21b301e5b",
+    "src\\roll3_physics.h": "859abe0ad8d1f5311586bb91006bd6165f9627a23c7b59c3e29fa0007e53f48a",
+    "src\\roll3_renderer.c": "562c143c61709c1311a7925368042d0bfb86d87cb878360f24eca41547ffcc27",
+    "src\\roll3_renderer.h": "49870a0abc8b611b967fbaa78b827f9cf59149419f6b3123320ac374286f0446",
+    "src\\roll3_runtime.c": "f92f68a1ff42e09b56bdad74942f90fc49b34e9cd61bb512d67aaaa74048c69c",
+    "src\\roll3_runtime.h": "ddc8514e777fe011aa6c63e5e845cd5c77bab527461ff0e8c985029c385750d4",
+    "src\\roll3_scene.c": "7b9163486b77a5a8da964001daff51eac9a104bb87989ae3a5652e40da1ac4c0",
+    "src\\roll3_scene.h": "2c7369f452fa742011f4edadf71411c5d012f97917f76079b13c7d8aa0c639b3",
+    "src\\roll3_scene_m4.c": "7f74b9be553030e793490ecacb476655c5cbcb3bf664e2de9570546c0a4cc0ae",
+    "src\\roll3_selftest.c": "d3d294145e8d9d2359e824989358a5abf028a5029e744215b3867befb3e76631",
+    "src\\roll3_selftest.h": "a1d4be908d0e3562097bc0c406ccf6056bd337f85c2391bd5fa418201a46af53",
+    "src\\roll3_session.c": "caddc2fd5c50313e38a80da5f73c0a05b74f6c3c9ab5b83f1fb29f64ec51ab9d",
+    "src\\roll3_session.h": "51daf27c840b5f86b0b5bfd05ee1b9cafdc3ff503c1489a6d557d1d0c6b395f3",
+    "src\\roll3_session_selftest.c": "b082e1069063478796209888ec01f0c757b3515a69bfce8ebdf6a44918dc252a",
+    "src\\roll3_stage_art.h": "ed8474902bb3f3bb1006001cc51a01412a6c617518a984a9b94dbcfeae10753a",
+    "src\\roll3_view.c": "addf03d01aa1e084dc9e0baf2a80d0bd793f2c44f94b94715e0a481e9fcdc2e0",
+    "src\\roll3_view.h": "445cb1a6ad5107ffe3a8547a2c97d0ea822a85326b45d9ff3d17573ccb0adea7",
+    "tools\\generate_roll3_level2.py": "8fa07e1c463e1ed1106b8bccc98698a55ee14f2723ed60160f2d045383b31e3f"
+  },
+  "firmware": {
+    "project\\build_sf32lb52-lchspi-ulp_hcpu\\bootloader\\bootloader.bin": {
+      "bytes": 58496,
+      "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21"
+    },
+    "project\\build_sf32lb52-lchspi-ulp_hcpu\\ftab\\ftab.bin": {
+      "bytes": 11288,
+      "sha256": "ce661e2a25ba436711bb23e29d334e34924f8d4ea5ecad01957324726ab75ec2"
+    },
+    "project\\build_sf32lb52-lchspi-ulp_hcpu\\lcpu\\lcpu.bin": {
+      "bytes": 5364,
+      "sha256": "cbe461a1fb2ee5273b001ab8c787d2bb9ac2a94aab222496cc4c28e37c3a0a6a"
+    },
+    "project\\build_sf32lb52-lchspi-ulp_hcpu\\main.bin": {
+      "bytes": 1244504,
+      "sha256": "440eb4fc7f1acd8b672e0a121fd47994464fb40900193396765b89ef78984a93"
+    }
+  },
+  "physical_verification": "not performed; production entry remains M3"
+}

@@ -1,0 +1,7 @@
+PASS two builds byte-identical
+{
+  "model.json": "878e2aeda232d80b9a000f4c8c083c9c7d9c9e68ccaf21d46c5217f9b23e9b65",
+  "index.html": "95e54a51ed15f4a2fda2ab7e77c10cecfc51b50c96ce0082439ffedf1bc28cf8",
+  "level2-desktop.glb": "2c522a9316bdb1e24c022fee4b916b1614fbe44304bfdca9f87bce29ae7b206e",
+  "level2-desktop.obj": "3fecab0a29b81f96193ee9b42c0840dfe99268e632311efe6ff39d404e8f7482"
+}

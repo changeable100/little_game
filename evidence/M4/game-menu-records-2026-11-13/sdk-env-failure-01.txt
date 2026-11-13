@@ -1,0 +1,4 @@
+scons: Reading SConscript files ...
+ModuleNotFoundError: No module named 'building':
+  File "D:\peripheral_lab\project\SConstruct", line 9:
+    from building import *

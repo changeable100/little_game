@@ -1,0 +1,26 @@
+src\maze_contract.h
+src\maze_controller.c
+src\maze_controller.h
+src\maze_controller_selftest.c
+src\maze_controller_selftest.h
+src\maze_font.h
+src\maze_font_16.c
+src\maze_font_20.c
+src\maze_font_28.c
+src\maze_game.c
+src\maze_game.h
+src\maze_levels.c
+src\maze_levels.h
+src\maze_levels_selftest.c
+src\maze_levels_selftest.h
+src\maze_menu.c
+src\maze_menu.h
+src\maze_runtime.c
+src\maze_runtime.h
+src\maze_selftest.c
+src\maze_selftest.h
+src\maze_ui.c
+src\maze_ui.h
+src\maze_ui_runtime.c
+src\maze_ui_runtime.h
+Shared IMU service renamed, not removed.

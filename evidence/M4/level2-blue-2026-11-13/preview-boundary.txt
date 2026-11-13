@@ -1,0 +1,2 @@
+Dedicated M4 preview copy: build/m4-board-preview
+Only copied runtime/page world references select M4. Production sources/entry remain unchanged. Legacy demo/selftests remain M3.

@@ -1,0 +1,33 @@
+3D host view and production page adapter with fake runtime
+TC-526 monochrome 2x2 block glyphs/metrics, three sizes PASS
+TC-505 camera-center PASS
+TC-505 screen-right PASS
+TC-505 screen-forward PASS
+TC-505 near-guard PASS
+TC-526 framing-75pct PASS
+TC-526 vertical-75pct PASS
+TC-505 follow-translation PASS
+TC-505 ball-diameter-24px PASS
+TC-507 camera-sees-three-cube-faces PASS
+TC-507 antialias-rgb565-resolve PASS
+TC-509 edge-threshold-and-word-boundary PASS
+TC-516 play-edge-weight PASS
+TC-509 four-sample-resolve PASS
+TC-510 bounded-depth-rows PASS
+TC-506 camera-jitter-deadband PASS
+TC-506 camera-monotonic-follow PASS
+TC-506 camera-respawn-new-run PASS
+TC-501 perspective size, quaternion stripes, OBB slope axes, occlusion, clipping/canaries PASS
+TC-505 fallen checkpoint framing and immediate respawn focus PASS
+TC-506 invalid snapshot preserves camera PASS
+TC-507 three cube faces and subpixel edge coverage PASS
+TC-525 full 390x450 portrait scene, only clock/menu HUD and smaller buffers PASS
+TC-525 seven modal states, all product glyphs, 20 exits/external deletes and resource baseline PASS
+TC-527 English-only labels, printable glyph coverage, visible text widths and MENU hit area PASS
+TC-525 real action sink: pause waits for acknowledgement, duplicate guard, resume, checkpoint and recalibrate PASS
+TC-524 settlement reveal at 0/200/400/800ms, frozen score and return-to-PLAY selection hint PASS
+TC-524 close during animation, clean reentry and millisecond wrap PASS
+TC-528 M4 11 poses, 100/50 rows, guards and SDK pause/result PASS
+TC-533/534 actual level2 page and physical-replay poses, 100/50 rows, canaries PASS
+LVGL draw-buffer malloc attempts=0 largest=0 bytes (caller planes excluded)
+Host UI previews (simulated): D:\peripheral_lab\build\roll3-live-view

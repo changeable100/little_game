@@ -1,0 +1,10 @@
+User supplied console output (2026-11-13):
+PS C:\Users\23396> invoked D: preview uart_download.bat
+serial port num: 8
+com8
+[0x00] Connected success!
+[0x01] Download stub success!
+Error: Failed to parse file bootloader\bootloader.bin@0x12010000
+Caused by: 系统找不到指定的路径。 (os error 3)
+
+Interpretation: user-side serial/stub succeeded; image path resolution failed. No completed application flash or gameplay PASS supported.

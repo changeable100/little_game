@@ -1,0 +1,32 @@
+{
+  "build_tag": "m4-blue-preview-20261113",
+  "entry": "3D challenge directly selects M4 in isolated preview only",
+  "source": {
+    "src\\roll3_scene_m4.c": "f9fbaa5820611212e0dc355f26d93116e480e6d6ae6ac405c1053ad76eaecf31",
+    "tools\\generate_roll3_level2.py": "872636d00eaade39563ca2fb35fad17931ccf8ebb07ae2d22929a3fa5f304df7",
+    "tools\\build_roll3_m4_preview.py": "209a40a91e43dd62efb3d508334e073c97d8ac1c2b240d131611d4596f1b9fd9",
+    "build\\m4-board-preview\\src\\roll3_runtime.c": "296df3c0c9dc80606eafefdf72418e7564760bc6193700c77f5097f37ffc9027",
+    "build\\m4-board-preview\\src\\roll3_page.c": "82d32f3cb746f4f5708e70e763a76a6ce62af03e4f4dabd96b51f2ef56b99307"
+  },
+  "firmware": {
+    "build\\m4-board-preview\\project\\build_sf32lb52-lchspi-ulp_hcpu\\bootloader\\bootloader.bin": {
+      "bytes": 58496,
+      "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21"
+    },
+    "build\\m4-board-preview\\project\\build_sf32lb52-lchspi-ulp_hcpu\\ftab\\ftab.bin": {
+      "bytes": 11288,
+      "sha256": "7c3e6de681d49c8d811ebfbbece78fde33cf52d6ddad98eb1001bd1109688754"
+    },
+    "build\\m4-board-preview\\project\\build_sf32lb52-lchspi-ulp_hcpu\\lcpu\\lcpu.bin": {
+      "bytes": 5364,
+      "sha256": "cbe461a1fb2ee5273b001ab8c787d2bb9ac2a94aab222496cc4c28e37c3a0a6a"
+    },
+    "build\\m4-board-preview\\project\\build_sf32lb52-lchspi-ulp_hcpu\\main.bin": {
+      "bytes": 1244512,
+      "sha256": "036a405aabae190a3a27c2670db434e3681100f3eca56691a366ed5602de40f3"
+    }
+  },
+  "flashed": false,
+  "download_script_sha256": "92ca458df05530540622fc63f3b12ecc6710aef723d4e9eeaae397b3d84b07ad",
+  "download_path_fix": "cd /d and absolute WORK_PATH image arguments; fake sftool validation only"
+}

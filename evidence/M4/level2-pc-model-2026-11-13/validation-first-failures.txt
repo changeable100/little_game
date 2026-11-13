@@ -1,0 +1,4 @@
+Observed validation failures retained from tool output:
+1. assert cp['top']==bridge['top']==west['top']==4.65 -> AssertionError (seed float precision; actual mesh positions use 1um quantization).
+2. assert sum(x*x for x in normal)>1e-16 -> AssertionError: ('HOLE2_LEFT', 18). Eight sub-quantization clipped triangles collapsed after rounding; generator now drops them.
+Retest: validation.txt PASS, 3515 non-degenerate triangles.

@@ -1,0 +1,128 @@
+COMMAND C:\Users\23396\AppData\Local\Programs\Python\Python312\python.exe -m ziglang cc --version
+clang version 18.1.6 (https://github.com/ziglang/zig-bootstrap 98bc6bf4fc4009888d33941daf6b600d20a42a56)
+Target: x86_64-unknown-windows-gnu
+Thread model: posix
+InstalledDir: D:/peripheral_lab
+
+exit_code=0
+COMMAND C:\Users\23396\AppData\Local\Programs\Python\Python312\python.exe -m ziglang cc -std=c11 -Wall -Wextra -Werror -O2 -Itests/runtime_stubs -Isrc tests/roll3_main_host.c -o D:\peripheral_lab\build\roll3_main_host.exe
+
+exit_code=0
+COMMAND D:\peripheral_lab\build\roll3_main_host.exe
+TC-532 actual main: 3D-only startup, selftest/display failures, records init and game menu PASS
+
+exit_code=0
+COMMAND C:\Users\23396\AppData\Local\Programs\Python\Python312\python.exe -m ziglang cc -std=c11 -Wall -Wextra -Werror -O2 -Isrc src/roll3_records.c src/roll3_records_selftest.c tests/roll3_records_host.c -o D:\peripheral_lab\build\roll3_records_host.exe
+
+exit_code=0
+COMMAND D:\peripheral_lab\build\roll3_records_host.exe
+TC-531 only first valid completed run; no error/zero/limited score PASS
+TC-531 time sorting / falls tie-break / top ten cap PASS
+TC-531 restart reload / new boot run / coalesced generations alternate physical slots PASS
+TC-531 CRC/truncation recovery / write and read-back failure never claim saved PASS
+
+exit_code=0
+COMMAND C:\Users\23396\AppData\Local\Programs\Python\Python312\python.exe -m ziglang cc -std=c11 -Wall -Wextra -Werror -O2 -Itests/runtime_stubs -Isrc src/roll3_records.c tests/roll3_records_service_host.c -o D:\peripheral_lab\build\roll3_records_service_host.exe
+
+exit_code=0
+COMMAND D:\peripheral_lab\build\roll3_records_service_host.exe
+TC-531 background-only storage, pending/error/saved, concurrent score retention PASS
+
+exit_code=0
+COMMAND C:\Users\23396\AppData\Local\Programs\Python\Python312\python.exe -m ziglang cc -std=c11 -Wall -Wextra -Werror -O2 -Isrc src/roll3_physics.c src/roll3_scene.c src/roll3_scene_m4.c src/roll3_m4_selftest.c src/roll3_selftest.c src/roll3_session.c src/roll3_session_selftest.c tests/roll3_host.c -o D:\peripheral_lab\build\roll3_host.exe
+
+exit_code=0
+COMMAND D:\peripheral_lab\build\roll3_host.exe
+TC-501 scene-xyz-contract PASS
+TC-501 malformed-world PASS
+TC-501 stale-and-api-guards PASS
+TC-501 calibration-pause-restart-back PASS
+TC-502 stationary-2000-steps PASS
+TC-502 xyz-freeflight-orientation PASS
+TC-502 freefall-gravity PASS
+TC-502 elastic-face-tangent PASS
+TC-502 thin-wall-8mps PASS
+TC-502 rounded-edge PASS
+TC-502 rounded-corner PASS
+TC-502 rotated-box-normal PASS
+TC-502 ramp-natural-roll PASS
+TC-502 no-slip-preserves-energy PASS
+TC-502 friction-spinup PASS
+TC-502 rolling-resistance-dissipates PASS
+TC-502 repeated-elastic-energy PASS
+TC-502 multi-contact-corner PASS
+TC-501 checkpoint-fall-respawn PASS
+TC-501 goal-freeze PASS
+TC-502 invalid-input PASS
+TC-501 counters-and-exhaustion PASS
+TC-502 quaternion-normalization PASS
+TC-502 rounded-box-near-miss PASS
+TC-502 bounded-deep-contact PASS
+TC-502 linear-angular-speed-budget PASS
+TC-513 seven-deck-top-corners PASS
+TC-513 seam S-R1 PASS
+TC-513 seam R1-C1 PASS
+TC-513 seam C1-R2 PASS
+TC-513 seam R2-C2 PASS
+TC-513 seam C2-R3 PASS
+TC-513 seam R3-G PASS
+TC-513 checkpoint-goal-clearance PASS
+TC-513 continuous-six-seam-checkpoint-route PASS
+TC-506 level-coast-stops-without-energy-gain PASS
+TC-517 smooth banked bend geometry and flush ends PASS
+TC-517 curved outside rail contains the ball PASS
+TC-517 both bend joins cross in both directions PASS
+TC-517 continuous M2 checkpoint bend and goal PASS
+TC-517 auto respawn continues from checkpoint to M2 goal PASS
+TC-518 both M3 guide rails stop the ball PASS
+TC-518 M3 two turns landing checkpoint U bend and goal PASS
+TC-522 deeper narrow trough with flat flush joins PASS
+TC-519 both trough joins cross in both directions PASS
+TC-519 gravity returns ball from inner slope PASS
+TC-519 gravity returns ball from outer slope PASS
+TC-521 M3 5mps smooth floor keeps moving PASS
+TC-521 M3 7.5mps smooth floor keeps moving PASS
+TC-521 M3 fast negative-angle curve keeps moving PASS
+TC-521 M3 fast positive-angle curve keeps moving PASS
+TC-524 nine green points lock score and keep rolling PASS
+TC-523 airborne sidewall and pink approach do not win PASS
+TC-523 three entrance lanes reach goal PASS
+TC-523 three solid goal rails geometry PASS
+TC-523 goal guards contain nine 2mps impacts with win disabled PASS
+TC-523 goal selector guarded and legacy worlds unchanged PASS
+TC-524 rolling off green preserves settlement PASS
+TC-524 completion advances without IMU with bounded delays PASS
+TC-525 menu pause restores linear and angular motion PASS
+TC-525 menu return uses checkpoint zero or one PASS
+TC-528 M4 validation spawn and checkpoint PASS
+TC-528 both curved seam endpoints within 0.1mm PASS
+TC-528 five goal decks top contact and airborne guards PASS
+TC-528 five real guards at four speeds straight and oblique PASS
+TC-528 both bends four speeds and three approach angles PASS
+TC-528 solid tower geometry and 48 wall impacts PASS
+M4 continuous input route: time=37150ms falls=0 limited=0 checkpoint=1
+TC-528 continuous two bends two chutes checkpoint goal PASS
+TC-504 calibration-session-and-axes PASS
+TC-504 clock-wrap-catchup-heartbeat PASS
+TC-504 input-timeout-and-old-run PASS
+TC-506 gentle-input-and-full-uphill-range PASS
+TC-507 oblique-right-up-input PASS
+TC-508 first-sample-tilt-reverse-neutral PASS
+TC-511 running-input-faults-and-restart PASS
+TC-512 light-first-sample-medium-full-tilt PASS
+TC-514 midrange-and-diagonal-cap PASS
+TC-514 flat-neutral-brake PASS
+TC-514 slope-air-and-counter-tilt PASS
+TC-515 auto-start-at-600ms PASS
+TC-515 auto-checkpoint-fresh-wrap-and-counters PASS
+TC-515 manual-respawn-still-available PASS
+roll3 summary PASS failures=0
+
+exit_code=0
+COMMAND C:\Users\23396\AppData\Local\Programs\Python\Python312\python.exe -m ziglang cc -std=c11 -Wall -Wextra -Werror -O2 -Itests/runtime_stubs -Isrc src/roll3_physics.c src/roll3_scene.c src/roll3_scene_m4.c src/roll3_records.c src/roll3_session.c tests/roll3_runtime_host.c -o D:\peripheral_lab\build\roll3_runtime_host.exe
+
+exit_code=0
+COMMAND D:\peripheral_lab\build\roll3_runtime_host.exe
+Assertion failed: !roll3_runtime_busy(), file tests/roll3_runtime_host.c, line 180
+
+exit_code=3221226505

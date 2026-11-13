@@ -1,0 +1,1 @@
+PASS JSON / offline viewer / GLB / OBJ byte-identical after regeneration

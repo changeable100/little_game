@@ -1,0 +1,10 @@
+{
+  "tools\\build_m4_desktop_model.py": "d79670a5f44eddc37e20ec047c31023144fb76796cf8cf8564460d1870acf7a4",
+  "tools\\m4_desktop_layout.py": "92bbbaa64a8e4c25d9a996be25d18a6dca9d77d26c18382604505abc262a2c6c",
+  "tools\\check_m4_desktop_model.py": "19b30755a2501dd200116ffb1b1609cb988c460d26533343e64dc5835368b68f",
+  "tools\\m4_desktop_viewer.html": "7df88a4858c1a6d44402ee6c26904f38aa8a201c4c59bd7340eed1b7ff0cac08",
+  "models\\level2-desktop\\model.json": "a104ba1b8a0e0a405b0bb3a4e250a19a2ef4893ddcfdcc85a1ea0760e98fdefb",
+  "models\\level2-desktop\\index.html": "4d416ecae3f5c3706d564332dce83edfa9509a44dc7acc089e96528cf765d96f",
+  "models\\level2-desktop\\level2-desktop.glb": "b57d5c70e24ec731d078b4047ef1a91b20805b510f953bc30d3525402d423339",
+  "models\\level2-desktop\\level2-desktop.obj": "84d558f8ae8895bb306a46cb01032aa94cfe60feeb3c8ed2dfd32c71a64eb962"
+}

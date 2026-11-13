@@ -1,0 +1,14 @@
+{
+  "project\\build_sf32lb52-lchspi-ulp_hcpu\\main.bin": {
+    "bytes": 1068420,
+    "sha256": "b1af4b97cd7490699253575f6fd11c13ca4bbc8cccdc15ded848d68f79526858"
+  },
+  "project\\build_sf32lb52-lchspi-ulp_hcpu\\ftab\\ftab.bin": {
+    "bytes": 11288,
+    "sha256": "3d144145de6c54b2907feeb18b367ad10625a5c82c0b16ffa24562bce67cea53"
+  },
+  "project\\build_sf32lb52-lchspi-ulp_hcpu\\bootloader\\bootloader.bin": {
+    "bytes": 58496,
+    "sha256": "e59d70db44367d524fbb46a8a014ce0092462e86959d101a8e2e00ad27bb5e21"
+  }
+}

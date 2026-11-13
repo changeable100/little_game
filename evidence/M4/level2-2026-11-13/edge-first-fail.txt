@@ -1,0 +1,1 @@
+Assertion failed: total&&100u*matched>=99u*total, file tests/roll3_edge_compare.c, line 278

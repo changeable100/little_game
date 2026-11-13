@@ -1,0 +1,5 @@
+warning: in the working copy of 'tests/render.py', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'tests/run_roll3_sdk_view.py', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'tools/generate_maze_font.py', CRLF will be replaced by LF the next time Git touches it
+
+exit_code=0

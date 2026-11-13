@@ -1,0 +1,4 @@
+需求追踪：PRD 共 51 条需求。
+方案设计未覆盖需求：REQ-531, REQ-532
+测试报告未覆盖需求：REQ-530, REQ-531, REQ-532
+Combined REQ-530/531/532 shorthand was not parsed as three IDs; design identifiers expanded and actual completed results added before retest.

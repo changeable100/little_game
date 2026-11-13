@@ -1,0 +1,4 @@
+Observed real SDK LVGL fixture results:
+python tools/run_game_sdk_ui.py: TC-530 PASS, native home/help/empty/top10/error/unsaved views, text widths and 20 lifecycle rounds. Final full-screen sheet background retested PASS.
+python tools/run_game_sdk_ui.py --roll3-view: existing TC-501/505/506/507/509/510/516/524/525/526/527/528 PASS.
+All previews are synthetic host UI evidence, not physical display or real scores.

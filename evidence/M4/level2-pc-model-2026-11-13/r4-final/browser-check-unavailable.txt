@@ -1,0 +1,1 @@
+Current browser automation could not bind the previous tab or a new tab (not part of browser session). No r4 browser screenshot or browser interaction PASS is claimed. Current preview PNGs are rendered directly from actual exported geometry using tools/render_m4_desktop_model.py, with the same perspective and face lighting. Native game-menu PNGs are actual SDK LVGL host renders.

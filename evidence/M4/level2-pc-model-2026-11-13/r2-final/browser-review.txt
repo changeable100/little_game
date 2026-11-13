@@ -1,0 +1,1 @@
+Actual localhost browser review: whole/top/checkpoint/follow/goal views; all supports visible. Follow slider 720 and 955 changed ball/camera. Reset returned progress 0, 44 visible parts. Browser console errors: none. Persistent deliverable tab: http://127.0.0.1:8767/ . Screenshots are PC evidence, not hardware.
