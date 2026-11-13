@@ -1,0 +1,20 @@
+[
+  {
+    "archived_filename": "level2-public.jpg",
+    "source_original_filename": "codex-clipboard-dc171421-07ec-4e9b-ba92-4e7ce7ce7fd0.jpg",
+    "source_bytes": 9439861,
+    "source_sha256": "8ce33a7b51fbc5833bbaba5bbd1f445c8787c69095de4cd995f5345563bc68bd",
+    "public_bytes": 9419736,
+    "public_sha256": "f1aa28077e2815543db8b4e23038605ea62812d3100f372b4d4f5cfd0c9aa549",
+    "processing": "Removed original EXIF/XMP and ancillary APP metadata; retained only orientation and ICC color profile. JPEG image scan bytes unchanged; original retained locally in ignored build directory."
+  },
+  {
+    "archived_filename": "menu-public.jpg",
+    "source_original_filename": "codex-clipboard-f59921e3-9081-43d9-961d-a2e77e2165bd.jpg",
+    "source_bytes": 8668227,
+    "source_sha256": "2e91d417219c0cd63865405df3bfac7d1ba9ef514adf5ace470b3b3fd2831c7d",
+    "public_bytes": 8648516,
+    "public_sha256": "607c6117227894015c218d4c9d9d773e8a95bdaaed59446ed49067f1c38a15bf",
+    "processing": "Removed original EXIF/XMP and ancillary APP metadata; retained only orientation and ICC color profile. JPEG image scan bytes unchanged; original retained locally in ignored build directory."
+  }
+]

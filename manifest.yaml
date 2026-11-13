@@ -120,6 +120,11 @@ code:
   commit_range: A阶段二f4610d7与B已发布main e6bd646合并；本次合并版本未上板，HEAD见git log
   a_model_source: origin/feat/req-301-maze-model@9595000；模型实现源提交 77b15d3
 physical_verification:
+- item: TC-530 / TC-533 / TC-534 / TC-535 两关菜单与第二关负责人验收
+  required_action: 负责人烧录并验证当前第二关及菜单，回传实机证据
+  executed_at: 2026-11-13收到两张真实设备照片及负责人验证已通过确认，精确拍摄时刻未提供
+  evidence_path: evidence/M4/level2-port-2026-11-13/board-run01/analysis.md
+  agent_conclusion: 负责人明确确认验证已通过并授权提交推送；照片可见MARBLE RUN菜单及第二关00:19游玩、蓝白弯道和实体柱体/圆盘。按负责人确认记录本轮验收通过；未提供串口、独立Flash读回、定量帧时或断电前后榜单对照，不编造这些逐项数据。
 - item: TC-526 像素版真实错误页与字体不清楚反馈
   required_action: 回传像素版屏幕，核对字形和状态
   executed_at: 2026-11-12收到输入异常页原始照片
@@ -955,3 +960,16 @@ roll3_english_20261112:
   evidence: evidence/M4/roll3-english-2026-11-12/README.md
   fingerprint: evidence/M4/roll3-english-2026-11-12/firmware.json
   physical: 新英文未烧录验收；像素中文照片仅支持错误页显示/可读性不接受，输入异常原因缺串口待查
+
+roll3_level2_release_20261113:
+  requirements: REQ-528至REQ-535，含PC模型r4、同源第二关、PLAY选关与分关持久榜单
+  source: 本分支src和models/level2-desktop，当前生产两关版本
+  branch: codex/roll3-map-b
+  remote: https://github.com/changeable100/little_game.git
+  build_tag: levels-r4-20261113
+  firmware_bytes: 1172332
+  firmware_sha256: 69b911b8618462f302938aaea942473584cb459ba0c5f029e6058f7138d43c5d
+  software: 官方SDK构建、完整主机逻辑/运行时/榜单、真实SDK LVGL及42.705秒零掉落回放通过；54条严格追踪通过
+  evidence: evidence/M4/level2-port-2026-11-13/README.md
+  physical: 负责人回传两张设备照片并明确确认验证已通过，限定证据见physical_verification；无未提供的定量或断电逐项数据
+  publication: 负责人明确授权本次提交并推送到远程；功能与软件证据分别提交，硬件记录独立hw提交；实际提交和推送结果以Git历史与远程SHA核验为准
