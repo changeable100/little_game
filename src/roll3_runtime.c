@@ -1,6 +1,7 @@
 #include "roll3_runtime.h"
 #include "roll3_session.h"
 #include "roll3_scene.h"
+#include "roll3_records.h"
 #include "rtthread.h"
 
 static roll3_session_t session;
@@ -16,6 +17,11 @@ static struct {
     r3_action_kind_t action;
     r3_result_t result;
     bool occupied, page, pending, failed, have_sample;
+    bool new_session;
+    unsigned level;
+    bool ever_opened;
+    uint32_t last_open_run;
+    const r3_world_t *world;
 } mailbox;
 static bool ready;
 static uint32_t motion_token;
@@ -74,8 +80,17 @@ static void run_cycle(void)
     r3_action_kind_t action = mailbox.action;
     uint32_t run = mailbox.action_run;
     uint32_t heartbeat = mailbox.heartbeat;
+    bool new_session=mailbox.new_session;
+    const r3_world_t *selected_world=mailbox.world;
+    unsigned level=mailbox.level;
+    uint32_t selected_run=mailbox.snapshot.run;
+    mailbox.new_session=false;
     release();
     if (!occupied) return;
+    if(new_session){
+        if(roll3_session_init(&session,selected_world)!=R3_OK){acquire();mailbox.failed=true;mailbox.page=mailbox.occupied=false;release();return;}
+        session.game.s.run=selected_run;
+    }
 
     uint32_t now = now_ms();
     uint32_t cycle_started=now;
@@ -94,6 +109,8 @@ static void run_cycle(void)
                              now - heartbeat <= ROLL3_UI_TIMEOUT_MS);
         if(previous_state==R3_WON&&previous_run==session.game.s.run&&session.game.s.state==R3_WON)
             background_steps=session.game.s.revision-previous_revision;
+        /* Observe before a queued restart can replace the frozen WON score. */
+        roll3_records_observe_level(&session.game.s,level);
         if (pending) result = roll3_session_action(&session, action, run, now);
     } else if (session.game.s.state != R3_READY) {
         result = roll3_session_action(&session, R3_BACK, previous_run, now);
@@ -155,6 +172,7 @@ bool roll3_runtime_init(bool selftests_passed)
     if (!selftests_passed || roll3_session_init(&session, r3_demo_world()) != R3_OK)
         return false;
     mailbox.snapshot = session.game.s;
+    mailbox.world=r3_demo_world();mailbox.level=1;
     mailbox.have_sample = session.sequence != 0;
     mailbox.sample_stamp = session.stamp;
     if (rt_mutex_init(&lock, "r3_lock", RT_IPC_FLAG_PRIO) != RT_EOK) return false;
@@ -183,11 +201,26 @@ bool roll3_runtime_busy(void)
 
 bool roll3_runtime_open(void)
 {
+    return roll3_runtime_open_level(1);
+}
+bool roll3_runtime_open_level(unsigned level)
+{
     if (!ready) return false;
+    const r3_world_t *world=r3_level_world(level);
+    if(!world)return false;
     acquire();
     bool available = !mailbox.occupied && !mailbox.failed;
+    uint32_t next_run=mailbox.snapshot.run;
+    if(available&&mailbox.ever_opened&&next_run<=mailbox.last_open_run){
+        if(next_run>=LAB_ROLL3_SESSION_BIT-2)available=false;
+        else ++next_run;
+    }
     if (available) {
         mailbox.occupied = mailbox.page = true;
+        uint32_t run=next_run;mailbox.last_open_run=run;mailbox.ever_opened=true;
+        mailbox.world=world;mailbox.level=level;mailbox.new_session=true;
+        mailbox.snapshot=(r3_snapshot_t){.version=ROLL3_CONTRACT_VERSION,.run=run,.state=R3_READY,.position=world->spawn,.radius=R3_RADIUS,.orientation={1,0,0,0}};
+        mailbox.have_sample=false;
         mailbox.pending = false;
         mailbox.result = R3_OK;
         mailbox.cycle_max_ms=mailbox.steps_max=0;
@@ -236,7 +269,8 @@ void roll3_runtime_report_frame(uint32_t frames, uint32_t sample_age_ms,
 
 void roll3_runtime_report_open(int result,unsigned depth_rows)
 {
-    rt_kprintf("[roll3:open] result=%d depth_rows=%u build=m3-english-20261112 refresh_ms=33\n",result,depth_rows);
+    acquire();unsigned level=mailbox.level;release();
+    rt_kprintf("[roll3:open] level=%u result=%d depth_rows=%u build=levels-r4-20261113 refresh_ms=33\n",level,result,depth_rows);
 }
 
 bool roll3_runtime_submit(r3_action_kind_t kind, uint32_t run)

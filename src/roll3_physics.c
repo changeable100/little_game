@@ -1,5 +1,6 @@
 #include "roll3_physics.h"
 #include "roll3_bend.h"
+#include "roll3_mesh.h"
 #include <float.h>
 #include <math.h>
 #include <stddef.h>
@@ -142,12 +143,24 @@ static bool inside(r3_zone_t z,r3_vec_t p) {
     return p.x>=z.min.x&&p.x<=z.max.x&&p.y>=z.min.y&&p.y<=z.max.y&&p.z>=z.min.z&&p.z<=z.max.z;
 }
 r3_result_t r3_world_validate(const r3_world_t *w) {
-    if(!w||!w->boxes||!w->box_count||w->box_count>R3_MAX_BOXES||
+    if(!w||(!w->mesh&&(!w->boxes||!w->box_count))||(w->box_count&&!w->boxes)||w->box_count>R3_MAX_BOXES||
        !bounded(w->spawn)||!bounded(w->checkpoint_spawn)||!zone_valid(w->checkpoint)||
        !zone_valid(w->goal)||!isfinite(w->fall_z)||fabsf(w->fall_z)>100||
        w->spawn.z<=w->fall_z+R3_RADIUS||w->checkpoint_spawn.z<=w->fall_z+R3_RADIUS||
        !inside(w->checkpoint,w->checkpoint_spawn))return R3_INVALID;
-    if(w->goal_box_plus_one>w->box_count)return R3_INVALID;
+    if(w->goal_box_plus_one>w->box_count||w->extra_bend_count>R3_MAX_EXTRA_BENDS||
+       (w->extra_bend_count&&!w->extra_bends)||
+       (w->box_count<32&&(w->goal_boxes_mask>>w->box_count)))return R3_INVALID;
+    if(w->checkpoint_count>2||(w->checkpoint_count&&!w->checkpoints))return R3_INVALID;
+    for(unsigned i=0;i<w->checkpoint_count;++i)
+        if(!zone_valid(w->checkpoints[i].zone)||!bounded(w->checkpoints[i].spawn)||!inside(w->checkpoints[i].zone,w->checkpoints[i].spawn))return R3_INVALID;
+    if(w->mesh){
+        if(!r3_mesh_validate(w->mesh)||!isfinite(w->camera_pitch)||w->camera_pitch<.3f||w->camera_pitch>1.3f||!isfinite(w->camera_distance)||w->camera_distance<3||w->camera_distance>15)return R3_INVALID;
+        for(unsigned i=0;i<=w->checkpoint_count;++i){
+            r3_mesh_hit_t h=r3_mesh_nearest(w->mesh,i?w->checkpoints[i-1].spawn:w->spawn,R3_RADIUS+.001f);
+            if(h.found&&h.gap<-.00002f)return R3_INVALID;
+        }
+    }
     if(w->style){
         const r3_course_style_t *style=w->style;
         if(style->face_count>R3_MAX_ART_FACES||(style->face_count&&!style->faces)||
@@ -155,12 +168,13 @@ r3_result_t r3_world_validate(const r3_world_t *w) {
            style->light_tile>0xffffffu||!isfinite(style->skirt_z)||fabsf(style->skirt_z)>100)
             return R3_INVALID;
     }
-    if(w->bend){
-        if(!bend_valid(w->bend))return R3_INVALID;
+    for(unsigned bi=0;bi<r3_world_bend_count(w);++bi){
+        const r3_bend_t *bend=r3_world_bend(w,bi);
+        if(!bend_valid(bend))return R3_INVALID;
         r3_vec_t n;
         for(bend_surface_t i=BEND_FLOOR;i<BEND_SURFACES;++i)
-            if(bend_gap(w->bend,i,w->spawn,&n)<-SKIN||
-               bend_gap(w->bend,i,w->checkpoint_spawn,&n)<-SKIN)return R3_INVALID;
+            if(bend_gap(bend,i,w->spawn,&n)<-SKIN||
+               bend_gap(bend,i,w->checkpoint_spawn,&n)<-SKIN)return R3_INVALID;
     }
     for(unsigned i=0;i<w->box_count;i++) {
         const r3_box_t *b=&w->boxes[i];
@@ -213,7 +227,7 @@ r3_result_t r3_action(r3_game_t *g,const r3_action_t *a) {
         ++g->s.run;reset(g);
     }
     if(a->kind==R3_RESPAWN) {
-        g->s.position=g->s.checkpoint?g->world->checkpoint_spawn:g->world->spawn;
+        g->s.position=r3_world_respawn(g->world,g->s.checkpoint);
         g->s.orientation=(r3_quat_t){1,0,0,0};g->s.grounded=false;g->s.contacts=0;
         g->s.contact_normal=(r3_vec_t){0,0,0};
         g->pause_motion_saved=false;
@@ -247,7 +261,7 @@ r3_result_t r3_input_failed(r3_game_t *g, uint32_t run)
     return R3_OK;
 }
 
-typedef struct { bool found; float t; r3_vec_t normal; const r3_box_t *material; } hit_t;
+typedef struct { bool found; float t; r3_vec_t normal; const r3_box_t *material; uint16_t mesh_flags;} hit_t;
 /* Inflated AABB is only a broad phase; narrow phase is the rounded box. */
 static bool broad(r3_vec_t p,r3_vec_t d,r3_vec_t half) {
     float a[3]={p.x,p.y,p.z},v[3]={d.x,d.y,d.z},h[3]={half.x+R3_RADIUS,half.y+R3_RADIUS,half.z+R3_RADIUS};
@@ -270,7 +284,7 @@ static void candidate(hit_t *hit,const r3_box_t *b,r3_vec_t p,r3_vec_t d,float t
     if(dist<1e-9f||fabsf(dist-R3_RADIUS)>0.0002f)return;
     r3_vec_t n=mul(delta,1/dist);
     if(dot(d,n)>=-1e-8f)return;
-    hit->found=true;hit->t=t;hit->normal=world(b,n);hit->material=b;
+    hit->found=true;hit->t=t;hit->normal=world(b,n);hit->material=b;hit->mesh_flags=0;
 }
 static void root_candidate(hit_t *hit,const r3_box_t *b,r3_vec_t p,r3_vec_t d,float aa,float bb,float cc) {
     if(aa<1e-14f)return;
@@ -334,7 +348,14 @@ static void sweep_bend(hit_t *hit, const r3_bend_t *bend, bend_surface_t surface
     if(hit->found&&high>=hit->t)return;
     if(bend_gap(bend,surface,add(start,mul(delta,high)),&normal)==FLT_MAX||
         dot(delta,normal)>=-1e-8f)return;
-    *hit=(hit_t){true,high,normal,&bend_materials[surface]};
+    *hit=(hit_t){true,high,normal,&bend_materials[surface],0};
+}
+static const r3_box_t mesh_material={.restitution=.15f,.friction=.6f,.rolling_friction=.08f};
+static void mesh_contact(r3_game_t *g,uint16_t flags,r3_vec_t n){
+    if(n.z<=.25f)return;
+    if(flags&R3_MESH_GOAL)g->goal_touched=true;
+    unsigned cp=flags&R3_MESH_CP2?2:flags&R3_MESH_CP1?1:0;
+    if(cp>g->s.checkpoint&&cp<=g->world->checkpoint_count&&inside(g->world->checkpoints[cp-1].zone,g->s.position))g->s.checkpoint=cp;
 }
 
 static void mark_contact(r3_game_t *g,const r3_box_t *box,r3_vec_t n) {
@@ -342,7 +363,11 @@ static void mark_contact(r3_game_t *g,const r3_box_t *box,r3_vec_t n) {
     if(s->contacts<UINT8_MAX)++s->contacts;
     if(n.z>0.25f)s->grounded=true;
     s->contact_normal=n;
-    if(g->world->goal_box_plus_one&&box==&g->world->boxes[g->world->goal_box_plus_one-1]&&
+    bool goal=g->world->goal_box_plus_one&&box==&g->world->boxes[g->world->goal_box_plus_one-1];
+    if(g->world->goal_boxes_mask)
+        for(unsigned i=0;i<g->world->box_count;++i)
+            if((g->world->goal_boxes_mask&(1u<<i))&&box==&g->world->boxes[i])goal=true;
+    if(goal&&
        n.z>.25f&&dot(n,box->axis[2])>.25f&&
        dot(sub(s->position,box->center),box->axis[2])>=box->half.z-SKIN)
         g->goal_touched=true;
@@ -380,6 +405,14 @@ static void limited(r3_snapshot_t *s) {
 static void depenetrate(r3_game_t *g) {
     for(unsigned pass=0;pass<IMPACTS;pass++) {
         bool corrected=false;
+        if(g->world->mesh){
+            r3_mesh_hit_t h=r3_mesh_nearest(g->world->mesh,g->s.position,R3_RADIUS+2*SKIN);
+            if(h.found){
+                if(h.gap < -SKIN){g->s.position=add(g->s.position,mul(h.normal,SKIN-h.gap));impulse(g,&mesh_material,h.normal);corrected=true;}
+                else if(h.gap<=2*SKIN)mark_contact(g,&mesh_material,h.normal);
+                if(h.gap<=2*SKIN)mesh_contact(g,h.flags,h.normal);
+            }
+        }
         for(unsigned i=0;i<g->world->box_count;i++) {
             r3_vec_t n;float gap=separation(&g->world->boxes[i],g->s.position,&n);
             if(gap < -SKIN) {
@@ -387,10 +420,11 @@ static void depenetrate(r3_game_t *g) {
                 impulse(g,&g->world->boxes[i],n);corrected=true;
             } else if(gap<=2*SKIN)mark_contact(g,&g->world->boxes[i],n);
         }
-        if(g->world->bend){
+        for(unsigned bi=0;bi<r3_world_bend_count(g->world);++bi){
+            const r3_bend_t *bend=r3_world_bend(g->world,bi);
             for(bend_surface_t i=BEND_FLOOR;i<BEND_SURFACES;++i){
                 r3_vec_t n;
-                float gap=bend_gap(g->world->bend,i,g->s.position,&n);
+                float gap=bend_gap(bend,i,g->s.position,&n);
                 if(gap < -SKIN){
                     g->s.position=add(g->s.position,mul(n,SKIN-gap));
                     impulse(g,&bend_materials[i],n);corrected=true;
@@ -429,13 +463,22 @@ r3_result_t r3_step(r3_game_t *g,const r3_input_t *input,uint32_t dt_ms) {
     float remaining=g->goal_touched&&!g->world->finish_rolls?0:DT;
     for(unsigned impact=0;impact<IMPACTS&&remaining>1e-8f&&(!g->goal_touched||g->world->finish_rolls);impact++) {
         float span=remaining;
-        bool support=g->world->bend&&bend_support_move(g->world->bend,g->s.position,g->s.velocity,&span);
+        bool mesh_supported=r3_mesh_support_move(g->world->mesh,g->s.position,g->s.velocity,&span);
+        const r3_bend_t *supported=NULL;
+        for(unsigned bi=0;bi<r3_world_bend_count(g->world);++bi){
+            const r3_bend_t *b=r3_world_bend(g->world,bi);
+            if(bend_support_move(b,g->s.position,g->s.velocity,&span)){supported=b;break;}
+        }
         r3_vec_t delta=mul(g->s.velocity,span);
-        hit_t hit={false,1,{0,0,0},0};
+        hit_t hit={false,1,{0,0,0},0,0};
+        if(g->world->mesh){r3_mesh_hit_t h=r3_mesh_sweep(g->world->mesh,g->s.position,delta,mesh_supported);
+            if(h.found)hit=(hit_t){true,h.t,h.normal,&mesh_material,h.flags};}
         for(unsigned i=0;i<g->world->box_count;i++)sweep_box(&hit,&g->world->boxes[i],g->s.position,delta);
-        if(g->world->bend)
+        for(unsigned bi=0;bi<r3_world_bend_count(g->world);++bi){
+            const r3_bend_t *b=r3_world_bend(g->world,bi);
             for(bend_surface_t i=BEND_FLOOR;i<BEND_SURFACES;++i)
-                if(i!=BEND_FLOOR||!support)sweep_bend(&hit,g->world->bend,i,g->s.position,delta);
+                if(i!=BEND_FLOOR||b!=supported)sweep_bend(&hit,b,i,g->s.position,delta);
+        }
         if(!hit.found) {
             g->s.position=add(g->s.position,delta);remaining-=span;
             if(remaining>1e-8f)depenetrate(g);
@@ -443,14 +486,15 @@ r3_result_t r3_step(r3_game_t *g,const r3_input_t *input,uint32_t dt_ms) {
         }
         g->s.position=add(add(g->s.position,mul(delta,hit.t)),mul(hit.normal,SKIN));
         remaining-=span*hit.t;impulse(g,hit.material,hit.normal);
+        mesh_contact(g,hit.mesh_flags,hit.normal);
     }
     if(g->goal_touched&&!g->world->finish_rolls)remaining=0;
     if(remaining>1e-8f)limited(&g->s);
     depenetrate(g);cap_motion(&g->s);orientation(&g->s);
     if(!completed)g->s.elapsed_ms=UINT32_MAX-g->s.elapsed_ms<R3_STEP_MS?UINT32_MAX:g->s.elapsed_ms+R3_STEP_MS;
-    if(g->s.grounded&&inside(g->world->checkpoint,g->s.position))g->s.checkpoint=1;
+    if(!g->world->mesh&&g->s.grounded&&inside(g->world->checkpoint,g->s.position))g->s.checkpoint=1;
     if(!completed&&g->s.position.z<g->world->fall_z) {g->s.state=R3_FALLEN;g->s.falls=inc(g->s.falls);}
-    else if(!completed&&(g->world->goal_box_plus_one?g->goal_touched:
+    else if(!completed&&((g->world->mesh||g->world->goal_box_plus_one||g->world->goal_boxes_mask)?g->goal_touched:
         (g->s.grounded&&inside(g->world->goal,g->s.position))))g->s.state=R3_WON;
     if(g->s.state!=R3_RUNNING&&!(g->s.state==R3_WON&&g->world->finish_rolls))g->s.velocity=g->s.omega=(r3_vec_t){0,0,0};
     ++g->s.revision;return R3_OK;

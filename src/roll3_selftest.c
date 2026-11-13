@@ -1,4 +1,5 @@
 #include "roll3_selftest.h"
+#include "roll3_level2.h"
 #include "roll3_physics.h"
 #include "roll3_scene.h"
 #include "roll3_bend.h"
@@ -13,7 +14,7 @@ static const r3_input_t gravity={{0,0,-9.81f},true}, zero={{0,0,0},true};
 static const r3_box_t floor_box={{0,0,-0.2f},{20,20,0.2f},BASIS,0,0.6f,0,0x123456};
 static r3_world_t test_world(const r3_box_t *b,unsigned count) {
     r3_world_t w={b,count,{0,0,R3_RADIUS},{-3,-3,R3_RADIUS},
-        {{-4,-4,0},{-2,-2,2}},{{9,9,0},{10,10,2}},-3,NULL,NULL,0,false};
+        {{-4,-4,0},{-2,-2,2}},{{9,9,0},{10,10,2}},-3,NULL,NULL,0,false,NULL,0,0,NULL,NULL,0,0,0};
     return w;
 }
 static r3_result_t act(r3_game_t *g,r3_action_kind_t kind) {
@@ -769,7 +770,8 @@ static bool completed_session_gravity(void) {
     return s.game.s.position.x>before.x&&s.game.s.elapsed_ms==12000;
 }
 
-int r3_selftest_run(maze_test_report_t report) {
+int r3_m4_selftest(r3_test_report_t report);
+int r3_selftest_run(r3_test_report_t report) {
     int failures=0;
 #define RUN(name,expr) do {bool passed=(expr);if(!passed)++failures;if(report)report(name,passed);}while(0)
     RUN("TC-501 scene-xyz-contract",scene());
@@ -834,5 +836,5 @@ int r3_selftest_run(maze_test_report_t report) {
     RUN("TC-525 menu pause restores linear and angular motion",menu_pause_restore());
     RUN("TC-525 menu return uses checkpoint zero or one",menu_checkpoint_return());
 #undef RUN
-    return failures;
+    return failures+r3_m4_selftest(report)+r3_level2_selftest(report);
 }

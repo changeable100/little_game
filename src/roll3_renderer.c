@@ -1,5 +1,6 @@
 #include "roll3_renderer.h"
 #include "roll3_bend.h"
+#include "roll3_mesh.h"
 #include "roll3_camera_basis.h"
 #include "roll3_physics.h"
 #include <math.h>
@@ -43,7 +44,9 @@ r3_vec_t roll3_renderer_focus(const r3_snapshot_t *s,const r3_world_t *world)
         const r3_box_t *b=&world->boxes[world->goal_box_plus_one-1];
         return add(b->center,mul(b->axis[2],b->half.z+R3_RADIUS));
     }
-    r3_vec_t f=s->state==R3_FALLEN ? (s->checkpoint?world->checkpoint_spawn:world->spawn) : s->position;
+    if(s->state==R3_WON&&world->mesh&&world->finish_rolls)
+        return (r3_vec_t){(world->goal.min.x+world->goal.max.x)*.5f,(world->goal.min.y+world->goal.max.y)*.5f,(world->goal.min.z+world->goal.max.z)*.5f};
+    r3_vec_t f=s->state==R3_FALLEN ? r3_world_respawn(world,s->checkpoint) : s->position;
     f.z=fmaxf(R3_RADIUS,f.z);
     return f;
 }
@@ -81,7 +84,15 @@ typedef struct {
     const r3_edge_aa_t *edges;
     int first_row, end_row;
     const r3_course_style_t *style;
+    bool mesh_camera;
+    r3_vec_t eye;
+    float pitch_cos,pitch_sin;
 } r3_raster_t;
+static r3_vec_t camera_target(const r3_raster_t *t,r3_vec_t p,r3_vec_t focus){
+    if(!t->mesh_camera)return camera(p,focus);
+    r3_vec_t v=sub(sub(p,focus),t->eye);float f=R3_CAM_SIN*v.x+R3_CAM_COS*v.y;
+    return (r3_vec_t){R3_CAM_COS*v.x-R3_CAM_SIN*v.y,t->pitch_sin*f+t->pitch_cos*v.z,t->pitch_cos*f-t->pitch_sin*v.z};
+}
 
 enum { EDGE_SAMPLES = 4 };
 
@@ -282,7 +293,7 @@ static void triangle_view(r3_raster_t *target,r3_vec_t a,r3_vec_t b,r3_vec_t c,u
     clipped_triangle(target,pa,pb,pc,rgb(paint,light));
 }
 static void triangle(r3_raster_t *target,r3_vec_t a,r3_vec_t b,r3_vec_t c,uint32_t paint,r3_vec_t focus)
-{triangle_view(target,a,b,c,paint,camera(a,focus),camera(b,focus),camera(c,focus));}
+{triangle_view(target,a,b,c,paint,camera_target(target,a,focus),camera_target(target,b,focus),camera_target(target,c,focus));}
 static r3_vec_t rotate(r3_quat_t q,r3_vec_t p)
 {
     r3_vec_t u={q.x,q.y,q.z};r3_vec_t t=mul(cross(u,p),2);
@@ -338,7 +349,7 @@ static void draw_bend(r3_raster_t *target, const r3_bend_t *bend, r3_vec_t focus
     const float scale=r3_bend_longitudinal_scale(bend);
     const uint32_t rail=style?0xb964d1:0xa071bc;
     const uint32_t light_tile=style?style->light_tile:0xf2e6d5;
-    r3_vec_t eye=add(focus,eye_offset);
+    r3_vec_t eye=add(focus,target->eye);
     r3_vec_t floor[2][max_lanes+1];
     for(unsigned i=0;i+1<sizeof(ring)/sizeof(*ring);++i){
         r3_vec_t bottom[2][2],lip[2],rail_outer[2],rail_base[2];
@@ -382,11 +393,33 @@ static void draw_bend(r3_raster_t *target, const r3_bend_t *bend, r3_vec_t focus
 static void draw_scene(r3_raster_t *target,const r3_snapshot_t *s,
     const r3_world_t *world,r3_quat_t q,r3_vec_t focus)
 {
+    target->mesh_camera=world->mesh!=NULL;target->eye=eye_offset;
+    if(target->mesh_camera){
+        target->pitch_cos=cosf(world->camera_pitch);target->pitch_sin=sinf(world->camera_pitch);
+        float horizontal=world->camera_distance*target->pitch_cos;
+        target->eye=(r3_vec_t){-horizontal*R3_CAM_SIN,-horizontal*R3_CAM_COS,world->camera_distance*target->pitch_sin};
+    }
+    if(world->mesh){
+        const r3_mesh_t *m=world->mesh;
+        for(unsigned gi=0;gi<m->group_count;++gi){
+            const r3_mesh_group_t *group=&m->groups[gi];unsigned outside=63;
+            for(unsigned k=0;k<8&&outside;++k){r3_vec_t p={k&1?group->max.x:group->min.x,k&2?group->max.y:group->min.y,k&4?group->max.z:group->min.z};outside&=outside_planes(target,camera_target(target,p,focus));}
+            if(outside)continue;
+            for(unsigned i=group->first;i<(unsigned)group->first+group->count;++i){
+                const r3_mesh_face_t *f=&m->faces[i];if(!(f->flags&R3_MESH_DRAW))continue;
+                r3_vec_t a=camera_target(target,m->vertices[f->v[0]],focus),b=camera_target(target,m->vertices[f->v[1]],focus),c=camera_target(target,m->vertices[f->v[2]],focus);
+                if(!triangle_visible(target,a,b,c))continue;
+                float light=.35f+.65f*fabsf(dot(f->normal,(r3_vec_t){.3f,-.4f,.8660254f}));
+                clipped_triangle(target,a,b,c,rgb(f->color,light));
+            }
+        }
+    }
+
     static const unsigned faces[12][3]={{0,2,3},{0,3,1},{4,5,7},{4,7,6},{0,1,5},{0,5,4},
         {2,6,7},{2,7,3},{0,4,6},{0,6,2},{1,3,7},{1,7,5}};
     const r3_course_style_t *style=world->style;
     uint32_t light_tile=style?style->light_tile:0xf2e6d5;
-    r3_vec_t eye=add(focus,eye_offset);
+    r3_vec_t eye=add(focus,target->eye);
     for(unsigned i=0;i<world->box_count;++i){const r3_box_t *b=&world->boxes[i];r3_vec_t v[8];
         bool solid=style&&i>=style->solid_boxes_from;
         for(unsigned j=0;j<8;++j){v[j]=b->center;for(unsigned k=0;k<3;++k){float h=k==0?b->half.x:k==1?b->half.y:b->half.z;
@@ -394,7 +427,7 @@ static void draw_scene(r3_raster_t *target,const r3_snapshot_t *s,
         if(style&&!solid&&!(style->thin_road_mask&(1u<<i)))
             for(unsigned j=0;j<4;++j)v[j].z=fminf(v[j].z,style->skirt_z);
         unsigned outside=63;
-        for(unsigned j=0;j<8&&outside;++j)outside&=outside_planes(target,camera(v[j],focus));
+        for(unsigned j=0;j<8&&outside;++j)outside&=outside_planes(target,camera_target(target,v[j],focus));
         if(outside)continue;
         /* Road tops use checker cells; rails are drawn as solid boxes. */
         for(unsigned j=0;j<12;j+=2){
@@ -408,7 +441,7 @@ static void draw_scene(r3_raster_t *target,const r3_snapshot_t *s,
         /* The tall skirt can be visible while the entire checker top is off
          * screen. Cull that plane separately before generating the tile grid. */
         outside=63;
-        for(unsigned j=4;j<8&&outside;++j)outside&=outside_planes(target,camera(v[j],focus));
+        for(unsigned j=4;j<8&&outside;++j)outside&=outside_planes(target,camera_target(target,v[j],focus));
         if(outside)continue;
         unsigned nx=(unsigned)fmaxf(1,fminf(16,ceilf(b->half.x*4)));
         unsigned ny=(unsigned)fmaxf(1,fminf(16,ceilf(b->half.y*4)));
@@ -421,7 +454,7 @@ static void draw_scene(r3_raster_t *target,const r3_snapshot_t *s,
                 float u=-b->half.x+2*b->half.x*cx/(float)nx;
                 float v0=-b->half.y+2*b->half.y*(cy+row)/(float)ny;
                 r3_vec_t point=add(add(add(b->center,mul(b->axis[2],b->half.z)),mul(b->axis[0],u)),mul(b->axis[1],v0));
-                tile_rows[row][cx]=camera(point,focus);
+                tile_rows[row][cx]=camera_target(target,point,focus);
             }
             for(unsigned cx=0;cx<nx;++cx){
                 uint16_t paint=tile_colors[(cx+cy)%2];
@@ -432,7 +465,8 @@ static void draw_scene(r3_raster_t *target,const r3_snapshot_t *s,
             memcpy(tile_rows[0],tile_rows[1],sizeof(tile_rows[0]));
         }
     }
-    if(world->bend)draw_bend(target,world->bend,focus,style);
+    for(unsigned i=0;i<r3_world_bend_count(world);++i)
+        draw_bend(target,r3_world_bend(world,i),focus,style);
     if(style)
         for(unsigned i=0;i<style->face_count;++i){
             const r3_art_face_t *face=&style->faces[i];

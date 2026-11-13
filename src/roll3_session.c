@@ -1,6 +1,5 @@
 #include "roll3_session.h"
 #include "roll3_camera_basis.h"
-#include "maze_controller.h" /* Shared timing and calibration bounds. */
 #include <math.h>
 #include <string.h>
 
@@ -11,7 +10,7 @@ static bool newer(uint32_t value, uint32_t old)
 
 static bool fresh(const roll3_session_t *s, uint32_t now)
 {
-    return s->sequence && now - s->stamp <= MAZE_SAMPLE_MAX_AGE_MS;
+    return s->sequence && now - s->stamp <= ROLL3_SAMPLE_MAX_AGE_MS;
 }
 
 bool roll3_session_needs_motion(const roll3_session_t *s)
@@ -99,7 +98,7 @@ static void calibrate(roll3_session_t *s, const lab_motion_t *m, uint32_t now)
         return;
     }
     for (unsigned i = 0; i < 2; ++i) s->sum[i] += m->a[i];
-    if (++s->stable == MAZE_CALIBRATION_SAMPLES) {
+    if (++s->stable == ROLL3_CALIBRATION_SAMPLES) {
         for (unsigned i = 0; i < 2; ++i) s->bias[i] = s->sum[i] / s->stable;
         s->input = (r3_input_t){{0, 0, -9.81f}, true};
         s->anchor = now;
@@ -111,7 +110,7 @@ static void consume(roll3_session_t *s, const lab_motion_t *m, uint32_t now)
 {
     uint32_t run = s->game.s.run;
     if (!m || m->session != (run | LAB_ROLL3_SESSION_BIT) ||
-        !newer(m->sampled_ms, s->started) || now - m->sampled_ms > MAZE_SAMPLE_MAX_AGE_MS)
+        !newer(m->sampled_ms, s->started) || now - m->sampled_ms > ROLL3_SAMPLE_MAX_AGE_MS)
         return;
     bool valid = m->valid && m->sequence;
     for (unsigned i = 0; i < 3; ++i) {
@@ -209,7 +208,7 @@ void roll3_session_update(roll3_session_t *s, uint32_t now, const lab_motion_t *
             s->remainder = 0;
         }
     }
-    if (before == R3_CALIBRATING && now - s->started >= MAZE_CALIBRATION_TIMEOUT_MS) {
+    if (before == R3_CALIBRATING && now - s->started >= ROLL3_CALIBRATION_TIMEOUT_MS) {
         roll3_session_fail_input(s, ROLL3_INPUT_FAULT_CAL_TIMEOUT);
         return;
     }

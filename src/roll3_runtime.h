@@ -7,6 +7,7 @@ bool roll3_runtime_init(bool selftests_passed);
 /* Called by the UI thread. Busy includes a closing page's IMU cleanup. */
 bool roll3_runtime_busy(void);
 bool roll3_runtime_open(void);
+bool roll3_runtime_open_level(unsigned level);
 void roll3_runtime_close(void);
 /* Age is measured at snapshot read, UINT32_MAX if no sample is available. */
 bool roll3_runtime_read(r3_snapshot_t *snapshot, bool *pending, r3_result_t *result,

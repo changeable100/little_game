@@ -5,7 +5,8 @@
 #include <stdint.h>
 
 #define ROLL3_CONTRACT_VERSION 1u
-#define R3_MAX_BOXES 16u
+#define R3_MAX_BOXES 32u
+#define R3_MAX_EXTRA_BENDS 2u
 #define R3_MAX_ART_FACES 144u
 #define R3_STEP_MS 5u
 #define R3_RADIUS 0.20f
@@ -41,6 +42,8 @@ typedef struct {
     float skirt_z;
     uint32_t thin_road_mask;
 } r3_course_style_t; /* Immutable scenery and palette, independent of collision. */
+struct r3_mesh;
+typedef struct {r3_zone_t zone;r3_vec_t spawn;} r3_checkpoint_t;
 
 typedef struct {
     const r3_box_t *boxes; /* Immutable, borrowed for whole model lifetime. */
@@ -52,7 +55,21 @@ typedef struct {
     const r3_course_style_t *style;
     uint32_t goal_box_plus_one; /* Zero: legacy goal zone. Otherwise top contact wins. */
     bool finish_rolls; /* Lock score at WON but keep autonomous gravity motion. */
+    const r3_bend_t *extra_bends; /* Additional immutable half-annuli; legacy bend unchanged. */
+    unsigned extra_bend_count;
+    uint32_t goal_boxes_mask; /* Additional top-contact goal boxes, bit = box index. */
+    const struct r3_mesh *mesh; /* Optional immutable indexed collision/render mesh. */
+    const r3_checkpoint_t *checkpoints;
+    unsigned checkpoint_count;
+    float camera_pitch,camera_distance; /* Mesh course only; legacy camera unchanged. */
 } r3_world_t;
+static inline r3_vec_t r3_world_respawn(const r3_world_t *w,unsigned checkpoint)
+{return checkpoint&&w->checkpoint_count&&checkpoint<=w->checkpoint_count?w->checkpoints[checkpoint-1].spawn:checkpoint?w->checkpoint_spawn:w->spawn;}
+
+static inline unsigned r3_world_bend_count(const r3_world_t *w)
+{ return (w->bend ? 1u : 0u) + w->extra_bend_count; }
+static inline const r3_bend_t *r3_world_bend(const r3_world_t *w, unsigned i)
+{ return w->bend && i == 0 ? w->bend : &w->extra_bends[i - (w->bend ? 1u : 0u)]; }
 typedef enum { R3_OK=0, R3_INVALID=-1, R3_WRONG_STATE=-2,
                R3_STALE=-3, R3_EXHAUSTED=-4 } r3_result_t;
 typedef enum { R3_READY, R3_CALIBRATING, R3_RUNNING, R3_PAUSED,

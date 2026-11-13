@@ -306,7 +306,7 @@ static bool manual_respawn_before_timeout(void)
            s.game.s.state==R3_RUNNING&&!roll3_session_try_auto_respawn(&s,1345);
 }
 
-int roll3_session_selftest(maze_test_report_t report)
+int roll3_session_selftest(r3_test_report_t report)
 {
     bool axis = axes(), clock = timing(), life = lifecycle(), gentle=gentle_input(), basis=screen_basis();
     bool response=prompt_tilt_response(),diagnostics=diagnose_running_input();

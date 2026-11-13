@@ -7,6 +7,7 @@
 static lv_timer_t *refresh_timer;
 static uint32_t displayed_run, displayed_revision;
 static bool have_frame;
+static const r3_world_t *current_world;
 
 static struct {
     uint32_t start, previous, frames, sample_age, draw, gap;
@@ -55,8 +56,8 @@ static void refresh(lv_timer_t *timer)
     }
     if (!have_frame || snapshot.revision != displayed_revision) {
         uint32_t start = lv_tick_get();
-        roll3_view_render(&snapshot, r3_demo_world());
-        if (snapshot.state == R3_RUNNING || (snapshot.state==R3_WON&&r3_demo_world()->finish_rolls))
+        roll3_view_render(&snapshot, current_world);
+        if (snapshot.state == R3_RUNNING || (snapshot.state==R3_WON&&current_world->finish_rolls))
             record_frame(start, lv_tick_elaps(start), sample_age);
         else
             timing.active = false;
@@ -75,9 +76,12 @@ static void submit(r3_action_kind_t action)
     roll3_view_action_status(accepted, accepted ? R3_OK : R3_STALE);
 }
 
-int roll3_page_open(void)
+int roll3_page_open(void){return roll3_page_open_level(1);}
+int roll3_page_open_level(unsigned level)
 {
-    if (!roll3_runtime_open()) return -104;
+    const r3_world_t *world=r3_level_world(level);
+    if(!world||!roll3_runtime_open_level(level))return -104;
+    current_world=world;
     int result = roll3_view_create_live(submit, closed);
     if (result != 0) {
         roll3_runtime_close();

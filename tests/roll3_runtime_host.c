@@ -8,6 +8,11 @@
 static uint32_t clock_ms, held_token;
 static unsigned stops;
 static lab_motion_t publication;
+static r3_records_t records,records2;
+void roll3_records_observe_level(const r3_snapshot_t *s,unsigned level) {
+    assert(!lock.held); /* No Flash or UI work under the physics mailbox lock. */
+    (void)r3_records_observe_level(level==2?&records2:&records,s,level);
+}
 
 uint32_t rt_tick_get_millisecond(void) { return clock_ms; }
 void rt_thread_mdelay(int ms) { clock_ms += ms; }
@@ -168,8 +173,34 @@ int main(void)
     uint32_t score_time=snapshot.elapsed_ms;float ball_x=snapshot.position.x;
     publication.valid=false;clock_ms+=20;run_cycle();snapshot=read_page(false);
     assert(snapshot.state==R3_WON&&snapshot.elapsed_ms==score_time&&snapshot.position.x>ball_x&&motion_token==0);
+    assert(records.count==1&&records.rows[0].elapsed_ms==score_time);
     assert(mailbox.steps_max>=4&&session.input_fault==ROLL3_INPUT_FAULT_NONE);
-    roll3_runtime_close();run_cycle();assert(!roll3_runtime_busy());
+    assert(roll3_runtime_submit(R3_RESTART,snapshot.run));run_cycle();
+    assert(records.count==1&&read_page(false).state==R3_CALIBRATING);
+    roll3_runtime_close();run_cycle();held_token=0;run_cycle();assert(!roll3_runtime_busy());
     puts("TC-524 worker releases IMU, rolls behind result and closes cleanly PASS");
+    puts("TC-531 actual runtime first WON records frozen score; roll/restart do not duplicate PASS");
+    uint32_t old_run=mailbox.snapshot.run;
+    assert(!roll3_runtime_open_level(0)&&!roll3_runtime_open_level(3));
+    assert(roll3_runtime_open_level(2));assert(read_page(false).position.z==r3_level2_world()->spawn.z);
+    assert(roll3_runtime_submit(R3_START,read_page(false).run));run_cycle();assert(session.game.world==r3_level2_world());
+    publication.sequence=0;for(unsigned i=0;i<32;++i)advance_sample(20);
+    assert(read_page(false).state==R3_RUNNING&&read_page(false).run>old_run);
+    assert(!roll3_runtime_submit(R3_PAUSE,old_run));
+    session.game.s.position=r3_level2_world()->checkpoints[1].spawn;advance_sample(5);assert(read_page(false).checkpoint==2);
+    assert(roll3_runtime_submit(R3_PAUSE,read_page(false).run));run_cycle();
+    assert(roll3_runtime_submit(R3_RESPAWN,read_page(false).run));run_cycle();assert(session.game.world==r3_level2_world()&&read_page(false).checkpoint==2);
+    session.game.s.position=(r3_vec_t){(session.game.world->goal.min.x+session.game.world->goal.max.x)*.5f,(session.game.world->goal.min.y+session.game.world->goal.max.y)*.5f,.8f};
+    advance_sample(5);assert(read_page(false).state==R3_WON&&records2.count==1&&records2.rows[0].level==2&&records.count==1);
+    held_token=0;roll3_runtime_close();run_cycle();assert(!roll3_runtime_busy());
+    assert(roll3_runtime_open_level(1));run_cycle();assert(session.game.world==r3_demo_world()&&read_page(false).state==R3_READY);
+    roll3_runtime_close();run_cycle();
+    for(unsigned i=0;i<20;++i){
+        uint32_t stale=mailbox.last_open_run;unsigned level=i%2+1;
+        assert(roll3_runtime_open_level(level)&&read_page(false).run>stale);
+        assert(!roll3_runtime_submit(R3_START,stale));run_cycle();assert(session.game.world==r3_level_world(level));
+        roll3_runtime_close();run_cycle();assert(!roll3_runtime_busy());
+    }
+    puts("TC-534/535 actual runtime level switching / stale run / checkpoint2 / independent score PASS");
     return 0;
 }

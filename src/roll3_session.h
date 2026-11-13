@@ -4,6 +4,9 @@
 #include "lab_game.h"
 #include "roll3_physics.h"
 
+#define ROLL3_CALIBRATION_SAMPLES 32u
+#define ROLL3_CALIBRATION_TIMEOUT_MS 5000u
+#define ROLL3_SAMPLE_MAX_AGE_MS 100u
 #define ROLL3_UI_TIMEOUT_MS 750u
 #define ROLL3_CATCHUP_MS 250u
 #define ROLL3_AUTO_RESPAWN_MS 600u

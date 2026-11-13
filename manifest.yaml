@@ -12,10 +12,30 @@ dev_agent:
 requirements:
   prd_path: docs/01-需求规格说明.md
   hardware_constraints_ref: README.md；黄山派 SF32LB52 / 390x450 / SiFli SDK v2.5.1
-  source_contract: P0本地工作树为MAZE_CONTRACT_VERSION v2，新增pause_reason/interrupted_ms，几何仍二维；原v1模型从origin/feat/req-301-maze-model@9595000选择性接入，基于77b15d3；未提交版本不冒称已发布
+  source_contract: 当前生产为ROLL3_CONTRACT_VERSION 1，旧2D迷宫按负责人要求删除；3D共用IMU服务保留，第二关当前r4已同源移植且PLAY可选择两关，真机待验证；未提交修改不冒称已发布
 design:
   architecture_doc_path: docs/02-方案设计说明.md
   key_decisions:
+  - decision: ADR-0021 当前r4同源网格移植和PLAY两关选择
+    alternatives_considered: 旧拼盒地图无法忠实表示当前尖脊和短坡外弧
+    rationale: 用户明确先移植第二关再验证，显示和碰撞共用同源数据
+    adr: docs/adr/0021-level2-mesh-port-and-level-selection.md
+    decided_by: 负责人2026-11-13明确请求
+  - decision: ADR-0020 3D游戏菜单、删除2D及持久本机前十名
+    alternatives_considered: 文件系统方案需额外挂载；独立Flash分区需配置变更
+    rationale: 用户选择断电保留，复用SDK已启用的带锁键值存储和独立应用键
+    adr: docs/adr/0020-roll3-product-menu-and-persistent-records.md
+    decided_by: 负责人2026-11-13请求并确认关机后保留
+  - decision: ADR-0019 电脑端整关建模先于移植
+    alternatives_considered: 边修改固件边用跟球截图确认，已被负责人否决
+    rationale: 截图暴露交接穿插，先看清完整模型与接缝再做物理适配
+    adr: docs/adr/0019-roll3-pc-model-first.md
+    decided_by: 负责人2026-11-13明确要求
+  - decision: ADR-0018 完整第二关双弯双陡降
+    alternatives_considered: 单弯或折线近似会遗漏完整录像的核心结构
+    rationale: 负责人纠正二选一并明确要求开始落实完整路线
+    adr: docs/adr/0018-roll3-complete-second-course.md
+    decided_by: 负责人2026-11-13
   - decision: ADR-0017 满屏构图缩小与粉紫像素界面
     alternatives_considered: B保留柔和圆角并缩小控件、降低对比，颗粒差异仍在
     rationale: 负责人认为场景放大、计时菜单和结算过于清晰而脱离游戏，选择块状字形/阶梯轮廓/硬边阴影

@@ -163,7 +163,7 @@ static void set_mode(modal_t wanted) {
     else if(wanted==MODAL_RESULT){
         text(title,"LEVEL CLEAR!");lv_obj_set_y(title,36);text(info,"YOUR TIME");lv_obj_set_y(info,80);lv_obj_set_height(info,26);
         visible(score,true);visible(hint,true);visible(badge,true);
-        text(hint,"MORE LEVELS SOON");text(captions[0],"NEXT LEVEL");text(captions[1],"EXIT");
+        text(hint,"PLAY TO PICK LEVEL");text(captions[0],"");visible(buttons[0],false);text(captions[1],"EXIT");
         lv_obj_set_y(buttons[0],168);lv_obj_set_y(buttons[1],222);result_progress=257;
     }
     controls();

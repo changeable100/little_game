@@ -5,6 +5,7 @@
 
 /* LVGL owner only. */
 int roll3_page_open(void);
+int roll3_page_open_level(unsigned level);
 void roll3_page_close(void);
 
 #endif

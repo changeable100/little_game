@@ -48,7 +48,7 @@ static void full_reference(const r3_snapshot_t *s,const r3_world_t *world)
 {
     for(unsigned i=0;i<EDGE_SAMPLES;++i){
         r3_raster_t target={
-            .color=full_color[i],.depth=full_depth,
+            .color=full_color[i],.depth=full_depth,.style=world->style,
             .sample_x=i%2?.75f:.25f,.sample_y=i/2?.75f:.25f
         };
         clear_target(&target);
@@ -242,8 +242,46 @@ static void m3_style_buffers(void)
     puts("TC-518 M3 scenery 100/50-row output identity and guards PASS");
 }
 
+static void m4_buffers(void)
+{
+    const r3_world_t *world=r3_m4_world();
+    unsigned total=0,matched=0;
+    static const float points[][3]={{0,0,6},{2,5,5.35f},{4,0,4.85f},
+        {0,-1.05f,4.85f},{-2,0,4.85f},{-4.7f,-1.7f,4.425f},{-.35f,-3.4f,3.7f},
+        {.8f,-3.4f,3.066f},{3.1f,-3.4f,2.3f},{3.1f,-1.3f,1.624f},{3.1f,1.5f,.8f}};
+    double play_ms=0,bare_ms=0;
+    r3_course_style_t plain=*world->style;plain.face_count=0;plain.faces=NULL;
+    r3_world_t bare=*world;bare.style=&plain;
+    for(unsigned k=0;k<sizeof(points)/sizeof(*points);++k){
+        float u=points[k][0],v=points[k][1];
+        r3_snapshot_t pose={.version=1,.radius=R3_RADIUS,.state=R3_RUNNING,.orientation={1,0,0,0},
+            .position={-u*R3_M1_COS+v*R3_M1_SIN,u*R3_M1_SIN+v*R3_M1_COS,points[k][2]}};
+        double start=time_ms();
+        assert(roll3_renderer_render_play(baseline,regular+1,100,&pose,&bare,NULL)==0);
+        bare_ms+=time_ms()-start;
+        start=time_ms();
+        assert(roll3_renderer_render_play(banded,regular+1,100,&pose,world,NULL)==0);
+        play_ms+=time_ms()-start;
+        assert(roll3_renderer_render_play(local+1,compact+1,50,&pose,world,NULL)==0);
+        assert(memcmp(banded,local+1,sizeof(banded))==0);
+        full_reference(&pose,world);
+        assert(roll3_renderer_render_edges(local+1,regular+1,100,&pose,world,NULL,&edges)==0);
+        memcpy(baseline,local+1,sizeof(baseline));
+        assert(roll3_renderer_render_edges(local+1,compact+1,50,&pose,world,NULL,&edges)==0);
+        assert(memcmp(baseline,local+1,sizeof(baseline))==0);
+        for(unsigned y=0;y<R3_VIEW_H;++y)for(unsigned x=0;x<R3_VIEW_W;++x)
+            if(edges.mask[y][x/32]&(1u<<(x%32))){++total;matched+=close_color(local[1+y*R3_VIEW_W+x],reference[y*R3_VIEW_W+x]);}
+        check_guards();
+        assert(regular[0]==0xdada&&regular[sizeof(regular)/sizeof(*regular)-1]==0x1cad);
+        assert(compact[0]==0xdada&&compact[sizeof(compact)/sizeof(*compact)-1]==0x1cad);
+    }
+    assert(total&&100u*matched>=99u*total);
+    printf("TC-528 M4 edge quality %u/%u, 100/50 rows and tail guards PASS; mean host play ms bare=%.3f scenery=%.3f\n",matched,total,bare_ms/11,play_ms/11);
+}
+
 int main(int argc,char **argv)
 {
+    setvbuf(stdout,NULL,_IONBF,0);
     (void)argv;
     const r3_world_t *world=r3_m1_world();
     local[0]=0x7be1;local[R3_VIEW_PIXELS+1]=0xc473;
@@ -335,5 +373,6 @@ int main(int argc,char **argv)
     m1_motion(world,argc>1);
     m2_curve_buffers();
     m3_style_buffers();
+    m4_buffers();
     return 0;
 }

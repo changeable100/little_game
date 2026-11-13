@@ -17,6 +17,7 @@
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 static uint16_t color[R3_VIEW_PIXELS+2],depth[R3_VIEW_PIXELS+2],saved[R3_VIEW_PIXELS],aa[R3_VIEW_PIXELS+2];
@@ -63,11 +64,13 @@ static bool live_open, live_pending;
 static unsigned requests, closes;
 static r3_action_kind_t last_action;
 
-bool roll3_runtime_open(void)
+bool roll3_runtime_open(void){return roll3_runtime_open_level(1);}
+bool roll3_runtime_open_level(unsigned level)
 {
+    if(!r3_level_world(level))return false;
     if (live_open) return false;
     live_snapshot = (r3_snapshot_t){.version = ROLL3_CONTRACT_VERSION, .radius = R3_RADIUS,
-        .position = r3_demo_world()->spawn, .orientation = {1, 0, 0, 0}};
+        .position = r3_level_world(level)->spawn, .orientation = {1, 0, 0, 0}};
     live_pending = false;
     return live_open = true;
 }
@@ -396,12 +399,12 @@ int main(void)
         char file[80];snprintf(file,sizeof(file),"IMMERSIVE-RESULT-%03u.ppm",times[i]);screenshot(file);
     }
     assert(lv_obj_get_y(result_card)<start_y&&old_opacity==255);
-    assert(find(lv_layer_top(),"00:12.34")&&find(lv_layer_top(),"MORE LEVELS SOON"));
-    sent=requests;click("NEXT LEVEL");assert(requests==sent);
+    assert(find(lv_layer_top(),"00:12.34")&&find(lv_layer_top(),"PLAY TO PICK LEVEL"));
+    sent=requests;assert(!find(lv_layer_top(),"NEXT LEVEL"));assert(requests==sent);
     lv_tick_inc(1000);lv_timer_handler();assert(lv_obj_get_style_text_opa(result_title,LV_PART_MAIN)==255);
     assert(find(lv_layer_top(),"00:12.34"));
     click("EXIT");assert(!live_open&&!buffer_live);
-    puts("TC-524 settlement reveal at 0/200/400/800ms, frozen score, no replay and disabled next-level PASS");
+    puts("TC-524 settlement reveal at 0/200/400/800ms, frozen score and return-to-PLAY selection hint PASS");
 
     assert(roll3_page_open()==0);publish(R3_RUNNING);live_snapshot.elapsed_ms=7000;publish(R3_WON);
     lv_tick_inc(200);roll3_view_tick();lv_obj_delete(lv_obj_get_child(lv_layer_top(),-1));
@@ -414,6 +417,42 @@ int main(void)
     click("EXIT");roll3_page_close();
     assert(!live_open&&!buffer_live&&objects(lv_layer_top())==base&&timers()==clock_base);
     puts("TC-524 close during animation, clean reentry and millisecond wrap PASS");
+    const r3_world_t *m4=r3_m4_world();
+    static const float m4_poses[][3]={{0,0,6},{2,5,5.35f},{4,0,4.85f},
+        {0,-1.05f,4.85f},{-2,0,4.85f},{-4.7f,-1.7f,4.425f},{-.35f,-3.4f,3.7f},
+        {.8f,-3.4f,3.066f},{3.1f,-3.4f,2.3f},{3.1f,-1.3f,1.624f},{3.1f,1.5f,.8f}};
+    for(unsigned i=0;i<sizeof(m4_poses)/sizeof(*m4_poses);++i){
+        assert(roll3_view_create()==0);
+        s=(r3_snapshot_t){.version=1,.run=i+1,.radius=R3_RADIUS,.orientation={1,0,0,0},
+            .state=R3_RUNNING,.position=from_uv(-m4_poses[i][0],-m4_poses[i][1],m4_poses[i][2])};
+        roll3_view_render(&s,m4);glyphs(lv_layer_top());
+        char file[64];snprintf(file,sizeof(file),"M4-%02u.ppm",i);screenshot(file);
+        assert(roll3_renderer_render_edges(color+1,depth+1,100,&s,m4,NULL,NULL)==0);
+        memcpy(saved,color+1,sizeof(saved));
+        assert(roll3_renderer_render_edges(color+1,depth+1,50,&s,m4,NULL,NULL)==0);
+        assert(memcmp(saved,color+1,sizeof(saved))==0);
+        assert(color[0]==0xabcd&&color[R3_VIEW_PIXELS+1]==0xabcd);
+        roll3_view_destroy();
+    }
+    assert(roll3_view_create()==0);
+    s.state=R3_PAUSED;roll3_view_render(&s,m4);screenshot("M4-PAUSED.ppm");
+    s.state=R3_WON;roll3_view_render(&s,m4);lv_tick_inc(800);roll3_view_tick();screenshot("M4-RESULT.ppm");
+    roll3_view_destroy();
+    puts("TC-528 M4 11 poses, 100/50 rows, guards and SDK pause/result PASS");
+    assert(roll3_page_open_level(2)==0);assert(live_snapshot.position.z==r3_level2_world()->spawn.z);publish(R3_RUNNING);screenshot("LEVEL2-PAGE.ppm");click("MENU");publish(R3_PAUSED);click("EXIT");assert(!live_open&&!buffer_live);
+    for(unsigned i=0;i<20;++i){assert(roll3_page_open_level(i%2+1)==0);publish(R3_RUNNING);click("MENU");publish(R3_PAUSED);click("EXIT");assert(!live_open&&!buffer_live&&objects(lv_layer_top())==base&&timers()==clock_base);}
+    const char *pose_path=getenv("ROLL3_LEVEL2_POSES");assert(pose_path);FILE *physics_poses_file=fopen(pose_path,"r");assert(physics_poses_file);
+    unsigned pi=0;while(1){unsigned state,cp,ms;float x,y,z,qw,qx,qy,qz;
+        int got=fscanf(physics_poses_file,"%u,%u,%u,%f,%f,%f,%f,%f,%f,%f",&ms,&state,&cp,&x,&y,&z,&qw,&qx,&qy,&qz);if(got!=10)break;
+        s=(r3_snapshot_t){.version=1,.run=1000+pi,.radius=R3_RADIUS,.orientation={qw,qx,qy,qz},.state=(r3_state_t)state,.position={x,y,z},.elapsed_ms=ms,.checkpoint=cp};
+        assert(roll3_view_create()==0);roll3_view_render(&s,r3_level2_world());glyphs(lv_layer_top());
+        char file[64];snprintf(file,sizeof(file),"LEVEL2-%02u.ppm",pi);screenshot(file);
+        assert(roll3_renderer_render_edges(color+1,depth+1,100,&s,r3_level2_world(),NULL,NULL)==0);memcpy(saved,color+1,sizeof(saved));
+        assert(roll3_renderer_render_edges(color+1,depth+1,50,&s,r3_level2_world(),NULL,NULL)==0);assert(!memcmp(saved,color+1,sizeof(saved)));
+        assert(color[0]==0xabcd&&color[R3_VIEW_PIXELS+1]==0xabcd&&depth[0]==0xabcd&&depth[R3_VIEW_PIXELS+1]==0xabcd);
+        roll3_view_destroy();++pi;
+    }fclose(physics_poses_file);assert(pi>=10);
+    puts("TC-533/534 actual level2 page and physical-replay poses, 100/50 rows, canaries PASS");
     printf("LVGL draw-buffer malloc attempts=%u largest=%lu bytes (caller planes excluded)\n",draw_attempts,(unsigned long)largest_draw);
     assert(draw_attempts==0);
     return 0;
