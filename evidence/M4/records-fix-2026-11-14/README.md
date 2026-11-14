@@ -11,3 +11,6 @@
 - firmware-fingerprints.json及source-fingerprints.json对应最终固件与源码；course-check.txt保存课程检查历史问题。构建标记records-fix-20261114。
 
 没有本版烧录/通关/断电测试。此前未保存且已离开会话的成绩没有历史来源，不能凭空补录；请新固件重新完成一局再验证。RAM待存成绩在真正写后读回成功前仍会因断电丢失，界面不会提前显示SAVED ON THIS DEVICE。
+
+
+后续验收：负责人明确确认“现在没问题了”并要求推送，见board-confirmation.md；本问题按负责人确认通过。上面的待板测描述为交付时记录，本次没有新增照片、串口或独立断电逐项对照。

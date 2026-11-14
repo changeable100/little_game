@@ -120,6 +120,11 @@ code:
   commit_range: A阶段二f4610d7与B已发布main e6bd646合并；本次合并版本未上板，HEAD见git log
   a_model_source: origin/feat/req-301-maze-model@9595000；模型实现源提交 77b15d3
 physical_verification:
+- item: TC-536 排行榜修复负责人验收确认
+  required_action: 修复后实机复测通关入榜并反馈结果
+  executed_at: 2026-11-14收到负责人文字确认，精确操作时刻未提供
+  evidence_path: evidence/M4/records-fix-2026-11-14/board-confirmation.md
+  agent_conclusion: 负责人明确表示现在没问题并授权推送GitHub，按负责人确认记录本问题验收通过；本次无新增照片/串口/独立断电对照，不编造逐项数据。
 - item: TC-530 / TC-533 / TC-534 / TC-535 两关菜单与第二关负责人验收
   required_action: 负责人烧录并验证当前第二关及菜单，回传实机证据
   executed_at: 2026-11-13收到两张真实设备照片及负责人验证已通过确认，精确拍摄时刻未提供
@@ -981,7 +986,7 @@ roll3_records_fix_20261114:
   build_tag: records-fix-20261114
   evidence: evidence/M4/records-fix-2026-11-14/README.md
   software: 完整主机及生产存储适配器初始化恢复/双关重载、原生SDK榜单界面回归通过
-  physical: 当前修复版待通关入榜及断电重启新证据，上轮整体通过不替代该子项
+  physical: 负责人本轮明确确认现在没问题并授权推送，本问题验收通过；本次无新增照片/串口/独立断电逐项对照，见board-confirmation.md
   firmware_bytes: 1174940
   firmware_sha256: 982e58a23bea9cdafce4336b9bb5fed98a2a3332248ca0216f11afcf731b630c
   build_result: 官方SDK最终构建通过，sdk-final.txt
