@@ -19,12 +19,13 @@ int r3_records_selftest(void (*report)(const char *,bool)) {
     r3_snapshot_t s={.version=ROLL3_CONTRACT_VERSION,.run=1,.state=R3_RUNNING,.elapsed_ms=1000};
     CHECK(!r3_records_observe(&t,&s));s.state=R3_ERROR;CHECK(!r3_records_observe(&t,&s));
     s.state=R3_WON;s.elapsed_ms=0;CHECK(!r3_records_observe(&t,&s));
-    s.run=2;s.elapsed_ms=2000;s.limited_steps=1;CHECK(!r3_records_observe(&t,&s));
+    s.run=2;s.elapsed_ms=2000;s.limited_steps=1;s.limited=true;CHECK(r3_records_observe(&t,&s));
+    CHECK(t.count==1);memset(&t,0,sizeof(t));s.limited=false;
     s.run=3;s.limited_steps=0;s.error=R3_INPUT_ERROR;CHECK(!r3_records_observe(&t,&s));
     s.run=4;s.error=R3_NO_ERROR;s.falls=3;CHECK(r3_records_observe(&t,&s));
     CHECK(!r3_records_observe(&t,&s)&&t.count==1);
     s.state=R3_PAUSED;CHECK(!r3_records_observe(&t,&s));
-    PASS("only first valid completed run; no error/zero/limited score");
+    PASS("valid WON with budget diagnostics recorded; no error/zero/duplicate score");
     s.state=R3_WON;s.run=5;s.elapsed_ms=1000;s.falls=2;CHECK(r3_records_observe(&t,&s));
     s.run=6;s.falls=1;CHECK(r3_records_observe(&t,&s));CHECK(t.rows[0].falls==1&&t.rows[1].falls==2);
     for(unsigned i=7;i<22;++i){s.run=i;s.elapsed_ms=3000+i*100;s.falls=0;(void)r3_records_observe(&t,&s);}
@@ -55,5 +56,11 @@ int r3_records_selftest(void (*report)(const char *,bool)) {
     CHECK(r3_records_save(&second_table,&second_io)&&r3_records_load(&restored,&second_io));
     CHECK(restored.count==1&&restored.rows[0].level==2&&restored.rows[0].elapsed_ms==1700);
     PASS("level2 format reload / reject mixed-level table");
+    r3_records_t pending={0};s.run=1;s.elapsed_ms=900;s.limited_steps=2;
+    CHECK(r3_records_observe_level(&pending,&s,2));
+    CHECK(r3_records_merge_pending(&second_table,&pending));
+    CHECK(second_table.count==2&&second_table.rows[0].elapsed_ms==900&&second_table.last_run==1);
+    CHECK(!r3_records_observe_level(&second_table,&s,2));
+    PASS("offline pending merge retains frozen times and real run watermark");
     return 0;
 }

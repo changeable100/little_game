@@ -22,6 +22,7 @@ evidence.mkdir(parents=True, exist_ok=True)
 log = evidence / ('host_' + datetime.now().strftime('%Y-%m-%d_%H%M%S') + '.txt')
 suffix = '.exe' if sys.platform == 'win32' else ''
 suites = [
+    ('roll3_records_store_host', ['-Itests/records_store_stubs','-Isrc'], ['src/roll3_records.c','src/roll3_records_store.c','tests/roll3_records_store_host.c']),
     ('roll3_level2_host', ['-Isrc'], ['src/roll3_physics.c','src/roll3_mesh.c','src/roll3_scene_level2.c','src/roll3_scene.c','src/roll3_scene_m4.c','src/roll3_level2_selftest.c','tests/roll3_level2_host.c']),
     ('roll3_main_host', ['-Itests/runtime_stubs', '-Isrc'], ['tests/roll3_main_host.c']),
     ('roll3_records_host', ['-Isrc'], ['src/roll3_records.c','src/roll3_records_selftest.c','tests/roll3_records_host.c']),

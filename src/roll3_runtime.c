@@ -270,7 +270,7 @@ void roll3_runtime_report_frame(uint32_t frames, uint32_t sample_age_ms,
 void roll3_runtime_report_open(int result,unsigned depth_rows)
 {
     acquire();unsigned level=mailbox.level;release();
-    rt_kprintf("[roll3:open] level=%u result=%d depth_rows=%u build=levels-r4-20261113 refresh_ms=33\n",level,result,depth_rows);
+    rt_kprintf("[roll3:open] level=%u result=%d depth_rows=%u build=records-fix-20261114 refresh_ms=33\n",level,result,depth_rows);
 }
 
 bool roll3_runtime_submit(r3_action_kind_t kind, uint32_t run)

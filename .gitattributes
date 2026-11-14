@@ -50,3 +50,6 @@ evidence/M4/level2-compact-pillars-2026-11-13/** -text -whitespace
 evidence/M4/level2-pc-model-2026-11-13/** -text -whitespace
 evidence/M4/level2-planning-2026-11-13/** -text -whitespace
 evidence/M4/level2-port-2026-11-13/** -text -whitespace
+
+# Preserve the original 2026-11-14 records-fix diagnostic evidence bytes.
+evidence/M4/records-fix-2026-11-14/** -text -whitespace

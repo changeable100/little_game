@@ -8,8 +8,8 @@
 #include <stdio.h>
 #include <string.h>
 static uint8_t blobs[2][2][R3_RECORDS_BYTES];static size_t lengths[2][2];
-static bool background,write_error,concurrent;static unsigned writes;
-static bool read_slot(unsigned slot,void *p,size_t cap,size_t *n,void *ctx){unsigned level=(uintptr_t)ctx==2?1:0;*n=lengths[level][slot];assert(*n<=cap);memcpy(p,blobs[level][slot],*n);return true;}
+static bool background,write_error,concurrent,read_error;static unsigned writes;
+static bool read_slot(unsigned slot,void *p,size_t cap,size_t *n,void *ctx){unsigned level=(uintptr_t)ctx==2?1:0;if(read_error)return false;*n=lengths[level][slot];assert(*n<=cap);memcpy(p,blobs[level][slot],*n);return true;}
 static bool write_slot(unsigned slot,const void *p,size_t n,void *ctx){
     unsigned level=(uintptr_t)ctx==2?1:0;assert(background);++writes;if(write_error)return false;
     memcpy(blobs[level][slot],p,n);lengths[level][slot]=n;
@@ -42,6 +42,20 @@ int main(void){
     s.run=3;s.elapsed_ms=750;roll3_records_observe_level(&s,2);assert(roll3_records_read_level(2,&t)==R3_RECORDS_PENDING&&t.count==1&&t.rows[0].level==2);assert(flush_once());
     assert(r3_records_load(&t,&r3_records_storage_io_level2)&&t.count==1&&t.rows[0].elapsed_ms==750&&t.rows[0].level==2);
     assert(r3_records_load(&t,&r3_records_storage_io)&&t.count==2&&t.rows[0].elapsed_ms==500&&t.rows[0].level==1);
+    /* A later boot cannot reach flash yet; two wins must survive page closure. */
+    initialized=false;read_error=true;assert(roll3_records_init());
+    s.run=1;s.elapsed_ms=600;s.limited_steps=3;s.limited=true;
+    roll3_records_observe_level(&s,2);roll3_records_observe_level(&s,2);
+    assert(roll3_records_read_level(2,&t)==R3_RECORDS_UNSAVED&&t.count==1&&t.rows[0].elapsed_ms==600);
+    s.run=2;s.elapsed_ms=650;roll3_records_observe_level(&s,2);
+    s.elapsed_ms=550;roll3_records_observe_level(&s,1);
+    assert(!flush_once());read_error=false;assert(flush_once());
+    assert(roll3_records_read_level(2,&t)==R3_RECORDS_PENDING&&t.count==3&&t.rows[0].elapsed_ms==600&&t.rows[2].elapsed_ms==750);
+    assert(flush_once());assert(roll3_records_read_level(2,&t)==R3_RECORDS_SAVED);
+    assert(r3_records_load(&t,&r3_records_storage_io_level2)&&t.count==3);
+    assert(r3_records_load(&t,&r3_records_storage_io)&&t.count==3&&t.rows[0].elapsed_ms==500&&t.rows[1].elapsed_ms==550);
+    roll3_records_observe_level(&s,1);assert(roll3_records_read(&t)==R3_RECORDS_SAVED&&t.count==3);
+    puts("TC-536 offline wins retained / deduplicated / merged with both old tables / retried and reloaded PASS");
     puts("TC-535 separate level tables and flash reload with original level1 format PASS");
     puts("TC-531 background-only storage, pending/error/saved, concurrent score retention PASS");return 0;
 }

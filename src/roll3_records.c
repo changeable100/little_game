@@ -42,17 +42,31 @@ bool r3_records_load(r3_records_t *out,const r3_records_io_t *io) {
 bool r3_records_observe(r3_records_t *t,const r3_snapshot_t *s) {
     return r3_records_observe_level(t,s,1);
 }
-bool r3_records_observe_level(r3_records_t *t,const r3_snapshot_t *s,unsigned level) {
-    if(level<1||level>2||(t&&t->count&&t->rows[0].level!=level))return false;
-    if(!t||!s||s->version!=ROLL3_CONTRACT_VERSION||s->state!=R3_WON||!s->run||s->run<=t->last_run)return false;
-    t->last_run=s->run;
-    if(s->error!=R3_NO_ERROR||!s->elapsed_ms||s->limited_steps||s->limited||t->generation==UINT32_MAX)return false;
-    r3_record_t row={s->elapsed_ms,s->falls,level};unsigned at=0;
+static bool insert(r3_records_t *t,r3_record_t row) {
+    if(t->generation==UINT32_MAX)return false;
+    unsigned at=0;
     while(at<t->count&&!before(row,t->rows[at]))++at;
     if(at==R3_RECORDS_MAX)return false;
     unsigned count=t->count<R3_RECORDS_MAX?t->count+1:R3_RECORDS_MAX;
     for(unsigned i=count-1;i>at;--i)t->rows[i]=t->rows[i-1];
     t->rows[at]=row;t->count=count;++t->generation;return true;
+}
+bool r3_records_observe_level(r3_records_t *t,const r3_snapshot_t *s,unsigned level) {
+    if(level<1||level>2||(t&&t->count&&t->rows[0].level!=level))return false;
+    if(!t||!s||s->version!=ROLL3_CONTRACT_VERSION||s->state!=R3_WON||!s->run||s->run<=t->last_run)return false;
+    t->last_run=s->run;
+    /* Budget counters diagnose contact resolution, not an invalid completion.
+     * The authoritative WON snapshot already owns the frozen score. */
+    if(s->error!=R3_NO_ERROR||!s->elapsed_ms)return false;
+    return insert(t,(r3_record_t){s->elapsed_ms,s->falls,level});
+}
+bool r3_records_merge_pending(r3_records_t *restored,const r3_records_t *pending) {
+    if(!restored||!pending||pending->count>R3_RECORDS_MAX||restored->count>R3_RECORDS_MAX)return false;
+    if(restored->count&&pending->count&&restored->rows[0].level!=pending->rows[0].level)return false;
+    bool changed=false;
+    for(unsigned i=0;i<pending->count;++i)changed=insert(restored,pending->rows[i])||changed;
+    restored->last_run=pending->last_run;
+    return changed;
 }
 bool r3_records_save(const r3_records_t *t,const r3_records_io_t *io) {
     if(!t||!t->count||t->count>R3_RECORDS_MAX||!t->generation||!io||!io->write||!io->read)return false;

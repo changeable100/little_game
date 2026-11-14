@@ -17,6 +17,8 @@ typedef struct {
 bool r3_records_load(r3_records_t *out, const r3_records_io_t *io);
 bool r3_records_observe(r3_records_t *table, const r3_snapshot_t *snapshot);
 bool r3_records_observe_level(r3_records_t *table,const r3_snapshot_t *snapshot,unsigned level);
+/* Merge only RAM wins accumulated before the persisted table was readable. */
+bool r3_records_merge_pending(r3_records_t *restored,const r3_records_t *pending);
 bool r3_records_save(const r3_records_t *table, const r3_records_io_t *io);
 int r3_records_selftest(void (*report)(const char *, bool));
 /* Service owns locking and background Flash writes. UI receives a copy only. */

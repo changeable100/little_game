@@ -17,7 +17,10 @@ static bool flush_level(unsigned i) {
         bool ok=r3_records_load(&restored,io(i));
         (void)rt_mutex_take(&lock,RT_WAITING_FOREVER);
         if(ok&&restored.count&&restored.rows[0].level!=i+1)ok=false;
-        if(ok){table[i]=restored;ready[i]=true;failed[i]=false;}
+        if(ok){
+            dirty[i]=r3_records_merge_pending(&restored,&table[i]);
+            table[i]=restored;ready[i]=true;failed[i]=false;
+        }else failed[i]=true;
         (void)rt_mutex_release(&lock);return ok;
     }
     if(!dirty[i]){(void)rt_mutex_release(&lock);return true;}
@@ -41,7 +44,14 @@ bool roll3_records_init(void) {
     if(rt_thread_init(&thread,"r3_save",worker,NULL,stack,sizeof(stack),RT_MAIN_THREAD_PRIORITY+2,10)!=RT_EOK){rt_mutex_detach(&lock);return false;}
     /* Main initializes before the physics/UI readers exist. Flash runs here
      * only during boot; all later reads/writes belong to the storage worker. */
-    for(unsigned i=0;i<2;++i){ready[i]=r3_records_load(&table[i],io(i));if(ready[i]&&table[i].count&&table[i].rows[0].level!=i+1)ready[i]=false;}
+    for(unsigned i=0;i<2;++i){
+        memset(&table[i],0,sizeof(table[i]));dirty[i]=false;
+        ready[i]=r3_records_load(&table[i],io(i));
+        if(ready[i]&&table[i].count&&table[i].rows[0].level!=i+1)ready[i]=false;
+        if(!ready[i])memset(&table[i],0,sizeof(table[i]));
+        failed[i]=!ready[i];
+        rt_kprintf("[roll3:records] level=%u load=%s count=%u\n",i+1,ready[i]?"PASS":"RETRY",table[i].count);
+    }
     initialized=true;
     if(rt_thread_startup(&thread)!=RT_EOK){initialized=false;rt_thread_detach(&thread);rt_mutex_detach(&lock);return false;}
     return true;
@@ -50,7 +60,10 @@ void roll3_records_observe(const r3_snapshot_t *s){roll3_records_observe_level(s
 void roll3_records_observe_level(const r3_snapshot_t *s,unsigned level){
     if(!initialized||level<1||level>2)return;unsigned i=level-1;
     (void)rt_mutex_take(&lock,RT_WAITING_FOREVER);
-    if(ready[i]&&r3_records_observe_level(&table[i],s,level))dirty[i]=true;
+    if(r3_records_observe_level(&table[i],s,level)){
+        dirty[i]=true;
+        rt_kprintf("[roll3:records] level=%u run=%u accepted_ms=%u storage=%s\n",level,s->run,s->elapsed_ms,ready[i]?"PENDING":"RETRY");
+    }
     (void)rt_mutex_release(&lock);
 }
 r3_records_status_t roll3_records_read(r3_records_t *out){return roll3_records_read_level(1,out);}
@@ -59,6 +72,6 @@ r3_records_status_t roll3_records_read_level(unsigned level,r3_records_t *out){
     if(!initialized||level<1||level>2)return R3_RECORDS_OFFLINE;unsigned i=level-1;
     (void)rt_mutex_take(&lock,RT_WAITING_FOREVER);
     if(out)*out=table[i];
-    r3_records_status_t status=!ready[i]?R3_RECORDS_OFFLINE:failed[i]?R3_RECORDS_UNSAVED:dirty[i]?R3_RECORDS_PENDING:R3_RECORDS_SAVED;
+    r3_records_status_t status=!ready[i]?(table[i].count?R3_RECORDS_UNSAVED:R3_RECORDS_OFFLINE):failed[i]?R3_RECORDS_UNSAVED:dirty[i]?R3_RECORDS_PENDING:R3_RECORDS_SAVED;
     (void)rt_mutex_release(&lock);return status;
 }

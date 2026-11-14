@@ -1,0 +1,2 @@
+TC-530 native SDK menu, help, empty/full board, real callbacks, error status, text widths and 20 reopen/delete cycles PASS
+Host UI previews (simulated): D:\peripheral_lab\build\game-menu-view
